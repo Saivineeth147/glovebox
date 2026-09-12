@@ -35,9 +35,14 @@ Two rules, added to capability validation:
 
 1. **No record-time literals in conditions.** A `success[]` or `outcomes[].detect` condition whose
    `value` contains a parameter value or an extracted output value from the recording run is
-   rejected. Kills `"$1250.75"` and `"Member No. 100234"`.
-2. **A terminal outcome may not match the success path.** An outcome whose detector would fire on
-   the same screen the success conditions describe is rejected. Kills `MEMBER_FOUND`.
+   rejected. Comparison is case-insensitive substring, and only values of **three characters or
+   more** participate, so a parameter that happens to be `"1"` cannot poison every condition.
+   Kills `"$1250.75"` and `"Member No. 100234"`.
+2. **A terminal outcome may not match the success path.** Concretely: a terminal outcome is
+   rejected when its `detect.value` contains, or is contained by, any `success[].value` in the same
+   artifact. `MEMBER_FOUND`'s detector `"Regular Savings $1250.75"` contains the success condition
+   `"Regular Savings"`, so it is rejected. This is a structural check on the artifact and needs no
+   run data.
 
 Rule 1 needs the record-time values, which live in the run, not the artifact. So the check runs in
 two places: the recorder refuses to emit such a condition (it has the values in hand), and the
@@ -73,8 +78,8 @@ SHA-256 digest**, so read access to the database cannot mint a session.
 
 **Roles.** The first account to register becomes `admin`; every later registration becomes
 `viewer`. `viewer` is read-only. `operator` may run discovery, replay and takeover. `admin` may
-additionally approve capabilities and change roles. Registration is open because the first-user
-rule makes it safe; it is not open to privilege.
+additionally approve capabilities and change roles. Registration is open, but not open to privilege: a new
+account can read and nothing else until an admin acts.
 
 **Gate.** A dependency on every `/api/*` route except the auth routes and a health probe. The
 unknown-path catch-all at `server.py:295` must stop swallowing `/api/*`, or an unauthenticated
