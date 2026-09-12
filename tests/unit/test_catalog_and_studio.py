@@ -39,6 +39,16 @@ def test_studio_api_serves_catalog_policy_and_tools(tmp_path: Path):
     Catalog(cat_dir).save(_cap())
     app = create_studio(tmp_path / "runs", cat_dir, ROOT / "policies" / "default.yaml")
     c = TestClient(app)
+    # The API is gated, so an unauthenticated caller sees nothing at all.
+    assert c.get("/api/overview").status_code == 401
+    # The first account registered is the admin, and registering signs it in.
+    assert (
+        c.post(
+            "/api/auth/register",
+            json={"email": "reviewer@example.com", "password": "a-long-enough-password"},
+        ).json()["role"]
+        == "admin"
+    )
     ov = c.get("/api/overview").json()
     assert ov["capabilities"] == 1 and ov["policy"] == "meridian-core-teller" and "target" in ov
     caps = c.get("/api/capabilities").json()
