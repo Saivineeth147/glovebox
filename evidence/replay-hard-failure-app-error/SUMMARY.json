@@ -10,11 +10,11 @@
     "expected": "no failure signal",
     "observed": "found",
     "evidence": {
-      "screenshot": "/home/user/glovebox/runs/replay-20260912T054235-7495e9/screenshots/1789191756967-failure-s04_click.png",
-      "snapshot:top": "/home/user/glovebox/runs/replay-20260912T054235-7495e9/snapshots/1789191757002-failure-s04_click-top.html",
-      "snapshot:nav": "/home/user/glovebox/runs/replay-20260912T054235-7495e9/snapshots/1789191757005-failure-s04_click-nav.html",
-      "snapshot:menu": "/home/user/glovebox/runs/replay-20260912T054235-7495e9/snapshots/1789191757007-failure-s04_click-menu.html",
-      "snapshot:main": "/home/user/glovebox/runs/replay-20260912T054235-7495e9/snapshots/1789191757008-failure-s04_click-main.html"
+      "screenshot": "/home/user/glovebox/runs/replay-20260912T054837-34b688/screenshots/1789192119695-failure-s04_click.png",
+      "snapshot:top": "/home/user/glovebox/runs/replay-20260912T054837-34b688/snapshots/1789192119731-failure-s04_click-top.html",
+      "snapshot:nav": "/home/user/glovebox/runs/replay-20260912T054837-34b688/snapshots/1789192119734-failure-s04_click-nav.html",
+      "snapshot:menu": "/home/user/glovebox/runs/replay-20260912T054837-34b688/snapshots/1789192119736-failure-s04_click-menu.html",
+      "snapshot:main": "/home/user/glovebox/runs/replay-20260912T054837-34b688/snapshots/1789192119738-failure-s04_click-main.html"
     }
   },
   "handoff": null

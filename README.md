@@ -42,6 +42,16 @@ labels and an extra post-login notice. A **fault injector** arms one-shot runtim
 `validation` — so replay error handling is demonstrated against real failures rather than
 described. All data is fictional; credentials are fake.
 
+## The operator console
+
+When automation is stuck, needs approval for an irreversible step, or a policy blocks it, the
+run does not die: it raises an intervention and *serves* the human. The console shows the same
+browser session with clickable hotspots on every control, the context of why it stopped, and
+the six ways to hand control back. Every human action is recorded with the same locator
+description the recorder uses.
+
+<p align="center"><img src="docs/operator-console.png" alt="Glovebox operator console during a handoff: intervention context, live screenshot with element hotspots, action bar, hand-back verbs, timeline" width="900"></p>
+
 ## Setup
 
 Requirements: Python ≥ 3.11, [uv](https://docs.astral.sh/uv/), Chromium via Playwright.

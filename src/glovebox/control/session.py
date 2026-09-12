@@ -49,6 +49,7 @@ class Intervention(BaseModel):
     run_id: str
     kind: InterventionKind
     reason: str
+    observed: str | None = None
     step_id: str | None
     capability_id: str | None
     goal: str | None
@@ -148,7 +149,11 @@ class ControlSession:
         self.owner = to
 
     def request_intervention(
-        self, kind: InterventionKind, reason: str, step_id: str | None = None
+        self,
+        kind: InterventionKind,
+        reason: str,
+        step_id: str | None = None,
+        observed: str | None = None,
     ) -> Resolution:
         """Detect-and-route + take-control + hand-back, in one blocking call on the automation thread."""
         evidence = self.surface.capture(f"handoff-{kind}")
@@ -162,6 +167,7 @@ class ControlSession:
             run_id=self.run_id,
             kind=kind,
             reason=reason,
+            observed=observed,
             step_id=step_id,
             capability_id=self.capability_id,
             goal=self.goal,

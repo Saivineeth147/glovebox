@@ -287,7 +287,9 @@ def _same_row(a: Element, b: Element) -> bool:
 
 
 def _describe(el: Element) -> str:
-    what = (el.name or el.text) if el.role in {"button", "link"} else (el.label or el.name or el.text)
+    what = (
+        (el.name or el.text) if el.role in {"button", "link"} else (el.label or el.name or el.text)
+    )
     what = what or el.name_attr or el.tag
     return f"{el.role} '{what}'"
 

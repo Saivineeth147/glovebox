@@ -91,6 +91,7 @@ def run_replay(
         echo=echo,
         handoff_timeout_s=handoff_timeout_s,
         capability_id=capability.id,
+        goal=capability.title,
         trace=trace,
     )
     if on_context:

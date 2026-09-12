@@ -369,9 +369,7 @@ class ReplayEngine:
                 )
             )
         res = self.control.request_intervention(
-            InterventionKind.STUCK,
-            f"{message}; expected {expected}, saw: {observed[:200]}",
-            step.id,
+            InterventionKind.STUCK, f"{message} (expected {expected})", step.id, observed=observed
         )
         self._note_handoff(res, step.id)
         if res.action == "resume":

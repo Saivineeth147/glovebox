@@ -119,7 +119,8 @@ async function refresh(){let r;try{r=await fetch('/api/state');state=await r.jso
  const i=state.intervention;
  $('ctx').innerHTML='<h2>Intervention</h2>'+(i?`<span class="badge ${i.kind}">${i.kind}</span><div class="reason">${esc(i.reason)}</div>
    <dl class="kv"><dt>Capability</dt><dd>${esc(i.capability_id||'—')}</dd><dt>Goal</dt><dd>${esc(i.goal||'—')}</dd><dt>Step</dt><dd>${esc(i.step_id||'—')}</dd>
-   <dt>Run</dt><dd>${esc(i.run_id)}</dd><dt>Opened</dt><dd>${fmt(i.created_at)}</dd></dl>`:'<div class="empty">No open intervention. Automation is running; this page updates every 2 s.</div>');
+   <dt>Run</dt><dd>${esc(i.run_id)}</dd><dt>Opened</dt><dd>${fmt(i.created_at)}</dd></dl>
+   ${i.observed?`<details style="margin-top:10px"><summary style="cursor:pointer;color:var(--muted);font-size:12.5px">What the automation saw</summary><pre style="white-space:pre-wrap;font-size:12px;background:var(--chip);padding:10px;border-radius:8px;margin:8px 0 0">${esc(i.observed)}</pre></details>`:''}`:'<div class="empty">No open intervention. Automation is running; this page updates every 2 s.</div>');
  $('confirmVerbs').style.display=(i&&i.kind==='confirm')?'':'none';
  document.querySelectorAll('.verb button, .row button').forEach(b=>b.disabled=!human);
  if(state.screenshot&&state.screenshot!==lastShot){lastShot=state.screenshot;$('shot').src='/api/screenshot?t='+Date.now()}

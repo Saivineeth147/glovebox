@@ -8,8 +8,8 @@
   "outcome_code": null,
   "failure": null,
   "handoff": {
-    "intervention_id": "int_257f99fa02",
-    "reason": "click e24 failed: another element covers the target (modal/interstitial?); expected button 'Find Member', saw: url=http://127.0.0.1:8089/t/alpha/ title='Meridian Core \u2014 Alpine Credit Union' text='[nav]\\nMeridian Core \u2014 Alpine Credit Union Not signed in\\n\\n[menu]\\nMENU\\nHome\\nMember Inquiry\\nTransactions\\nRepor",
+    "intervention_id": "int_5a96351943",
+    "reason": "click e24 failed: another element covers the target (modal/interstitial?) (expected button 'Find Member')",
     "step_id": "s09_click",
     "resolution": "resume",
     "human_actions": 2,
