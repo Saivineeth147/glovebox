@@ -11,7 +11,11 @@ import re
 from collections.abc import Sequence
 
 MIN_LITERAL_LENGTH = 3
-_MULTI_DIGIT = re.compile(r"\d{2,}")
+# An identifier long enough to be a record key, or an amount with cents. Short runs are left
+# alone: the target's own share codes are S01 and S09, and "Page 10 of 12" is a static label —
+# rejecting those would refuse the only stable heading a screen has.
+IDENTIFIER_DIGITS = 5
+_RUN_SPECIFIC_NUMBER = re.compile(rf"\d[\d,]*\.\d{{2}}|\d{{{IDENTIFIER_DIGITS},}}")
 
 _ADVICE = (
     "Replay conditions must hold for every input. Use static screen text such as a heading, "
@@ -25,6 +29,9 @@ def overfit_reason(text: str, literals: Sequence[str]) -> str | None:
     for literal in literals:
         if len(literal) >= MIN_LITERAL_LENGTH and literal.lower() in lowered:
             return f"{text!r} contains {literal!r}, a value from this run. {_ADVICE}"
-    if match := _MULTI_DIGIT.search(text):
-        return f"{text!r} contains the number {match.group()!r}, which varies per input. {_ADVICE}"
+    if match := _RUN_SPECIFIC_NUMBER.search(text):
+        return (
+            f"{text!r} contains {match.group()!r}, which reads as an amount or a record "
+            f"identifier and so varies per input. {_ADVICE}"
+        )
     return None

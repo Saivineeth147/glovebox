@@ -59,18 +59,14 @@ def catalog_approve(
     promised a business outcome. Pass --accept-unverified to approve it anyway.
     """
     from glovebox.catalog import Catalog
+    from glovebox.catalog.registry import UnverifiedOutcomeError
 
-    catalog = Catalog(catalog_dir)
-    unverified = [
-        o.code for o in catalog.load(capability_id).outcomes if o.terminal and not o.verified
-    ]
-    if unverified and not accept_unverified:
+    try:
+        c = Catalog(catalog_dir).approve(capability_id, reviewer, notes, accept_unverified)
+    except UnverifiedOutcomeError as refusal:
         rprint(
-            f"[red]refusing to approve {capability_id}[/red]: unverified terminal outcome(s) "
-            f"{', '.join(unverified)}. Their detector text was never observed during discovery, "
-            "so replay would report a hard failure instead. Re-record having exercised that "
-            "state, or approve with --accept-unverified."
+            f"[red]refusing to approve {capability_id}[/red]: {refusal}. Re-record having "
+            "exercised that state, or approve with --accept-unverified."
         )
-        raise typer.Exit(code=1)
-    c = catalog.approve(capability_id, reviewer, notes)
+        raise typer.Exit(code=1) from refusal
     rprint(f"{c.id}@{c.version} approved by {reviewer}")

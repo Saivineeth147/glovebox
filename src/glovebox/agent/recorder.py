@@ -34,6 +34,10 @@ DEFAULT_FAILURE_SIGNALS = [
 ]
 
 
+def _collapse_whitespace(text: str) -> str:
+    return " ".join(text.lower().split())
+
+
 class Recorder:
     def __init__(
         self,
@@ -235,15 +239,20 @@ class Recorder:
         return kept
 
     def note_observed_text(self, text: str) -> None:
-        """Keep what the run actually saw, so an outcome detector can be checked against it."""
+        """Keep what the run actually saw, so an outcome detector can be checked against it.
+
+        Runs of whitespace are collapsed on both sides of the later comparison: a legacy page
+        renders one sentence across several table cells, and a detector that was genuinely on
+        screen must not read as unverified because of a line break between two words.
+        """
         if text:
-            self._seen_text.append(text.lower())
+            self._seen_text.append(_collapse_whitespace(text))
 
     def _verified(self, detect_text: str | None) -> bool:
         """Whether any observation in this run contained `detect_text`."""
         if not detect_text:
             return False
-        needle = detect_text.lower()
+        needle = _collapse_whitespace(detect_text)
         return any(needle in seen for seen in self._seen_text)
 
     def note_observed_value(self, value: str | None) -> None:
@@ -257,8 +266,12 @@ class Recorder:
 
     # ------------------------------------------------------------------ contract
     def declare_outcome(self, code: str, description: str, detect_text: str) -> None:
-        if self.paused:
-            return
+        """Recorded even while probing: an outcome is text, not a step.
+
+        Probing exists so the model can read the wording that identifies a state it has
+        not seen, so suppressing the declaration made during a probe would discard the
+        one thing the probe was for.
+        """
         if all(o.code != code for o in self.outcomes):
             self.outcomes.append(
                 Outcome(

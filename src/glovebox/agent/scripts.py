@@ -49,6 +49,41 @@ MEMBER_SAVINGS_BALANCE: list[dict[str, Any]] = [
         "tool": "assert_text",
         "input": {"text": "Share Accounts", "why": "confirm the member detail page loaded"},
     },
+    # Go and read the wording of the not-found screen rather than guessing it, then come back.
+    # Nothing between begin_probe and end_probe is recorded, so the capability does not end up
+    # searching for a member who does not exist.
+    {"tool": "begin_probe", "input": {"why": "read the exact wording of the not-found screen"}},
+    {
+        "tool": "click",
+        "find": {"role": "link", "name": "New Inquiry"},
+        "input": {"why": "start a fresh inquiry"},
+    },
+    {
+        "tool": "fill",
+        "find": {"name_attr": "member_no"},
+        "input": {"text": "999999", "why": "search for a member number that does not exist"},
+    },
+    {
+        "tool": "click",
+        "find": {"role": "button", "name": "Find Member"},
+        "input": {"why": "reach the not-found screen"},
+    },
+    {
+        "tool": "click",
+        "find": {"role": "link", "name": "Back to search"},
+        "input": {"why": "return towards the recorded flow"},
+    },
+    {
+        "tool": "fill",
+        "find": {"name_attr": "member_no"},
+        "input": {"param": "member_id", "why": "restore the member the goal is about"},
+    },
+    {
+        "tool": "click",
+        "find": {"role": "button", "name": "Find Member"},
+        "input": {"why": "return to the member detail screen"},
+    },
+    {"tool": "end_probe", "input": {}},
     {
         "tool": "declare_outcome",
         "input": {

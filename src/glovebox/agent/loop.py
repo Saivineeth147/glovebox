@@ -386,6 +386,11 @@ class DiscoveryAgent:
         return f"outcome {code} recorded"
 
     def _t_declare_recovery(self, name: str, detect_text: str, dismiss_ref: str) -> str:
+        if self.recorder.paused:
+            raise ValueError(
+                "a recovery names the control that dismisses it, and that control is on "
+                "this probed screen, which replay never visits. Declare it after end_probe."
+            )
         el = self._el(dismiss_ref)
         self.recorder.declare_recovery(name, detect_text, self.surface.describe_target(el))
         return f"recovery {name!r} recorded"

@@ -172,3 +172,23 @@ def test_should_drop_an_extract_step_superseded_by_a_later_one_for_the_same_outp
     assert len(extracts) == 1
     assert extracts[0].target is not None
     assert "S01" in extracts[0].target.description
+
+
+def test_should_accept_a_short_code_that_happens_to_contain_digits() -> None:
+    """S01 and S09 are the target's own share codes: static labels, not run data."""
+    assert overfit_reason("S01", []) is None
+    assert overfit_reason("S09 Checking", []) is None
+
+
+def test_should_accept_static_text_with_a_small_number_in_it() -> None:
+    for text in ("Page 10 of 12", "401(k) Accounts", "Form 1099", "Meridian Core v7.2.1"):
+        assert overfit_reason(text, []) is None, text
+
+
+def test_should_reject_a_monetary_amount() -> None:
+    for text in ("$1250.75", "Balance $5.00", "18,930.00"):
+        assert overfit_reason(text, []) is not None, text
+
+
+def test_should_reject_a_long_identifier() -> None:
+    assert overfit_reason("Member 100234", []) is not None

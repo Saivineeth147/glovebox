@@ -42,6 +42,20 @@ def _outputs(capability: Capability) -> set[tuple[str, str]]:
     return {(output.name, str(output.type)) for output in capability.outputs}
 
 
+def _locator_kinds(capability: Capability) -> list[str]:
+    """The strategy each targeted step leads with, in order.
+
+    Comparing action kinds alone would call two runs identical when one reads the balance
+    cell and the other reads the member number, since both are an `extract`. What a reviewer
+    needs to know is whether the two runs addressed the same controls the same way.
+    """
+    return [
+        f"{step.action}:{step.target.strategies[0].kind}"
+        for step in capability.steps
+        if step.target and step.target.strategies
+    ]
+
+
 def _describe_set_difference(first: set[Any], second: set[Any]) -> str:
     only_first = sorted(str(item) for item in first - second)
     only_second = sorted(str(item) for item in second - first)
@@ -64,6 +78,14 @@ def compare(first: Capability, second: Capability) -> list[Divergence]:
                 f"{' → '.join(first_actions)} versus {' → '.join(second_actions)}",
             )
         )
+    first_locators, second_locators = _locator_kinds(first), _locator_kinds(second)
+    if first_locators != second_locators:
+        divergences.append(
+            Divergence(
+                "locators",
+                f"{', '.join(first_locators)} versus {', '.join(second_locators)}",
+            )
+        )
     for aspect, reader in (
         ("success", _success_values),
         ("outcomes", _outcome_codes),
@@ -77,7 +99,7 @@ def compare(first: Capability, second: Capability) -> list[Divergence]:
 
 #: Aspects compared, so agreement is a fraction of a fixed denominator rather than of
 #: however many disagreements happened to be found.
-COMPARED_ASPECTS = ("steps", "success", "outcomes", "outputs")
+COMPARED_ASPECTS = ("steps", "locators", "success", "outcomes", "outputs")
 
 
 def agreement(first: Capability, second: Capability) -> float:

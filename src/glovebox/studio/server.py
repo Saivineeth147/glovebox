@@ -22,6 +22,7 @@ from pydantic import BaseModel
 
 from glovebox.agent.llm import RECOMMENDED_MODELS, available_provider
 from glovebox.catalog import Catalog
+from glovebox.catalog.registry import UnverifiedOutcomeError
 from glovebox.schema.capability import Capability
 from glovebox.schema.policy import Policy
 
@@ -68,6 +69,8 @@ class ApproveBody(BaseModel):
     # No reviewer field: approval is recorded against the signed-in admin, because a
     # name typed into the request is not an audit trail.
     notes: str | None = None
+    # The reviewer saw the warning on the capability page and chose to proceed.
+    accept_unverified: bool = False
 
 
 class CommandBody(BaseModel):
@@ -200,7 +203,13 @@ def create_studio(runs_dir: Path, catalog_dir: Path, policy_path: Path) -> FastA
         body: ApproveBody,
         user: Annotated[Account, Depends(require_role("admin"))],
     ) -> dict[str, Any]:
-        return cap_public(catalog.approve(cap_id, user.email, body.notes))
+        try:
+            approved = catalog.approve(
+                cap_id, user.email, body.notes, accept_unverified=body.accept_unverified
+            )
+        except UnverifiedOutcomeError as refusal:
+            raise HTTPException(status_code=409, detail=str(refusal)) from refusal
+        return cap_public(approved)
 
     # ------------------------------------------------------------------ jobs
     @api.post("/api/discover", dependencies=[Depends(require_role("operator"))])
@@ -330,9 +339,12 @@ def create_studio(runs_dir: Path, catalog_dir: Path, policy_path: Path) -> FastA
     def spa(path: str) -> Any:
         if path.startswith(API_PATH_PREFIX):
             return JSONResponse({"detail": UNKNOWN_API_ROUTE_MESSAGE}, status_code=404)
-        f = STATIC / path
-        if path and f.is_file():
-            return FileResponse(str(f))
+        # Resolve before serving: this route is deliberately unauthenticated so the sign-in
+        # screen can load, so it must not be able to reach outside the built bundle. Uvicorn
+        # normalises traversal today, but that is the server's behaviour, not this app's.
+        candidate = (STATIC / path).resolve()
+        if path and candidate.is_file() and candidate.is_relative_to(STATIC.resolve()):
+            return FileResponse(str(candidate))
         index = STATIC / "index.html"
         if not index.exists():
             return HTMLResponse(

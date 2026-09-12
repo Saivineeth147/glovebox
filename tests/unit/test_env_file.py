@@ -5,7 +5,18 @@ from __future__ import annotations
 import os
 from pathlib import Path
 
+import pytest
+
 from glovebox.envfile import load_env_file, parse_env_file
+
+
+@pytest.fixture(autouse=True)
+def _restore_environment():
+    """load_env_file writes to os.environ itself, so monkeypatch has nothing to undo."""
+    before = dict(os.environ)
+    yield
+    os.environ.clear()
+    os.environ.update(before)
 
 
 def test_should_parse_key_value_pairs_and_ignore_comments_and_blanks(tmp_path: Path) -> None:

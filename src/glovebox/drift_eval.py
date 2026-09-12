@@ -90,19 +90,27 @@ def _set_drift(target_url: str, name: str | None) -> None:
         httpx.post(f"{target_url}{DRIFT_ENDPOINT}/{name}", timeout=10).raise_for_status()
 
 
-def _replay_under(drift: str | None, plan: tuple[Any, dict[str, Any], Any]) -> DriftResult:
+@dataclass(frozen=True)
+class _ReplayPlan:
+    """Everything one evaluation replay needs, named rather than positional."""
+
+    capability: Any
+    params: dict[str, Any]
+    policy: Any
+    options: DriftEvalOptions
+
+
+def _replay_under(drift: str | None, plan: _ReplayPlan) -> DriftResult:
     """Replay the capability once with `drift` armed (or nothing armed for the baseline)."""
     from glovebox.runner import run_replay
 
-    capability, params, options = plan
-    policy, replay_options = options
-    _set_drift(replay_options.target_url, drift)
+    _set_drift(plan.options.target_url, drift)
     result = run_replay(
-        capability,
-        params,
-        policy,
-        runs_dir=replay_options.runs_dir,
-        tenant=replay_options.tenant,
+        plan.capability,
+        plan.params,
+        plan.policy,
+        runs_dir=plan.options.runs_dir,
+        tenant=plan.options.tenant,
         allow_draft=True,
         trace=False,
     )
@@ -127,10 +135,13 @@ def evaluate_capability(
     Returns the baseline alongside the mutated runs so the caller can attribute a survival to
     the strategy that took over, which is the part worth reporting.
     """
-    plan = (capability, params, (policy, options))
+    plan = _ReplayPlan(capability, params, policy, options)
     names = list(options.drifts) or known_drifts(options.target_url)
     try:
         baseline = _replay_under(None, plan)
+        if not baseline.survived:
+            # Every mutated run would fail for the same reason, at minutes apiece.
+            return baseline, []
         return baseline, [_replay_under(name, plan) for name in names]
     finally:
         _set_drift(options.target_url, None)

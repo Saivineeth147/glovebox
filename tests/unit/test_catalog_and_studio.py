@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import os
 from pathlib import Path
 
 from fastapi.testclient import TestClient
@@ -91,3 +92,16 @@ def test_approval_is_recorded_against_the_signed_in_admin_not_the_request_body(t
     ).json()
 
     assert approved["review"]["reviewed_by"] == "admin@example.com"
+
+
+def test_the_unauthenticated_spa_route_cannot_reach_outside_the_built_bundle(tmp_path: Path):
+    """This route must stay open so the sign-in screen loads, so its reach is what bounds it."""
+    from glovebox.studio import server
+
+    app = create_studio(tmp_path / "runs", tmp_path, ROOT / "policies" / "default.yaml")
+    secret = ROOT / ".env.example"
+    escape = os.path.relpath(secret, server.STATIC)
+
+    response = TestClient(app).get(f"/{escape}")
+
+    assert "ANTHROPIC_API_KEY" not in response.text

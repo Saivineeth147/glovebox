@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import os
+import socket
 from collections.abc import Iterator
 from pathlib import Path
 
@@ -17,8 +18,27 @@ ROOT = Path(__file__).resolve().parents[1]
 FIXED_PORT = 8089  # policies/default.yaml allowlists this origin
 
 
+def _port_is_free(port: int) -> bool:
+    with socket.socket() as probe:
+        return probe.connect_ex(("127.0.0.1", port)) != 0
+
+
 @pytest.fixture(scope="session")
 def app_url() -> Iterator[str]:
+    """Serve the target on the one origin the policy allowlists.
+
+    The port is pinned rather than allocated because `policies/default.yaml` allowlists this
+    exact origin, and a run on another port would be refused by the guardrails it is meant to
+    exercise. That makes a port clash a setup problem, so say so plainly: left to itself the
+    suite silently talks to whatever is already listening and fails much later, in tests that
+    look unrelated.
+    """
+    if not _port_is_free(FIXED_PORT):
+        pytest.exit(
+            f"port {FIXED_PORT} is already in use. The policy allowlists this exact origin, so "
+            "the suite cannot move. Stop any running `glovebox target serve` and retry.",
+            returncode=1,
+        )
     os.environ.setdefault("GLOVEBOX_APP_USERNAME", "teller1")
     os.environ.setdefault("GLOVEBOX_APP_PASSWORD", "teller1-pass")
     with target_app(FIXED_PORT) as base:
@@ -89,7 +109,10 @@ def savings_capability(
         {"member_id": "100234"},
     )
     catalog.save(cap)
-    return catalog.approve(cap.id, "test-reviewer")
+    # The scripted flows are written by someone who knows the app, which is exactly the
+    # case --accept-unverified exists for. The savings flow probes for its detector instead
+    # and does not need this; the sub-account flow declares outcomes it never walks to.
+    return catalog.approve(cap.id, "test-reviewer", accept_unverified=True)
 
 
 @pytest.fixture(scope="session")
@@ -131,7 +154,7 @@ def subaccount_capability(
     assert res.status == "success", res.summary
     assert res.capability is not None
     catalog.save(res.capability)
-    return catalog.approve(res.capability.id, "test-reviewer")
+    return catalog.approve(res.capability.id, "test-reviewer", accept_unverified=True)
 
 
 def creds() -> dict[str, str]:

@@ -513,3 +513,16 @@ def test_capability_survives_a_redesign_through_a_lower_locator_strategy(
     assert rescues(baseline.strategies, results[0].strategies), (
         "renaming the control changed nothing, so the mutation did not reach the recorded locator"
     )
+
+
+@pytest.mark.integration
+def test_the_scripted_flow_verifies_its_outcome_detector_by_probing(
+    savings_capability: Capability,
+) -> None:
+    """The detector's wording is read off the real screen, not guessed, and the walk there
+    leaves no trace in the recorded steps."""
+    outcome = next(o for o in savings_capability.outcomes if o.code == "MEMBER_NOT_FOUND")
+    assert outcome.verified is True
+    assert not any(step.value == "999999" for step in savings_capability.steps), (
+        "the probe's bogus search was recorded into the capability"
+    )

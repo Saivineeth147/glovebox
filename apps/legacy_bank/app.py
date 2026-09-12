@@ -121,8 +121,14 @@ def create_app() -> FastAPI:
         if not _DRIFT or "text/html" not in response.headers.get("content-type", ""):
             return response
         body = b"".join([section async for section in response.body_iterator])
+        # Carry the original headers across. Rebuilding a bare response would drop Set-Cookie
+        # and Location, so a capability would appear to fail the redesign for a reason that
+        # has nothing to do with the redesign — the confound this module exists to avoid.
+        headers = {k: v for k, v in response.headers.items() if k.lower() != "content-length"}
         return HTMLResponse(
-            apply_drift(body.decode(), sorted(_DRIFT)), status_code=response.status_code
+            apply_drift(body.decode(), sorted(_DRIFT)),
+            status_code=response.status_code,
+            headers=headers,
         )
 
     # ---------------------------------------------------------------- shell

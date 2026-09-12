@@ -128,3 +128,26 @@ def test_should_refuse_to_finish_while_a_probe_is_open() -> None:
     agent.recorder.paused = True
     with pytest.raises(ValueError, match="probe is still open"):
         DiscoveryAgent._t_finish(agent, ["Share Accounts"], "summary", "title")
+
+
+def test_should_record_an_outcome_declared_while_probing() -> None:
+    """Reading the wording is why the probe exists; discarding it would defeat the feature."""
+    rec = _recorder()
+    rec.navigate("http://127.0.0.1:8089/t/alpha/", "open the application entry point")
+    rec.extract(_target(), "savings_balance", "balance", "string", None)
+    rec.paused = True
+    rec.note_observed_text("No member record matched number 999999.")
+    rec.declare_outcome("MEMBER_NOT_FOUND", "no match", "No member record matched")
+    rec.paused = False
+    outcome = _finish(rec).outcomes[0]
+    assert outcome.code == "MEMBER_NOT_FOUND" and outcome.verified is True
+
+
+def test_should_refuse_a_recovery_declared_while_probing() -> None:
+    """A recovery carries the locator that dismisses it, taken from a screen replay never sees."""
+    from glovebox.agent.loop import DiscoveryAgent
+
+    agent = _agent_with(_recorder())
+    agent.recorder.paused = True
+    with pytest.raises(ValueError, match="probed screen"):
+        DiscoveryAgent._t_declare_recovery(agent, "stale_dialog", "Notice", "e1")

@@ -14,6 +14,21 @@ from typing import Any
 from glovebox.schema.capability import Capability, ParamType, ReviewState, ReviewStatus
 
 
+class UnverifiedOutcomeError(Exception):
+    """Approval was refused because a terminal outcome's detector was never observed.
+
+    Such a detector never fires, so replay reports a hard failure where the catalog promised a
+    business outcome and a calling agent branches on something it will never see.
+    """
+
+    def __init__(self, codes: list[str]) -> None:
+        self.codes = codes
+        super().__init__(
+            f"unverified terminal outcome(s) {', '.join(codes)}: their detector text was never "
+            "observed during discovery, so replay would report a hard failure instead"
+        )
+
+
 class Catalog:
     def __init__(self, directory: str | Path) -> None:
         self.dir = Path(directory)
@@ -45,8 +60,22 @@ class Catalog:
     def all(self) -> list[Capability]:
         return [self.load(str(p)) for p in sorted(self.dir.glob("*.json"))]
 
-    def approve(self, cap_id: str, reviewer: str, notes: str | None = None) -> Capability:
+    def approve(
+        self,
+        cap_id: str,
+        reviewer: str,
+        notes: str | None = None,
+        accept_unverified: bool = False,
+    ) -> Capability:
+        """Mark a capability fit for unattended replay.
+
+        The unverified-outcome refusal lives here rather than in a command, because approval
+        is reachable from the CLI and from Studio and a guard on one of them is not a guard.
+        """
         cap = self.load(cap_id)
+        unverified = [o.code for o in cap.outcomes if o.terminal and not o.verified]
+        if unverified and not accept_unverified:
+            raise UnverifiedOutcomeError(unverified)
         cap.review.status = ReviewStatus.APPROVED
         cap.review.reviewed_by = reviewer
         cap.review.reviewed_at = datetime.now(UTC)

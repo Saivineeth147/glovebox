@@ -55,6 +55,22 @@ class ReplayOptions:
     screenshot_each_step: bool = True
 
 
+class _ExtractionMismatch(Exception):
+    """The text under a resolved target did not have the shape the step recorded.
+
+    Raised rather than stopping on the spot so the caller can record which strategy resolved
+    the target — the drift evaluation reads exactly that — and so an attended run offers the
+    operator the same takeover every other checkpoint failure does.
+    """
+
+    def __init__(self, output: str, expected: str, observed: str) -> None:
+        self.output, self.expected, self.observed = output, expected, observed
+        super().__init__(
+            f"{output} did not match the shape recorded for it; the screen is not the one "
+            "this step was recorded against"
+        )
+
+
 class _Stop(Exception):
     def __init__(self, result: ReplayResult) -> None:
         self.result = result
@@ -87,6 +103,9 @@ class ReplayEngine:
         self.handoff: HandoffRecord | None = None
         self._restarts = 0
         self._recovery_uses: dict[str, int] = {}
+        # The strategy that resolved the most recent target, kept so a failure after
+        # resolution can still report which rung of the ladder was in play.
+        self._last_strategy: str | None = None
 
     # ------------------------------------------------------------------ entry
     def run(self) -> ReplayResult:
@@ -167,6 +186,19 @@ class ReplayEngine:
                     expected=step.target.description if step.target else str(step.action),
                 )
                 strategy = None
+            except _ExtractionMismatch as mismatch:
+                # The target resolved; it was the value behind it that was wrong, so the
+                # strategy that found it is still the useful thing to record.
+                rec.strategy_used = self._last_strategy
+                self._stuck(
+                    step,
+                    rec,
+                    FailureClass.CHECKPOINT_FAILED,
+                    str(mismatch),
+                    expected=mismatch.expected,
+                    observed=mismatch.observed,
+                )
+                strategy = self._last_strategy
             rec.strategy_used = strategy
             self.surface.wait_settled(
                 step.wait.load_state, step.wait.settle_ms, step.wait.timeout_ms
@@ -282,6 +314,7 @@ class ReplayEngine:
             return "key"
         assert step.target is not None
         resolved = self._resolve(step)
+        self._last_strategy = str(resolved.strategy_kind)
         el = resolved.element
         if step.action == ActionKind.CLICK:
             s.click(el)
@@ -317,16 +350,7 @@ class ReplayEngine:
         spec = next(o for o in self.cap.outputs if o.name == step.extract_to)
         value = extracted_value(text, step.value)  # regex stored in value for extract steps
         if value is None:
-            raise _Stop(
-                self._fail(
-                    FailureClass.CHECKPOINT_FAILED,
-                    step.id,
-                    f"{step.extract_to} did not match the shape recorded for it; the screen is "
-                    "not the one this step was recorded against",
-                    expected=f"text matching {step.value!r}",
-                    observed=text[:200],
-                )
-            )
+            raise _ExtractionMismatch(step.extract_to, f"text matching {step.value!r}", text[:200])
         self.outputs[step.extract_to] = coerce_output(str(value), spec.type)
         if spec.sensitive:
             self.log.redactor.register_secret(str(value), step.extract_to)

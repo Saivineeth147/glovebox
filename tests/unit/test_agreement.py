@@ -64,3 +64,28 @@ def test_should_score_full_disagreement_below_full_agreement() -> None:
     base = _artifact()
     different = base.model_copy(update={"outcomes": [], "steps": base.steps[:-1]})
     assert 0.0 <= agreement(base, different) < 1.0
+
+
+def test_should_report_steps_that_resolved_through_different_locators() -> None:
+    """Two runs can share every action kind and still address entirely different controls."""
+    base = _artifact()
+    extract_step = next(s for s in base.steps if s.extract_to)
+    assert extract_step.target is not None
+    retargeted = extract_step.target.model_copy(
+        update={
+            "strategies": [
+                extract_step.target.strategies[0].model_copy(update={"kind": "bbox"}),
+                *extract_step.target.strategies[1:],
+            ]
+        }
+    )
+    moved = base.model_copy(
+        update={
+            "steps": [
+                s.model_copy(update={"target": retargeted}) if s.extract_to else s
+                for s in base.steps
+            ]
+        }
+    )
+    aspects = {d.aspect for d in compare(base, moved)}
+    assert "locators" in aspects
