@@ -328,10 +328,29 @@ def catalog_approve(
     reviewer: str,
     notes: str | None = None,
     catalog_dir: Path = Path("capabilities"),
+    accept_unverified: bool = False,
 ) -> None:
+    """Approve a capability for unattended replay.
+
+    Refuses an unverified terminal outcome by default: its detector is wording the run never
+    saw, so it never fires and the capability reports a hard failure where the catalog
+    promised a business outcome. Pass --accept-unverified to approve it anyway.
+    """
     from glovebox.catalog import Catalog
 
-    c = Catalog(catalog_dir).approve(capability_id, reviewer, notes)
+    catalog = Catalog(catalog_dir)
+    unverified = [
+        o.code for o in catalog.load(capability_id).outcomes if o.terminal and not o.verified
+    ]
+    if unverified and not accept_unverified:
+        rprint(
+            f"[red]refusing to approve {capability_id}[/red]: unverified terminal outcome(s) "
+            f"{', '.join(unverified)}. Their detector text was never observed during discovery, "
+            "so replay would report a hard failure instead. Re-record having exercised that "
+            "state, or approve with --accept-unverified."
+        )
+        raise typer.Exit(code=1)
+    c = catalog.approve(capability_id, reviewer, notes)
     rprint(f"{c.id}@{c.version} approved by {reviewer}")
 
 

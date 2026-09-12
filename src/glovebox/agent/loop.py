@@ -201,6 +201,7 @@ class DiscoveryAgent:
     def _observe(self, screenshot: bool, label: str) -> Observation:
         obs = self.surface.observe(screenshot=screenshot or self.screenshots, label=label)
         self.last_obs = obs
+        self.recorder.note_observed_text(obs.text)
         fp = hashlib.sha1((obs.url + obs.text).encode()).hexdigest()  # noqa: S324 — fingerprint, not security
         self._fingerprints.append(fp)
         self.log.emit(

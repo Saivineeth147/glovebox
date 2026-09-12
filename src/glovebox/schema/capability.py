@@ -202,6 +202,14 @@ class Outcome(_Strict):
     description: str
     detect: Condition
     terminal: bool = True
+    verified: bool = Field(
+        default=False,
+        description=(
+            "The detector text was actually observed during discovery. An unverified detector "
+            "is the model's guess at wording it never saw; it silently never fires, so the "
+            "capability reports a hard failure where it promised a business outcome."
+        ),
+    )
 
 
 class Recovery(_Strict):

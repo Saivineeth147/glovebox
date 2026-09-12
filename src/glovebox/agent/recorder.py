@@ -63,6 +63,7 @@ class Recorder:
         self._n = 0
         # Values this run used or saw. Conditions built from them cannot generalize.
         self.dropped_outcomes: list[str] = []
+        self._seen_text: list[str] = []
         self._literals: list[str] = [
             str(v) for v in (param_values or {}).values() if len(str(v)) >= MIN_LITERAL_LENGTH
         ]
@@ -229,6 +230,18 @@ class Recorder:
                 kept.append(outcome)
         return kept
 
+    def note_observed_text(self, text: str) -> None:
+        """Keep what the run actually saw, so an outcome detector can be checked against it."""
+        if text:
+            self._seen_text.append(text.lower())
+
+    def _verified(self, detect_text: str | None) -> bool:
+        """Whether any observation in this run contained `detect_text`."""
+        if not detect_text:
+            return False
+        needle = detect_text.lower()
+        return any(needle in seen for seen in self._seen_text)
+
     def note_observed_value(self, value: str | None) -> None:
         """Remember a value read off the screen so a condition cannot be built from it."""
         if value and len(value) >= MIN_LITERAL_LENGTH:
@@ -309,7 +322,10 @@ class Recorder:
             outputs=self.outputs,
             steps=self._usable_steps(),
             success=success,
-            outcomes=self._usable_outcomes(success),
+            outcomes=[
+                o.model_copy(update={"verified": self._verified(o.detect.value)})
+                for o in self._usable_outcomes(success)
+            ],
             recoveries=recoveries,
             failure_signals=list(DEFAULT_FAILURE_SIGNALS),
             max_risk=highest,
