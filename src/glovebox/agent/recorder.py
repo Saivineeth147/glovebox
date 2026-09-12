@@ -9,6 +9,7 @@ from datetime import UTC, datetime
 from typing import Any, Literal
 from urllib.parse import urlsplit
 
+from glovebox.agent.overfit import MIN_LITERAL_LENGTH, overfit_reason
 from glovebox.schema.capability import (
     ActionKind,
     AppRef,
@@ -43,6 +44,7 @@ class Recorder:
         params: list[Parameter],
         model_name: str,
         run_id: str,
+        param_values: dict[str, Any] | None = None,
     ) -> None:
         self.capability_id = capability_id
         self.app_id = app_id
@@ -58,6 +60,10 @@ class Recorder:
         self.outcomes: list[Outcome] = []
         self.recoveries: list[Recovery] = []
         self._n = 0
+        # Values this run used or saw. Conditions built from them cannot generalize.
+        self._literals: list[str] = [
+            str(v) for v in (param_values or {}).values() if len(str(v)) >= MIN_LITERAL_LENGTH
+        ]
 
     # ------------------------------------------------------------------ steps
     def _id(self, action: str) -> str:
@@ -186,6 +192,15 @@ class Recorder:
     def _add(self, step: Step) -> Step:
         self.steps.append(step)
         return step
+
+    def note_observed_value(self, value: str | None) -> None:
+        """Remember a value read off the screen so a condition cannot be built from it."""
+        if value and len(value) >= MIN_LITERAL_LENGTH:
+            self._literals.append(str(value))
+
+    def overfit_reason(self, text: str) -> str | None:
+        """Why `text` must not become a replay condition, or None when it is safe."""
+        return overfit_reason(text, self._literals)
 
     # ------------------------------------------------------------------ contract
     def declare_outcome(self, code: str, description: str, detect_text: str) -> None:
