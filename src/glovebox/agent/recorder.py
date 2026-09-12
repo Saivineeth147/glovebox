@@ -195,6 +195,24 @@ class Recorder:
         self.steps.append(step)
         return step
 
+    def _usable_steps(self) -> list[Step]:
+        """Drop extract steps superseded by a later extract to the same output.
+
+        The model explores: it reads the wrong cell, sees the value is wrong and reads the
+        right one. Replay would overwrite the first result with the second anyway, so the
+        earlier step contributes nothing and can only fail — and it is usually anchored on
+        record-time data, which is exactly what breaks on other inputs.
+        """
+        last: dict[str, int] = {}
+        for index, step in enumerate(self.steps):
+            if step.extract_to:
+                last[step.extract_to] = index
+        return [
+            step
+            for index, step in enumerate(self.steps)
+            if not step.extract_to or last[step.extract_to] == index
+        ]
+
     def _usable_outcomes(self, success: list[Condition]) -> list[Outcome]:
         """Drop outcomes that would fire on the success screen.
 
@@ -289,7 +307,7 @@ class Recorder:
             ),
             inputs=inputs,
             outputs=self.outputs,
-            steps=self.steps,
+            steps=self._usable_steps(),
             success=success,
             outcomes=self._usable_outcomes(success),
             recoveries=recoveries,

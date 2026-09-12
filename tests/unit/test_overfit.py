@@ -138,3 +138,37 @@ def test_should_keep_an_outcome_that_describes_a_genuinely_different_screen() ->
     cap, rec = _built_with_outcome("No member record matched", ["Share Accounts"])
     assert [o.code for o in cap.outcomes] == ["MEMBER_FOUND"]
     assert rec.dropped_outcomes == []
+
+
+def _cell_target(description: str, anchor: str) -> Target:
+    return Target(
+        description=description,
+        strategies=[TargetStrategy(kind="text", value={"text": anchor}, robustness="r")],
+    )
+
+
+def test_should_drop_an_extract_step_superseded_by_a_later_one_for_the_same_output() -> None:
+    """Exploration that landed on the wrong cell can only fail later; the last write wins."""
+    rec = _recorder()
+    rec.navigate("http://127.0.0.1:8089/t/alpha/", "open the application entry point")
+    rec.extract(
+        _cell_target("cell in row 'SA-48121'", "SA-48121"), "savings_balance", "d", "string", None
+    )
+    rec.extract(
+        _cell_target("cell 'Current Balance' in row 'S01'", "S01"),
+        "savings_balance",
+        "d",
+        "string",
+        None,
+    )
+    cap = rec.build(
+        title="t",
+        description="d",
+        success_text=["Share Accounts"],
+        transcript=[],
+        surface_name="TestSurface",
+    )
+    extracts = [s for s in cap.steps if s.extract_to == "savings_balance"]
+    assert len(extracts) == 1
+    assert extracts[0].target is not None
+    assert "S01" in extracts[0].target.description
