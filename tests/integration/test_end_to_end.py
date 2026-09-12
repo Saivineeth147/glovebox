@@ -10,12 +10,19 @@ import pytest
 
 from glovebox.catalog import Catalog
 from glovebox.control.session import OperatorBridge, ScriptedOperator
+from glovebox.drift_eval import (
+    DriftEvalOptions,
+    evaluate_capability,
+    rescues,
+    survival_rate,
+)
 from glovebox.runner import run_replay
 from glovebox.schema import (
     ActionKind,
     Capability,
     Condition,
     ConditionKind,
+    Policy,
     Recovery,
     ReplayStatus,
     Step,
@@ -478,3 +485,31 @@ def test_human_can_restart_the_flow_from_the_top(savings_capability, policy, run
     assert r.status == ReplayStatus.SUCCESS, r.failure
     assert r.handoff.resolution == "restart"
     assert [s.step_id for s in r.steps].count("s01_navigate") == 2
+
+
+@pytest.mark.integration
+def test_capability_survives_a_redesign_through_a_lower_locator_strategy(
+    savings_capability: Capability,
+    policy: Policy,
+    runs_dir: Path,
+    app_url: str,
+) -> None:
+    """The locator ladder is the design's central claim; this measures it instead of asserting.
+
+    Renaming the search control breaks the recorded role+name, so the step must resolve through
+    a lower rung. A survival with no change of strategy would mean the mutation missed.
+    """
+    options = DriftEvalOptions(
+        target_url=app_url,
+        runs_dir=str(runs_dir),
+        drifts=("rename_action",),
+    )
+    baseline, results = evaluate_capability(
+        savings_capability, {"member_id": "100234", **creds()}, policy, options
+    )
+
+    assert baseline.survived, baseline.failure_class
+    assert survival_rate(results) == 1.0
+    assert rescues(baseline.strategies, results[0].strategies), (
+        "renaming the control changed nothing, so the mutation did not reach the recorded locator"
+    )

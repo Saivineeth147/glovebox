@@ -76,6 +76,20 @@ def _params(
     return values, specs
 
 
+def _with_app_credentials(cap: Capability, values: dict[str, Any]) -> dict[str, Any]:
+    """Fill sensitive inputs from the environment.
+
+    Credentials reach the run by name, never through the command line or the model's
+    transcript, which is what keeps them out of artifacts and evidence.
+    """
+    for p in cap.inputs:
+        if p.sensitive and p.name not in values:
+            env = f"GLOVEBOX_APP_{p.name.upper()}"
+            if env in os.environ:
+                values[p.name] = os.environ[env]
+    return values
+
+
 def _policy(path: Path | None) -> Policy:
     return Policy.load(path or DEFAULT_POLICY)
 
@@ -255,12 +269,7 @@ def replay(
 
     cat = Catalog(catalog_dir)
     cap = cat.load(capability)
-    values, _ = _params(param, secret)
-    for p in cap.inputs:
-        if p.sensitive and p.name not in values:
-            env = f"GLOVEBOX_APP_{p.name.upper()}"
-            if env in os.environ:
-                values[p.name] = os.environ[env]
+    values = _with_app_credentials(cap, _params(param, secret)[0])
     pol = _policy(policy)
     bridge, console = _bridge(console_port if (attended or console_port) else None)
     if fault:
@@ -371,10 +380,7 @@ def stability(
     from glovebox.runner import run_replay
 
     cap = Catalog(catalog_dir).load(capability)
-    values, _ = _params(param, None)
-    for p in cap.inputs:
-        if p.sensitive and p.name not in values:
-            values[p.name] = os.environ.get(f"GLOVEBOX_APP_{p.name.upper()}", "")
+    values = _with_app_credentials(cap, _params(param, None)[0])
     statuses = []
     for i in range(runs):
         r = run_replay(
@@ -392,6 +398,39 @@ def stability(
         )
     ok = sum(s == "success" for s in statuses)
     rprint(f"\nstability: {ok}/{runs} successful ({ok / runs:.0%})")
+
+
+@app.command()
+def drift(
+    capability: str,
+    param: list[str] | None = None,
+    tenant: str | None = None,
+    policy: Path | None = None,
+    catalog_dir: Path = Path("capabilities"),
+    runs_dir: Path = Path("runs"),
+    target_url: str = "http://127.0.0.1:8089",
+) -> None:
+    """Replay a capability under each simulated redesign and report what survived."""
+    from glovebox.catalog import Catalog
+    from glovebox.drift_eval import (
+        DriftEvalOptions,
+        evaluate_capability,
+        format_report,
+        survival_rate,
+    )
+
+    cap = Catalog(catalog_dir).load(capability)
+    baseline, results = evaluate_capability(
+        cap,
+        _with_app_credentials(cap, _params(param, None)[0]),
+        _policy(policy),
+        DriftEvalOptions(target_url=target_url, tenant=tenant, runs_dir=str(runs_dir)),
+    )
+    if not baseline.survived:
+        rprint(f"[red]baseline replay failed[/red] ({baseline.failure_class}); fix that first")
+        raise typer.Exit(code=1)
+    rprint(format_report(baseline, results, f"{capability}: survival under redesign"))
+    rprint(f"survived {survival_rate(results):.0%} of {len(results)} redesigns")
 
 
 @app.command()

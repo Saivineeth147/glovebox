@@ -6,6 +6,8 @@ Design notes (why it looks the way it does):
 * Server-rendered forms with `name` attributes only, JS `confirm()` before a mutating submit.
 * Two tenants share the code but differ in branding, labels, and an extra interstitial —
   a stand-in for "same vendor product, configured differently per institution".
+* A drift injector (`/__sim/drift`) rewrites the rendered page the way a redesign would,
+  so a capability's resilience can be measured instead of asserted.
 * A fault injector (`/__sim/faults`) arms one-shot runtime faults. It is a simulation control
   surface for tests and evidence, and is *not* something the agent is allowed to touch
   (the policy allowlist excludes it).
@@ -24,8 +26,13 @@ from fastapi.responses import HTMLResponse, JSONResponse, RedirectResponse, Resp
 from fastapi.templating import Jinja2Templates
 
 from .data import FAULTS, MEMBERS, PRODUCTS, next_reference
+from .drift import KNOWN_DRIFTS, apply_drift
 
 TEMPLATES = Jinja2Templates(directory=str(Path(__file__).parent / "templates"))
+
+# Armed structural drift, module-level for the same reason FAULTS is: one simulated
+# institution per process, driven from outside by the evaluation harness.
+_DRIFT: set[str] = set()
 
 TENANTS: dict[str, dict[str, Any]] = {
     "alpha": {
@@ -88,9 +95,35 @@ def create_app() -> FastAPI:
         FAULTS.clear()
         return JSONResponse({"armed": {}})
 
+    @app.get("/__sim/drift")
+    def list_drift() -> JSONResponse:
+        return JSONResponse({"armed": sorted(_DRIFT), "known": KNOWN_DRIFTS})
+
+    @app.post("/__sim/drift/{name}")
+    def arm_drift(name: str) -> JSONResponse:
+        if name not in KNOWN_DRIFTS:
+            return JSONResponse({"detail": f"unknown drift {name!r}"}, status_code=404)
+        _DRIFT.add(name)
+        return JSONResponse({"armed": sorted(_DRIFT)})
+
+    @app.delete("/__sim/drift")
+    def clear_drift() -> JSONResponse:
+        _DRIFT.clear()
+        return JSONResponse({"armed": []})
+
     @app.get("/__sim/health")
     def health() -> JSONResponse:
         return JSONResponse({"ok": True})
+
+    @app.middleware("http")
+    async def rewrite_for_drift(request: Request, call_next: Any) -> Response:
+        response = await call_next(request)
+        if not _DRIFT or "text/html" not in response.headers.get("content-type", ""):
+            return response
+        body = b"".join([section async for section in response.body_iterator])
+        return HTMLResponse(
+            apply_drift(body.decode(), sorted(_DRIFT)), status_code=response.status_code
+        )
 
     # ---------------------------------------------------------------- shell
     @app.get("/")

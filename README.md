@@ -137,6 +137,38 @@ Or do all of it from the UI: `make studio`.
 Other commands: `glovebox catalog list|tools` (the catalog as Claude tool definitions),
 `glovebox stability <cap> --runs 5`, `glovebox validate <cap.json>`, `glovebox schema`.
 
+## Resilience, measured
+
+The artifact stores several ordered locator strategies per target because which one survives a
+UI change is unknowable at record time. That is an argument; `glovebox drift` turns it into a
+number. The target app rewrites its own rendered pages the way a redesign would — renaming the
+search control, renaming the member field, swapping two table columns, wrapping every table,
+inserting a table ahead of the content — and the same approved capability is replayed against
+each.
+
+```bash
+make target        # terminal 1
+make drift         # terminal 2
+```
+
+```
+redesign              outcome   rescued by
+insert_leading_table  survived  s11_extract: table_cell → near_text
+rename_action         survived  s08_click:   role_name  → css
+rename_label          survived  s07_fill:    role_name  → name_attr
+reorder_columns       survived  —
+wrap_tables           survived  s11_extract: table_cell → near_text
+survived 100% of 5 redesigns
+```
+
+The last column is the point: it names the rung of the ladder that caught the fall. Swapping
+columns needs no fallback at all, because `table_cell` addresses a cell by its column header
+rather than its position — the reason that strategy exists.
+
+Mutations are presentation-only and leave the app working; a frameset page is left alone,
+because inserting anything around a frameset stops the frames loading and would measure the
+mutation rather than the capability.
+
 ## Tests
 
 ```bash
