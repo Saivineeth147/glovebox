@@ -47,7 +47,7 @@ target-version = "py311"
 src = ["src", "tests", "apps"]
 # Specs and plans carry illustrative snippets — a method body shown on its own is not a
 # module-level function, and letting the formatter "fix" that would make the document wrong.
-extend-exclude = ["docs/**/*.md"]
+extend-exclude = ["docs/**/*.md", ".claude"]
 
 [tool.ruff.lint]
 select = ["E", "F", "I", "B", "UP", "N", "SIM", "RUF", "PL", "PTH", "S"]

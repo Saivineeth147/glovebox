@@ -13,3 +13,6 @@ htmlcov/
 # frontend
 ui/node_modules/
 ui/dist/
+
+# Claude Code local state, including agent worktrees
+.claude/
