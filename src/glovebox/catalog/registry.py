@@ -1,0 +1,90 @@
+"""The capability catalog: where approved artifacts live and how an AI agent discovers them.
+
+`tool_definitions()` exposes every approved capability as a function-calling tool whose input
+schema is derived from the artifact's typed parameters — the agent-facing product can hand
+these straight to the model and route `tool_use` calls to `glovebox replay`."""
+
+from __future__ import annotations
+
+import json
+from datetime import UTC, datetime
+from pathlib import Path
+from typing import Any
+
+from glovebox.schema.capability import Capability, ParamType, ReviewStatus
+
+
+class Catalog:
+    def __init__(self, directory: str | Path) -> None:
+        self.dir = Path(directory)
+        self.dir.mkdir(parents=True, exist_ok=True)
+
+    def path(self, cap_id: str) -> Path:
+        return self.dir / f"{cap_id}.json"
+
+    def save(self, cap: Capability) -> Path:
+        p = self.path(cap.id)
+        p.write_text(cap.model_dump_json(indent=2), encoding="utf-8")
+        return p
+
+    def load(self, ref: str) -> Capability:
+        p = Path(ref) if ref.endswith(".json") else self.path(ref)
+        if not p.exists():
+            raise FileNotFoundError(f"no capability at {p}")
+        return Capability.model_validate_json(p.read_text(encoding="utf-8"))
+
+    def list(self) -> list[Capability]:
+        return [self.load(str(p)) for p in sorted(self.dir.glob("*.json"))]
+
+    def approve(self, cap_id: str, reviewer: str, notes: str | None = None) -> Capability:
+        cap = self.load(cap_id)
+        cap.review.status = ReviewStatus.APPROVED
+        cap.review.reviewed_by = reviewer
+        cap.review.reviewed_at = datetime.now(UTC)
+        cap.review.notes = notes
+        self.save(cap)
+        return cap
+
+    def record_replay(self, cap_id: str, success: bool) -> Capability:
+        cap = self.load(cap_id)
+        cap.review.replays += 1
+        cap.review.replay_successes += int(success)
+        self.save(cap)
+        return cap
+
+    def tool_definitions(self, include_drafts: bool = False) -> list[dict[str, Any]]:
+        out = []
+        for cap in self.list():
+            if cap.review.status != ReviewStatus.APPROVED and not include_drafts:
+                continue
+            props: dict[str, Any] = {}
+            required = []
+            for p in cap.inputs:
+                schema: dict[str, Any] = {"type": _json_type(p.type), "description": p.description}
+                if p.pattern:
+                    schema["pattern"] = p.pattern
+                if p.enum:
+                    schema["enum"] = p.enum
+                props[p.name] = schema
+                if p.required and p.default is None:
+                    required.append(p.name)
+            returns = {o.name: f"{o.type}: {o.description}" for o in cap.outputs}
+            outcomes = {o.code: o.description for o in cap.outcomes}
+            out.append(
+                {
+                    "name": cap.id,
+                    "description": (
+                        f"{cap.description} Returns {json.dumps(returns)}. "
+                        f"Possible business outcomes: {json.dumps(outcomes) or 'none'}. "
+                        f"Risk: {cap.max_risk}. Version {cap.version} ({cap.review.status})."
+                    ),
+                    "input_schema": {"type": "object", "properties": props, "required": required,
+                                     "additionalProperties": False},
+                }
+            )
+        return out
+
+
+def _json_type(t: ParamType) -> str:
+    return {ParamType.STRING: "string", ParamType.INTEGER: "integer", ParamType.NUMBER: "number",
+            ParamType.BOOLEAN: "boolean", ParamType.ENUM: "string"}[t]

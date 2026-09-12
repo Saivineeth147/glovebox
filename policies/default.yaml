@@ -1,0 +1,23 @@
+# Glovebox guardrail policy for the Meridian Core proxy target.
+# The agent may only act inside these bounds; the replay engine enforces the same bounds.
+name: meridian-core-teller
+allowed_origins:
+  - http://127.0.0.1:8089
+  - http://localhost:8089
+allowed_path_patterns:
+  - ^/t/[a-z]+/.*$          # tenant-scoped application routes only
+  - ^/$
+denied_path_patterns:
+  - ^/__sim/.*             # simulation/fault controls are never an agent surface
+  - ^/t/[a-z]+/app/logout$ # never sign the operator out
+allowed_actions: [navigate, click, fill, select, press, expect_dialog, wait, extract, assert]
+# Irreversible steps (form submits that create records, dialog confirmations) require a
+# human confirmation during discovery and are refused in unattended replay unless the
+# capability was approved with max_risk=irreversible and the caller runs attended.
+irreversible_policy: confirm
+max_risk_unattended: reversible
+max_steps: 40
+step_timeout_s: 30
+run_timeout_s: 600
+require_approved_for_replay: true
+redact_patterns: []
