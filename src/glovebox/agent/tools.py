@@ -116,7 +116,11 @@ TOOLS: list[dict[str, Any]] = [
     },
     {
         "name": "extract",
-        "description": "Read an element's text into a named output the caller will receive.",
+        "description": "Read an element's text into a named output the caller will receive. "
+        "Point `ref` at the smallest element that holds the value itself — in a table that is "
+        "the cell, not the row or the page. A cell that already contains only the value needs "
+        "no regex; use `regex` only when the value is embedded in a longer string, and it must "
+        "match that element's own text.",
         "input_schema": {
             "type": "object",
             "properties": {
@@ -130,7 +134,8 @@ TOOLS: list[dict[str, Any]] = [
                 },
                 "regex": {
                     "type": "string",
-                    "description": "Optional regex; capture group 1 is the value.",
+                    "description": "Optional regex; capture group 1 is the value. It is checked against "
+                    "the chosen element immediately and rejected if it does not match.",
                 },
             },
             "required": ["ref", "output", "description"],
@@ -212,6 +217,10 @@ How to work
 - If a native confirm dialog will appear, call `expect_dialog` first.
 - If you cannot make progress, are unsure whether an action is safe, or hit an error you cannot
   resolve with one obvious retry, call `escalate`. Do not guess in a bank system.
+- `declare_outcome` is only for results that are NOT success. Never declare the goal's own
+  success as an outcome; it would end replay before the outputs are read.
+- `extract` every value the goal asks for before `finish`. Finishing without them returns a
+  capability that answers nothing.
 - Before `finish`, `declare_outcome` for non-success results this flow can show (e.g. "no record
   found", "access denied") based on what the UI reveals, and `extract` every output the goal asks for.
 - Conditions must hold for any input: never use a balance, identifier, name or date you saw
