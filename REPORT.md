@@ -56,8 +56,9 @@ Key decisions and trade-offs:
   reads the same `events.jsonl` every run writes, streams it over SSE for live views, and
   drives takeover through the same `OperatorBridge` verbs the CLI console uses. Nothing in
   the UI can do what the CLI cannot; it makes the control model and the evidence visible.
-- **Model boundary is a protocol.** `AnthropicLLM` (Claude Opus 5 via the Anthropic SDK,
-  adaptive thinking, prompt caching on the frozen system prompt, streaming) and `ScriptedLLM`
+- **Model boundary is a protocol.** `AnthropicLLM` (Claude Sonnet 5 by default via the Anthropic SDK,
+  adaptive thinking, prompt caching on the frozen system prompt, streaming), `OpenAICompatibleLLM`
+  (OpenRouter or OpenAI, with tool-call translation) and `ScriptedLLM`
   produce identical tool-call shapes. Every test and every replay evidence bundle runs offline;
   the one thing that must be real — the discovery run — is (see `evidence/discovery/`).
 - **The target is a purpose-built hostile app** rather than a public demo site: framesets,

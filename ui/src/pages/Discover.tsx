@@ -12,14 +12,17 @@ export default function Discover() {
   const [params, setParams] = useState<[string, string][]>([["member_id", "100234"]]);
   const [offline, setOffline] = useState(false);
   const [hasKey, setHasKey] = useState(true);
+  const [models, setModels] = useState<any[]>([]);
+  const [model, setModel] = useState<string>("");
+  const [provider, setProvider] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
   const [err, setErr] = useState<string | null>(null);
-  useEffect(() => { api.overview().then((o) => { setHasKey(o.has_api_key); setAppUrl(o.target.url + "/"); if (!o.has_api_key) setOffline(true); }); }, []);
+  useEffect(() => { api.overview().then((o) => { setHasKey(o.has_api_key); setAppUrl(o.target.url + "/"); if (!o.has_api_key) setOffline(true); setModels(o.models ?? []); setModel(o.model ?? ""); setProvider(o.provider); }); }, []);
 
   const start = async () => {
     setBusy(true); setErr(null);
     try {
-      const job = await api.discover({ goal, app_url: appUrl, capability_id: capId, tenant, params: Object.fromEntries(params.filter(([k]) => k)), offline: offline ? capId : null });
+      const job = await api.discover({ goal, app_url: appUrl, capability_id: capId, tenant, params: Object.fromEntries(params.filter(([k]) => k)), offline: offline ? capId : null, model: offline ? null : model || null });
       const wait = async () => { const j = await api.job(job.id); if (j.run_id) go(`/runs/${j.run_id}`); else if (j.status === "error") { setErr(j.error); setBusy(false); } else setTimeout(wait, 300); };
       wait();
     } catch (e: any) { setErr(e.message); setBusy(false); }
@@ -45,9 +48,22 @@ export default function Discover() {
               <button className="btn" onClick={() => setParams([...params, ["", ""]])}><Plus className="w-3.5 h-3.5" /> parameter</button>
               <div className="text-[12px] text-ink-500 mt-2">Operator credentials are added automatically as sensitive parameters from the environment.</div>
             </div>
+            {hasKey && !offline && (
+              <div><div className="label mb-1">Model <span className="normal-case tracking-normal text-ink-500 font-normal">— via {provider}; input / output price per million tokens</span></div>
+                <div className="grid sm:grid-cols-2 gap-2">
+                  {models.map((m) => (
+                    <button key={m.id} type="button" onClick={() => setModel(m.id)} className={`text-left rounded-lg border px-3 py-2 transition-colors ${model === m.id ? "border-accent bg-accent/10" : "border-ink-800 hover:border-ink-600"}`}>
+                      <div className="flex items-center justify-between"><span className="text-[13px] font-medium">{m.label}</span><span className={`chip !normal-case !tracking-normal ${m.tier === "default" ? "bg-accent/15 text-accent-300 border border-accent/30" : m.tier === "best" ? "bg-emerald-500/15 text-emerald-300 border border-emerald-500/30" : "bg-ink-800 text-ink-300 border border-ink-700"}`}>{m.tier}</span></div>
+                      <div className="text-[11px] text-ink-400 font-mono mt-0.5">{m.id} · {m.price}</div>
+                    </button>
+                  ))}
+                  {models.length === 0 && <input className="input font-mono" value={model} onChange={(e) => setModel(e.target.value)} placeholder="model id" />}
+                </div>
+              </div>
+            )}
             <label className={`flex items-center gap-2 text-[13px] ${!hasKey ? "text-amber-300" : ""}`}><input type="checkbox" checked={offline} onChange={(e) => setOffline(e.target.checked)} /> Offline (scripted decisions, no model){!hasKey ? " — no ANTHROPIC_API_KEY / OPENROUTER_API_KEY detected" : ""}</label>
             {err && <div className="text-[12px] text-rose-300">{err}</div>}
-            <button className="btn btn-primary" disabled={busy} onClick={start}><Compass className="w-3.5 h-3.5" /> {busy ? "Starting…" : offline ? "Run scripted discovery" : "Run discovery with Claude"}</button>
+            <button className="btn btn-primary" disabled={busy} onClick={start}><Compass className="w-3.5 h-3.5" /> {busy ? "Starting…" : offline ? "Run scripted discovery" : `Run discovery with ${models.find((m) => m.id === model)?.label ?? (model || "the model")}`}</button>
           </div>
         </Panel>
         <div className="space-y-4">

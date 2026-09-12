@@ -20,7 +20,7 @@ from fastapi.responses import FileResponse, HTMLResponse, StreamingResponse
 from fastapi.staticfiles import StaticFiles
 from pydantic import BaseModel
 
-from glovebox.agent.llm import available_provider
+from glovebox.agent.llm import RECOMMENDED_MODELS, available_provider
 from glovebox.catalog import Catalog
 from glovebox.schema.capability import Capability
 from glovebox.schema.policy import Policy
@@ -105,6 +105,7 @@ def create_studio(runs_dir: Path, catalog_dir: Path, policy_path: Path) -> FastA
             ),
             "provider": available_provider(),
             "has_api_key": available_provider() is not None,
+            "models": [m for m in RECOMMENDED_MODELS if m["provider"] == available_provider()],
             "recent": runs[:6],
         }
 

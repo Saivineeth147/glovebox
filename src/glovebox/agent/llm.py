@@ -17,9 +17,85 @@ from typing import Any, Protocol, cast
 
 from glovebox.surface.base import Observation
 
-DEFAULT_MODEL = "claude-opus-5"
+DEFAULT_MODEL = "claude-sonnet-5"  # best value for discovery; claude-opus-5 for the hardest flows
 OPENROUTER_BASE_URL = "https://openrouter.ai/api/v1"
-DEFAULT_OPENROUTER_MODEL = "anthropic/claude-sonnet-4.5"
+DEFAULT_OPENROUTER_MODEL = "anthropic/claude-sonnet-5"
+
+# Curated, verified against the providers' catalogues (Sept 2026). Discovery needs vision +
+# tool calling; prices are USD per million tokens (input/output). A typical discovery run of
+# ~15 turns with screenshots is ~150k input tokens, so Sonnet 5 costs well under a dollar.
+RECOMMENDED_MODELS: list[dict[str, Any]] = [
+    {
+        "provider": "anthropic",
+        "id": "claude-sonnet-5",
+        "label": "Claude Sonnet 5",
+        "price": "$2 / $10",
+        "tier": "default",
+    },
+    {
+        "provider": "anthropic",
+        "id": "claude-opus-5",
+        "label": "Claude Opus 5",
+        "price": "$5 / $25",
+        "tier": "best",
+    },
+    {
+        "provider": "openrouter",
+        "id": "anthropic/claude-sonnet-5",
+        "label": "Claude Sonnet 5",
+        "price": "$2 / $10",
+        "tier": "default",
+    },
+    {
+        "provider": "openrouter",
+        "id": "anthropic/claude-opus-5",
+        "label": "Claude Opus 5",
+        "price": "$5 / $25",
+        "tier": "best",
+    },
+    {
+        "provider": "openrouter",
+        "id": "openai/gpt-5",
+        "label": "GPT-5",
+        "price": "$1.25 / $10",
+        "tier": "strong",
+    },
+    {
+        "provider": "openrouter",
+        "id": "openai/gpt-5-mini",
+        "label": "GPT-5 mini",
+        "price": "$0.25 / $2",
+        "tier": "budget",
+    },
+    {
+        "provider": "openrouter",
+        "id": "google/gemini-3.1-pro-preview",
+        "label": "Gemini 3.1 Pro",
+        "price": "$2 / $12",
+        "tier": "strong",
+    },
+    {
+        "provider": "openrouter",
+        "id": "google/gemini-3.8-flash",
+        "label": "Gemini 3.8 Flash",
+        "price": "$0.75 / $3.75",
+        "tier": "budget",
+    },
+    {
+        "provider": "openai",
+        "id": "gpt-5",
+        "label": "GPT-5",
+        "price": "$1.25 / $10",
+        "tier": "strong",
+    },
+    {
+        "provider": "openai",
+        "id": "gpt-5-mini",
+        "label": "GPT-5 mini",
+        "price": "$0.25 / $2",
+        "tier": "budget",
+    },
+]
 
 
 @dataclass

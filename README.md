@@ -109,10 +109,12 @@ uv run glovebox replay member_savings_balance --param member_id=100234 --fault i
 ```
 
 **Model providers.** Discovery is the only step that calls a model. Anthropic direct
-(`ANTHROPIC_API_KEY`, default `claude-opus-5`, adaptive thinking + prompt caching) or any
+(`ANTHROPIC_API_KEY`, default `claude-sonnet-5`, adaptive thinking + prompt caching; `claude-opus-5` for the hardest flows) or any
 OpenAI-compatible endpoint with tool calling — OpenRouter out of the box
-(`OPENROUTER_API_KEY`, `GLOVEBOX_MODEL=anthropic/claude-sonnet-4.5` or another tool-calling
-model; `--provider openrouter` or `GLOVEBOX_LLM_PROVIDER`). The artifact and the evidence are
+(`OPENROUTER_API_KEY`; default `anthropic/claude-sonnet-5`; also `anthropic/claude-opus-5`,
+`openai/gpt-5.6-sol`, `openai/gpt-5.6-luna`, `google/gemini-3.8-flash` — any vision + tool-calling model;
+`--provider openrouter` or `GLOVEBOX_LLM_PROVIDER`). A discovery run on Sonnet 5 costs well
+under a dollar. The artifact and the evidence are
 identical in shape whichever provider recorded them; replay never needs a key.
 
 Operator credentials for the fake app come from `GLOVEBOX_APP_USERNAME` / `GLOVEBOX_APP_PASSWORD`
