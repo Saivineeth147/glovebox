@@ -1,0 +1,21 @@
+{
+  "fault_injected": "interstitial",
+  "status": "failed",
+  "outputs": {},
+  "outcome_code": null,
+  "failure": {
+    "failure_class": "target_not_found",
+    "step_id": "s09_click",
+    "message": "click e24 failed: another element covers the target (modal/interstitial?)",
+    "expected": "button 'Find Member'",
+    "observed": "url=http://127.0.0.1:8089/t/alpha/ title='Meridian Core \u2014 Alpine Credit Union' text='[nav]\\nMeridian Core \u2014 Alpine Credit Union Not signed in\\n\\n[menu]\\nMENU\\nHome\\nMember Inquiry\\nTransactions\\nReports\\nAdministration\\n\\n[main]\\nMeridian Core \u2014 Alpine Credit Union \\xa0 v7.2.1\\nSystem Notice\\nNightly batch posting completed. Balances shown are as of 06:00.\\nMember Inquiry\\nMember No. \\n \\nMeridian Core '",
+    "evidence": {
+      "screenshot": "/home/user/glovebox/runs/replay-20260912T054310-b70a2c/screenshots/1789191798971-failure-s09_click.png",
+      "snapshot:top": "/home/user/glovebox/runs/replay-20260912T054310-b70a2c/snapshots/1789191799015-failure-s09_click-top.html",
+      "snapshot:nav": "/home/user/glovebox/runs/replay-20260912T054310-b70a2c/snapshots/1789191799017-failure-s09_click-nav.html",
+      "snapshot:menu": "/home/user/glovebox/runs/replay-20260912T054310-b70a2c/snapshots/1789191799019-failure-s09_click-menu.html",
+      "snapshot:main": "/home/user/glovebox/runs/replay-20260912T054310-b70a2c/snapshots/1789191799021-failure-s09_click-main.html"
+    }
+  },
+  "handoff": null
+}

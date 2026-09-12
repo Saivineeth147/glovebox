@@ -1,0 +1,97 @@
+{
+  "run_id": "replay-20260912T054231-5dd5aa",
+  "capability_id": "member_savings_balance",
+  "capability_version": "1.0.0",
+  "tenant": "alpha",
+  "status": "business_outcome",
+  "outputs": {},
+  "outcome_code": "MEMBER_NOT_FOUND",
+  "outcome_description": "No member record matched the number",
+  "failure": null,
+  "handoff": null,
+  "steps": [
+    {
+      "step_id": "s01_navigate",
+      "action": "navigate",
+      "status": "ok",
+      "started_at": "2026-09-12T05:42:31.551228Z",
+      "duration_ms": 380,
+      "strategy_used": "url",
+      "recoveries": [],
+      "note": null
+    },
+    {
+      "step_id": "s02_fill",
+      "action": "fill",
+      "status": "ok",
+      "started_at": "2026-09-12T05:42:31.931591Z",
+      "duration_ms": 398,
+      "strategy_used": "role_name",
+      "recoveries": [],
+      "note": null
+    },
+    {
+      "step_id": "s03_fill",
+      "action": "fill",
+      "status": "ok",
+      "started_at": "2026-09-12T05:42:32.330732Z",
+      "duration_ms": 333,
+      "strategy_used": "role_name",
+      "recoveries": [],
+      "note": null
+    },
+    {
+      "step_id": "s04_click",
+      "action": "click",
+      "status": "ok",
+      "started_at": "2026-09-12T05:42:32.664296Z",
+      "duration_ms": 365,
+      "strategy_used": "role_name",
+      "recoveries": [],
+      "note": null
+    },
+    {
+      "step_id": "s05_assert",
+      "action": "assert",
+      "status": "ok",
+      "started_at": "2026-09-12T05:42:33.029958Z",
+      "duration_ms": 298,
+      "strategy_used": null,
+      "recoveries": [],
+      "note": null
+    },
+    {
+      "step_id": "s06_click",
+      "action": "click",
+      "status": "ok",
+      "started_at": "2026-09-12T05:42:33.329113Z",
+      "duration_ms": 349,
+      "strategy_used": "role_name",
+      "recoveries": [],
+      "note": null
+    },
+    {
+      "step_id": "s07_assert",
+      "action": "assert",
+      "status": "ok",
+      "started_at": "2026-09-12T05:42:33.679255Z",
+      "duration_ms": 300,
+      "strategy_used": null,
+      "recoveries": [],
+      "note": null
+    },
+    {
+      "step_id": "s08_fill",
+      "action": "fill",
+      "status": "ok",
+      "started_at": "2026-09-12T05:42:33.979758Z",
+      "duration_ms": 333,
+      "strategy_used": "role_name",
+      "recoveries": [],
+      "note": null
+    }
+  ],
+  "started_at": "2026-09-12T05:42:31.550909Z",
+  "finished_at": "2026-09-12T05:42:34.597809Z",
+  "evidence_dir": "/home/user/glovebox/runs/replay-20260912T054231-5dd5aa"
+}

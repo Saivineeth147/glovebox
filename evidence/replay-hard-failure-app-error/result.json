@@ -1,0 +1,60 @@
+{
+  "run_id": "replay-20260912T054235-7495e9",
+  "capability_id": "member_savings_balance",
+  "capability_version": "1.0.0",
+  "tenant": "alpha",
+  "status": "failed",
+  "outputs": {},
+  "outcome_code": null,
+  "outcome_description": null,
+  "failure": {
+    "failure_class": "failure_signal",
+    "step_id": "s04_click",
+    "message": "failure signal fired: text_visible: 'Application Error'",
+    "expected": "no failure signal",
+    "observed": "found",
+    "evidence": {
+      "screenshot": "/home/user/glovebox/runs/replay-20260912T054235-7495e9/screenshots/[REDACTED:card_pan]failure-s04_click.png",
+      "snapshot:top": "/home/user/glovebox/runs/replay-20260912T054235-7495e9/snapshots/[REDACTED:card_pan]failure-s04_click-top.html",
+      "snapshot:nav": "/home/user/glovebox/runs/replay-20260912T054235-7495e9/snapshots/[REDACTED:card_pan]failure-s04_click-nav.html",
+      "snapshot:menu": "/home/user/glovebox/runs/replay-20260912T054235-7495e9/snapshots/[REDACTED:card_pan]failure-s04_click-menu.html",
+      "snapshot:main": "/home/user/glovebox/runs/replay-20260912T054235-7495e9/snapshots/[REDACTED:card_pan]failure-s04_click-main.html"
+    }
+  },
+  "handoff": null,
+  "steps": [
+    {
+      "step_id": "s01_navigate",
+      "action": "navigate",
+      "status": "ok",
+      "started_at": "2026-09-12T05:42:35.640629Z",
+      "duration_ms": 373,
+      "strategy_used": "url",
+      "recoveries": [],
+      "note": null
+    },
+    {
+      "step_id": "s02_fill",
+      "action": "fill",
+      "status": "ok",
+      "started_at": "2026-09-12T05:42:36.014059Z",
+      "duration_ms": 350,
+      "strategy_used": "role_name",
+      "recoveries": [],
+      "note": null
+    },
+    {
+      "step_id": "s03_fill",
+      "action": "fill",
+      "status": "ok",
+      "started_at": "2026-09-12T05:42:36.364631Z",
+      "duration_ms": 332,
+      "strategy_used": "role_name",
+      "recoveries": [],
+      "note": null
+    }
+  ],
+  "started_at": "2026-09-12T05:42:35.640328Z",
+  "finished_at": "2026-09-12T05:42:37.010783Z",
+  "evidence_dir": "/home/user/glovebox/runs/replay-20260912T054235-7495e9"
+}

@@ -1,0 +1,11 @@
+{
+  "fault_injected": null,
+  "status": "success",
+  "outputs": {
+    "savings_balance": 18930.0,
+    "member_name": "Ng, Marcus"
+  },
+  "outcome_code": null,
+  "failure": null,
+  "handoff": null
+}

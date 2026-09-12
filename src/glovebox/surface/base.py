@@ -30,6 +30,12 @@ class Element:
     value: str | None = None
     href: str | None = None
     options: list[str] = field(default_factory=list)
+    page_box: tuple[float, float, float, float] = (
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+    )  # bbox in page/viewport coords
     table: str | None = None  # css of the enclosing table (cells only)
     row: int = -1
     col: int = -1
@@ -69,6 +75,7 @@ class Observation:
     dialog: DialogInfo | None
     last_status: int | None
     screenshot: Path | None
+    viewport: tuple[int, int] = (0, 0)
 
     def element(self, ref: str) -> Element:
         for e in self.elements:

@@ -1,0 +1,53 @@
+{"ts":"2026-09-12T05:42:51.845434Z","run_id":"replay-20260912T054251-2c6ce7","kind":"run.started","step_id":null,"message":"replay member_savings_balance@1.0.0 tenant=alpha","data":{"capability":"member_savings_balance","version":"1.0.0","attended":false}}
+{"ts":"2026-09-12T05:42:51.845695Z","run_id":"replay-20260912T054251-2c6ce7","kind":"replay.step.started","step_id":"s01_navigate","message":"navigate — open the application entry point","data":{"attempt":1}}
+{"ts":"2026-09-12T05:42:51.845784Z","run_id":"replay-20260912T054251-2c6ce7","kind":"policy.decision","step_id":"s01_navigate","message":"allow: within policy","data":{"risk":"read"}}
+{"ts":"2026-09-12T05:42:52.230192Z","run_id":"replay-20260912T054251-2c6ce7","kind":"replay.step.finished","step_id":"s01_navigate","message":"ok in 384ms via url","data":{"status":"ok","recoveries":[]}}
+{"ts":"2026-09-12T05:42:52.230366Z","run_id":"replay-20260912T054251-2c6ce7","kind":"replay.step.started","step_id":"s02_fill","message":"fill — sign in as the operator","data":{"attempt":1}}
+{"ts":"2026-09-12T05:42:52.230458Z","run_id":"replay-20260912T054251-2c6ce7","kind":"policy.decision","step_id":"s02_fill","message":"allow: within policy","data":{"risk":"reversible"}}
+{"ts":"2026-09-12T05:42:52.262052Z","run_id":"replay-20260912T054251-2c6ce7","kind":"replay.target.resolved","step_id":"s02_fill","message":"textbox 'Operator ID' via role_name#0","data":{"strategy":"role_name","index":0}}
+{"ts":"2026-09-12T05:42:52.580344Z","run_id":"replay-20260912T054251-2c6ce7","kind":"replay.step.finished","step_id":"s02_fill","message":"ok in 349ms via role_name","data":{"status":"ok","recoveries":[]}}
+{"ts":"2026-09-12T05:42:52.580507Z","run_id":"replay-20260912T054251-2c6ce7","kind":"replay.step.started","step_id":"s03_fill","message":"fill — enter operator password","data":{"attempt":1}}
+{"ts":"2026-09-12T05:42:52.580604Z","run_id":"replay-20260912T054251-2c6ce7","kind":"policy.decision","step_id":"s03_fill","message":"allow: within policy","data":{"risk":"reversible"}}
+{"ts":"2026-09-12T05:42:52.612189Z","run_id":"replay-20260912T054251-2c6ce7","kind":"replay.target.resolved","step_id":"s03_fill","message":"textbox 'Password' via role_name#0","data":{"strategy":"role_name","index":0}}
+{"ts":"2026-09-12T05:42:52.913554Z","run_id":"replay-20260912T054251-2c6ce7","kind":"replay.step.finished","step_id":"s03_fill","message":"ok in 333ms via role_name","data":{"status":"ok","recoveries":[]}}
+{"ts":"2026-09-12T05:42:52.913761Z","run_id":"replay-20260912T054251-2c6ce7","kind":"replay.step.started","step_id":"s04_click","message":"click — submit the sign-in form","data":{"attempt":1}}
+{"ts":"2026-09-12T05:42:52.913859Z","run_id":"replay-20260912T054251-2c6ce7","kind":"policy.decision","step_id":"s04_click","message":"allow: within policy","data":{"risk":"reversible"}}
+{"ts":"2026-09-12T05:42:52.944099Z","run_id":"replay-20260912T054251-2c6ce7","kind":"replay.target.resolved","step_id":"s04_click","message":"button 'Sign In' via role_name#0","data":{"strategy":"role_name","index":0}}
+{"ts":"2026-09-12T05:42:53.268117Z","run_id":"replay-20260912T054251-2c6ce7","kind":"replay.step.finished","step_id":"s04_click","message":"ok in 354ms via role_name","data":{"status":"ok","recoveries":[]}}
+{"ts":"2026-09-12T05:42:53.268289Z","run_id":"replay-20260912T054251-2c6ce7","kind":"replay.step.started","step_id":"s05_assert","message":"assert — confirm we are signed in","data":{"attempt":1}}
+{"ts":"2026-09-12T05:42:53.268370Z","run_id":"replay-20260912T054251-2c6ce7","kind":"policy.decision","step_id":"s05_assert","message":"allow: within policy","data":{"risk":"read"}}
+{"ts":"2026-09-12T05:42:57.028270Z","run_id":"replay-20260912T054251-2c6ce7","kind":"replay.condition","step_id":null,"message":"ok text_visible: 'Welcome,'","data":{"observed":"found"}}
+{"ts":"2026-09-12T05:42:57.097669Z","run_id":"replay-20260912T054251-2c6ce7","kind":"replay.step.finished","step_id":"s05_assert","message":"ok in 3829ms via -","data":{"status":"ok","recoveries":[]}}
+{"ts":"2026-09-12T05:42:57.097874Z","run_id":"replay-20260912T054251-2c6ce7","kind":"replay.step.started","step_id":"s06_click","message":"click — open the member inquiry screen","data":{"attempt":1}}
+{"ts":"2026-09-12T05:42:57.098015Z","run_id":"replay-20260912T054251-2c6ce7","kind":"policy.decision","step_id":"s06_click","message":"allow: within policy","data":{"risk":"reversible"}}
+{"ts":"2026-09-12T05:42:57.139297Z","run_id":"replay-20260912T054251-2c6ce7","kind":"replay.target.resolved","step_id":"s06_click","message":"link 'Member Inquiry' via role_name#0","data":{"strategy":"role_name","index":0}}
+{"ts":"2026-09-12T05:42:57.480332Z","run_id":"replay-20260912T054251-2c6ce7","kind":"replay.step.finished","step_id":"s06_click","message":"ok in 382ms via role_name","data":{"status":"ok","recoveries":[]}}
+{"ts":"2026-09-12T05:42:57.480524Z","run_id":"replay-20260912T054251-2c6ce7","kind":"replay.step.started","step_id":"s07_assert","message":"assert — confirm the inquiry form is shown","data":{"attempt":1}}
+{"ts":"2026-09-12T05:42:57.480623Z","run_id":"replay-20260912T054251-2c6ce7","kind":"policy.decision","step_id":"s07_assert","message":"allow: within policy","data":{"risk":"read"}}
+{"ts":"2026-09-12T05:42:57.735421Z","run_id":"replay-20260912T054251-2c6ce7","kind":"replay.condition","step_id":null,"message":"ok text_visible: 'Member Inquiry'","data":{"observed":"found"}}
+{"ts":"2026-09-12T05:42:57.797525Z","run_id":"replay-20260912T054251-2c6ce7","kind":"replay.step.finished","step_id":"s07_assert","message":"ok in 316ms via -","data":{"status":"ok","recoveries":[]}}
+{"ts":"2026-09-12T05:42:57.797698Z","run_id":"replay-20260912T054251-2c6ce7","kind":"replay.step.started","step_id":"s08_fill","message":"fill — enter the member number","data":{"attempt":1}}
+{"ts":"2026-09-12T05:42:57.797780Z","run_id":"replay-20260912T054251-2c6ce7","kind":"policy.decision","step_id":"s08_fill","message":"allow: within policy","data":{"risk":"reversible"}}
+{"ts":"2026-09-12T05:42:57.828636Z","run_id":"replay-20260912T054251-2c6ce7","kind":"replay.target.resolved","step_id":"s08_fill","message":"textbox 'Member No.' via role_name#0","data":{"strategy":"role_name","index":0}}
+{"ts":"2026-09-12T05:42:58.129628Z","run_id":"replay-20260912T054251-2c6ce7","kind":"replay.step.finished","step_id":"s08_fill","message":"ok in 331ms via role_name","data":{"status":"ok","recoveries":[]}}
+{"ts":"2026-09-12T05:42:58.129812Z","run_id":"replay-20260912T054251-2c6ce7","kind":"replay.step.started","step_id":"s09_click","message":"click — run the search","data":{"attempt":1}}
+{"ts":"2026-09-12T05:42:58.129899Z","run_id":"replay-20260912T054251-2c6ce7","kind":"policy.decision","step_id":"s09_click","message":"allow: within policy","data":{"risk":"reversible"}}
+{"ts":"2026-09-12T05:42:58.158866Z","run_id":"replay-20260912T054251-2c6ce7","kind":"replay.target.resolved","step_id":"s09_click","message":"button 'Find Member' via role_name#0","data":{"strategy":"role_name","index":0}}
+{"ts":"2026-09-12T05:42:58.565660Z","run_id":"replay-20260912T054251-2c6ce7","kind":"replay.step.finished","step_id":"s09_click","message":"ok in 435ms via role_name","data":{"status":"ok","recoveries":[]}}
+{"ts":"2026-09-12T05:42:58.565944Z","run_id":"replay-20260912T054251-2c6ce7","kind":"replay.step.started","step_id":"s10_assert","message":"assert — confirm the member detail page loaded","data":{"attempt":1}}
+{"ts":"2026-09-12T05:42:58.566155Z","run_id":"replay-20260912T054251-2c6ce7","kind":"policy.decision","step_id":"s10_assert","message":"allow: within policy","data":{"risk":"read"}}
+{"ts":"2026-09-12T05:42:58.831178Z","run_id":"replay-20260912T054251-2c6ce7","kind":"replay.condition","step_id":null,"message":"ok text_visible: 'Share Accounts'","data":{"observed":"found"}}
+{"ts":"2026-09-12T05:42:58.924175Z","run_id":"replay-20260912T054251-2c6ce7","kind":"replay.step.finished","step_id":"s10_assert","message":"ok in 358ms via -","data":{"status":"ok","recoveries":[]}}
+{"ts":"2026-09-12T05:42:58.924349Z","run_id":"replay-20260912T054251-2c6ce7","kind":"replay.step.started","step_id":"s11_extract","message":"extract — read savings_balance","data":{"attempt":1}}
+{"ts":"2026-09-12T05:42:58.924450Z","run_id":"replay-20260912T054251-2c6ce7","kind":"policy.decision","step_id":"s11_extract","message":"allow: within policy","data":{"risk":"read"}}
+{"ts":"2026-09-12T05:42:58.961944Z","run_id":"replay-20260912T054251-2c6ce7","kind":"replay.target.resolved","step_id":"s11_extract","message":"cell 'Current Balance' in row 'S01' via table_cell#0","data":{"strategy":"table_cell","index":0}}
+{"ts":"2026-09-12T05:42:58.962249Z","run_id":"replay-20260912T054251-2c6ce7","kind":"surface.action","step_id":"s11_extract","message":"extracted savings_balance","data":{"value":"$1250.75"}}
+{"ts":"2026-09-12T05:42:59.249919Z","run_id":"replay-20260912T054251-2c6ce7","kind":"replay.step.finished","step_id":"s11_extract","message":"ok in 325ms via table_cell","data":{"status":"ok","recoveries":[]}}
+{"ts":"2026-09-12T05:42:59.250181Z","run_id":"replay-20260912T054251-2c6ce7","kind":"replay.step.started","step_id":"s12_extract","message":"extract — read member_name","data":{"attempt":1}}
+{"ts":"2026-09-12T05:42:59.250297Z","run_id":"replay-20260912T054251-2c6ce7","kind":"policy.decision","step_id":"s12_extract","message":"allow: within policy","data":{"risk":"read"}}
+{"ts":"2026-09-12T05:42:59.283865Z","run_id":"replay-20260912T054251-2c6ce7","kind":"replay.target.resolved","step_id":"s12_extract","message":"cell 'Doe, Jane' via near_text#0","data":{"strategy":"near_text","index":0}}
+{"ts":"2026-09-12T05:42:59.284094Z","run_id":"replay-20260912T054251-2c6ce7","kind":"surface.action","step_id":"s12_extract","message":"extracted member_name","data":{"value":"Doe, Jane"}}
+{"ts":"2026-09-12T05:42:59.580614Z","run_id":"replay-20260912T054251-2c6ce7","kind":"replay.step.finished","step_id":"s12_extract","message":"ok in 330ms via near_text","data":{"status":"ok","recoveries":[]}}
+{"ts":"2026-09-12T05:42:59.621090Z","run_id":"replay-20260912T054251-2c6ce7","kind":"replay.condition","step_id":null,"message":"ok text_visible: 'Share Accounts'","data":{"observed":"found"}}
+{"ts":"2026-09-12T05:42:59.654308Z","run_id":"replay-20260912T054251-2c6ce7","kind":"replay.condition","step_id":null,"message":"ok text_visible: 'Regular Savings'","data":{"observed":"found"}}
+{"ts":"2026-09-12T05:42:59.655601Z","run_id":"replay-20260912T054251-2c6ce7","kind":"run.finished","step_id":null,"message":"success","data":{"status":"success","outputs":{"savings_balance":1250.75,"member_name":"Doe, Jane"}}}

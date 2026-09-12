@@ -1,0 +1,21 @@
+{
+  "status": "success",
+  "outputs": {
+    "savings_balance": 1250.75,
+    "member_name": "Doe, Jane"
+  },
+  "strategies_used": {
+    "s01_navigate": "url",
+    "s02_fill": "role_name",
+    "s03_fill": "role_name",
+    "s04_click": "role_name",
+    "s05_assert": null,
+    "s06_click": "role_name",
+    "s07_assert": null,
+    "s08_fill": "name_attr",
+    "s09_click": "css",
+    "s10_assert": null,
+    "s11_extract": "table_cell",
+    "s12_extract": "near_text"
+  }
+}

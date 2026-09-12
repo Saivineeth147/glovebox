@@ -100,7 +100,7 @@
       idx: i++, tag, role, interactive,
       name: nameOf(el, role).slice(0, 120),
       text: ownText(el),
-      label: interactive ? labelFor(el) : null,
+      label: (interactive && role !== "button" && role !== "link") ? labelFor(el) : null,
       name_attr: el.getAttribute("name") || null,
       value: (tag === "input" && el.type === "password") ? (el.value ? "••••" : "") : (tag === "input" || tag === "select" || tag === "textarea") ? (el.value || "") : null,
       href: tag === "a" ? el.getAttribute("href") : null,

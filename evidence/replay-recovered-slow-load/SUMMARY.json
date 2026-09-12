@@ -1,0 +1,11 @@
+{
+  "fault_injected": "slow",
+  "status": "success",
+  "outputs": {
+    "savings_balance": 1250.75,
+    "member_name": "Doe, Jane"
+  },
+  "outcome_code": null,
+  "failure": null,
+  "handoff": null
+}

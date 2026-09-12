@@ -423,10 +423,15 @@ def test_operator_console_serves_state_and_forwards_commands(
         state = c.get("/api/state").json()
         assert state["owner"] == "human" and state["intervention"]["kind"] == "stuck"
         assert c.get("/api/screenshot").status_code == 200
-        ok = next(e for e in state["elements"] if 'button "OK"' in e).split("]")[0][1:]
-        assert c.post("/api/command", json={"op": "click", "ref": ok}).json()["ok"]
+        ok = next(
+            e["ref"] for e in state["elements"] if e["role"] == "button" and e["name"] == "OK"
+        )
+        assert c.post(
+            "/api/command", json={"op": "click", "ref": ok, "operator": "console-user"}
+        ).json()["ok"]
         state = c.get("/api/state").json()
-        field = next(e for e in state["elements"] if "name=member_no" in e).split("]")[0][1:]
+        assert state["actions"] and state["actions"][0]["target"]["description"] == "button 'OK'"
+        field = next(e["ref"] for e in state["elements"] if e["name_attr"] == "member_no")
         assert c.post("/api/command", json={"op": "fill", "ref": field, "text": "100234"}).json()[
             "ok"
         ]

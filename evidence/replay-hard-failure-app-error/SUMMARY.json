@@ -1,0 +1,21 @@
+{
+  "fault_injected": "app_error",
+  "status": "failed",
+  "outputs": {},
+  "outcome_code": null,
+  "failure": {
+    "failure_class": "failure_signal",
+    "step_id": "s04_click",
+    "message": "failure signal fired: text_visible: 'Application Error'",
+    "expected": "no failure signal",
+    "observed": "found",
+    "evidence": {
+      "screenshot": "/home/user/glovebox/runs/replay-20260912T054235-7495e9/screenshots/1789191756967-failure-s04_click.png",
+      "snapshot:top": "/home/user/glovebox/runs/replay-20260912T054235-7495e9/snapshots/1789191757002-failure-s04_click-top.html",
+      "snapshot:nav": "/home/user/glovebox/runs/replay-20260912T054235-7495e9/snapshots/1789191757005-failure-s04_click-nav.html",
+      "snapshot:menu": "/home/user/glovebox/runs/replay-20260912T054235-7495e9/snapshots/1789191757007-failure-s04_click-menu.html",
+      "snapshot:main": "/home/user/glovebox/runs/replay-20260912T054235-7495e9/snapshots/1789191757008-failure-s04_click-main.html"
+    }
+  },
+  "handoff": null
+}

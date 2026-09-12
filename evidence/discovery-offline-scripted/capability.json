@@ -1,0 +1,712 @@
+{
+  "schema_version": "1.0",
+  "id": "member_savings_balance",
+  "version": "1.0.0",
+  "title": "Member savings balance lookup",
+  "description": "Look up a member by number and read the current balance of their Regular Savings share.",
+  "app": {
+    "app_id": "meridian-core",
+    "vendor_version": null,
+    "tenant": "alpha",
+    "origin": "http://127.0.0.1:8089",
+    "entry_path": "/t/alpha/"
+  },
+  "inputs": [
+    {
+      "name": "username",
+      "type": "string",
+      "description": "Operator ID for the back-office sign-in",
+      "required": true,
+      "default": null,
+      "pattern": null,
+      "enum": null,
+      "sensitive": true,
+      "example": null
+    },
+    {
+      "name": "password",
+      "type": "string",
+      "description": "Operator password",
+      "required": true,
+      "default": null,
+      "pattern": null,
+      "enum": null,
+      "sensitive": true,
+      "example": null
+    },
+    {
+      "name": "member_id",
+      "type": "string",
+      "description": "Member number to look up",
+      "required": true,
+      "default": null,
+      "pattern": "^\\d{6}$",
+      "enum": null,
+      "sensitive": false,
+      "example": "100234"
+    }
+  ],
+  "outputs": [
+    {
+      "name": "savings_balance",
+      "type": "number",
+      "description": "Current balance of the S01 Regular Savings share, USD",
+      "sensitive": false
+    },
+    {
+      "name": "member_name",
+      "type": "string",
+      "description": "Member name as 'Last, First'",
+      "sensitive": false
+    }
+  ],
+  "steps": [
+    {
+      "id": "s01_navigate",
+      "action": "navigate",
+      "intent": "open the application entry point",
+      "target": null,
+      "value": "{{ app.entry_path }}",
+      "wait": {
+        "load_state": "load",
+        "settle_ms": 150,
+        "timeout_ms": 15000
+      },
+      "risk": "read",
+      "expect": [],
+      "extract_to": null,
+      "dialog_response": null
+    },
+    {
+      "id": "s02_fill",
+      "action": "fill",
+      "intent": "sign in as the operator",
+      "target": {
+        "description": "textbox 'Operator ID'",
+        "frame": [
+          "main"
+        ],
+        "strategies": [
+          {
+            "kind": "role_name",
+            "value": {
+              "role": "textbox",
+              "name": "Operator ID"
+            },
+            "robustness": "accessible role+name; stable across layout and styling changes"
+          },
+          {
+            "kind": "label",
+            "value": {
+              "label": "Operator ID",
+              "role": "textbox"
+            },
+            "robustness": "visible label in the same table row; survives DOM reshuffles"
+          },
+          {
+            "kind": "name_attr",
+            "value": {
+              "name": "username",
+              "tag": "input"
+            },
+            "robustness": "form field name is bound to the server contract; rarely changes"
+          },
+          {
+            "kind": "near_text",
+            "value": {
+              "anchor": "Operator ID",
+              "role": "textbox",
+              "direction": "right_or_below"
+            },
+            "robustness": "first control of this role right of / below the anchor text"
+          },
+          {
+            "kind": "css",
+            "value": {
+              "css": "body > table:nth-of-type(2) > tbody > tr:nth-of-type(2) > td:nth-of-type(2) > input"
+            },
+            "robustness": "structural path; exact on an unchanged page, brittle to any DOM edit"
+          },
+          {
+            "kind": "bbox",
+            "value": {
+              "x": 0.223,
+              "y": 0.1173,
+              "role": "textbox"
+            },
+            "robustness": "normalized position; last resort and the only option for screenshots"
+          }
+        ]
+      },
+      "value": "{{ params.username }}",
+      "wait": {
+        "load_state": "load",
+        "settle_ms": 150,
+        "timeout_ms": 15000
+      },
+      "risk": "reversible",
+      "expect": [],
+      "extract_to": null,
+      "dialog_response": null
+    },
+    {
+      "id": "s03_fill",
+      "action": "fill",
+      "intent": "enter operator password",
+      "target": {
+        "description": "textbox 'Password'",
+        "frame": [
+          "main"
+        ],
+        "strategies": [
+          {
+            "kind": "role_name",
+            "value": {
+              "role": "textbox",
+              "name": "Password"
+            },
+            "robustness": "accessible role+name; stable across layout and styling changes"
+          },
+          {
+            "kind": "label",
+            "value": {
+              "label": "Password",
+              "role": "textbox"
+            },
+            "robustness": "visible label in the same table row; survives DOM reshuffles"
+          },
+          {
+            "kind": "name_attr",
+            "value": {
+              "name": "password",
+              "tag": "input"
+            },
+            "robustness": "form field name is bound to the server contract; rarely changes"
+          },
+          {
+            "kind": "near_text",
+            "value": {
+              "anchor": "Password",
+              "role": "textbox",
+              "direction": "right_or_below"
+            },
+            "robustness": "first control of this role right of / below the anchor text"
+          },
+          {
+            "kind": "css",
+            "value": {
+              "css": "body > table:nth-of-type(2) > tbody > tr:nth-of-type(3) > td:nth-of-type(2) > input"
+            },
+            "robustness": "structural path; exact on an unchanged page, brittle to any DOM edit"
+          },
+          {
+            "kind": "bbox",
+            "value": {
+              "x": 0.223,
+              "y": 0.1562,
+              "role": "textbox"
+            },
+            "robustness": "normalized position; last resort and the only option for screenshots"
+          }
+        ]
+      },
+      "value": "{{ params.password }}",
+      "wait": {
+        "load_state": "load",
+        "settle_ms": 150,
+        "timeout_ms": 15000
+      },
+      "risk": "reversible",
+      "expect": [],
+      "extract_to": null,
+      "dialog_response": null
+    },
+    {
+      "id": "s04_click",
+      "action": "click",
+      "intent": "submit the sign-in form",
+      "target": {
+        "description": "button 'Sign In'",
+        "frame": [
+          "main"
+        ],
+        "strategies": [
+          {
+            "kind": "role_name",
+            "value": {
+              "role": "button",
+              "name": "Sign In"
+            },
+            "robustness": "accessible role+name; stable across layout and styling changes"
+          },
+          {
+            "kind": "css",
+            "value": {
+              "css": "body > table:nth-of-type(2) > tbody > tr:nth-of-type(4) > td:nth-of-type(2) > input"
+            },
+            "robustness": "structural path; exact on an unchanged page, brittle to any DOM edit"
+          },
+          {
+            "kind": "bbox",
+            "value": {
+              "x": 0.1541,
+              "y": 0.195,
+              "role": "button"
+            },
+            "robustness": "normalized position; last resort and the only option for screenshots"
+          }
+        ]
+      },
+      "value": null,
+      "wait": {
+        "load_state": "load",
+        "settle_ms": 150,
+        "timeout_ms": 15000
+      },
+      "risk": "reversible",
+      "expect": [],
+      "extract_to": null,
+      "dialog_response": null
+    },
+    {
+      "id": "s05_assert",
+      "action": "assert",
+      "intent": "confirm we are signed in",
+      "target": null,
+      "value": null,
+      "wait": {
+        "load_state": "load",
+        "settle_ms": 150,
+        "timeout_ms": 15000
+      },
+      "risk": "read",
+      "expect": [
+        {
+          "kind": "text_visible",
+          "value": "Welcome,",
+          "regex": false,
+          "target": null,
+          "frame": [],
+          "timeout_ms": 8000
+        }
+      ],
+      "extract_to": null,
+      "dialog_response": null
+    },
+    {
+      "id": "s06_click",
+      "action": "click",
+      "intent": "open the member inquiry screen",
+      "target": {
+        "description": "link 'Member Inquiry'",
+        "frame": [
+          "menu"
+        ],
+        "strategies": [
+          {
+            "kind": "role_name",
+            "value": {
+              "role": "link",
+              "name": "Member Inquiry"
+            },
+            "robustness": "accessible role+name; stable across layout and styling changes"
+          },
+          {
+            "kind": "text",
+            "value": {
+              "text": "Member Inquiry",
+              "role": "link"
+            },
+            "robustness": "exact visible text; breaks only on copy changes"
+          },
+          {
+            "kind": "css",
+            "value": {
+              "css": "body > table > tbody > tr:nth-of-type(3) > td > a"
+            },
+            "robustness": "structural path; exact on an unchanged page, brittle to any DOM edit"
+          },
+          {
+            "kind": "bbox",
+            "value": {
+              "x": 0.3921,
+              "y": 0.1052,
+              "role": "link"
+            },
+            "robustness": "normalized position; last resort and the only option for screenshots"
+          }
+        ]
+      },
+      "value": null,
+      "wait": {
+        "load_state": "load",
+        "settle_ms": 150,
+        "timeout_ms": 15000
+      },
+      "risk": "reversible",
+      "expect": [],
+      "extract_to": null,
+      "dialog_response": null
+    },
+    {
+      "id": "s07_assert",
+      "action": "assert",
+      "intent": "confirm the inquiry form is shown",
+      "target": null,
+      "value": null,
+      "wait": {
+        "load_state": "load",
+        "settle_ms": 150,
+        "timeout_ms": 15000
+      },
+      "risk": "read",
+      "expect": [
+        {
+          "kind": "text_visible",
+          "value": "Member Inquiry",
+          "regex": false,
+          "target": null,
+          "frame": [],
+          "timeout_ms": 8000
+        }
+      ],
+      "extract_to": null,
+      "dialog_response": null
+    },
+    {
+      "id": "s08_fill",
+      "action": "fill",
+      "intent": "enter the member number",
+      "target": {
+        "description": "textbox 'Member No.'",
+        "frame": [
+          "main"
+        ],
+        "strategies": [
+          {
+            "kind": "role_name",
+            "value": {
+              "role": "textbox",
+              "name": "Member No."
+            },
+            "robustness": "accessible role+name; stable across layout and styling changes"
+          },
+          {
+            "kind": "label",
+            "value": {
+              "label": "Member No.",
+              "role": "textbox"
+            },
+            "robustness": "visible label in the same table row; survives DOM reshuffles"
+          },
+          {
+            "kind": "name_attr",
+            "value": {
+              "name": "member_no",
+              "tag": "input"
+            },
+            "robustness": "form field name is bound to the server contract; rarely changes"
+          },
+          {
+            "kind": "near_text",
+            "value": {
+              "anchor": "Member No.",
+              "role": "textbox",
+              "direction": "right_or_below"
+            },
+            "robustness": "first control of this role right of / below the anchor text"
+          },
+          {
+            "kind": "css",
+            "value": {
+              "css": "body > table:nth-of-type(2) > tbody > tr:nth-of-type(2) > td:nth-of-type(2) > input"
+            },
+            "robustness": "structural path; exact on an unchanged page, brittle to any DOM edit"
+          },
+          {
+            "kind": "bbox",
+            "value": {
+              "x": 0.1932,
+              "y": 0.1173,
+              "role": "textbox"
+            },
+            "robustness": "normalized position; last resort and the only option for screenshots"
+          }
+        ]
+      },
+      "value": "{{ params.member_id }}",
+      "wait": {
+        "load_state": "load",
+        "settle_ms": 150,
+        "timeout_ms": 15000
+      },
+      "risk": "reversible",
+      "expect": [],
+      "extract_to": null,
+      "dialog_response": null
+    },
+    {
+      "id": "s09_click",
+      "action": "click",
+      "intent": "run the search",
+      "target": {
+        "description": "button 'Find Member'",
+        "frame": [
+          "main"
+        ],
+        "strategies": [
+          {
+            "kind": "role_name",
+            "value": {
+              "role": "button",
+              "name": "Find Member"
+            },
+            "robustness": "accessible role+name; stable across layout and styling changes"
+          },
+          {
+            "kind": "css",
+            "value": {
+              "css": "body > table:nth-of-type(2) > tbody > tr:nth-of-type(3) > td:nth-of-type(2) > input"
+            },
+            "robustness": "structural path; exact on an unchanged page, brittle to any DOM edit"
+          },
+          {
+            "kind": "bbox",
+            "value": {
+              "x": 0.1789,
+              "y": 0.1562,
+              "role": "button"
+            },
+            "robustness": "normalized position; last resort and the only option for screenshots"
+          }
+        ]
+      },
+      "value": null,
+      "wait": {
+        "load_state": "load",
+        "settle_ms": 150,
+        "timeout_ms": 15000
+      },
+      "risk": "reversible",
+      "expect": [],
+      "extract_to": null,
+      "dialog_response": null
+    },
+    {
+      "id": "s10_assert",
+      "action": "assert",
+      "intent": "confirm the member detail page loaded",
+      "target": null,
+      "value": null,
+      "wait": {
+        "load_state": "load",
+        "settle_ms": 150,
+        "timeout_ms": 15000
+      },
+      "risk": "read",
+      "expect": [
+        {
+          "kind": "text_visible",
+          "value": "Share Accounts",
+          "regex": false,
+          "target": null,
+          "frame": [],
+          "timeout_ms": 8000
+        }
+      ],
+      "extract_to": null,
+      "dialog_response": null
+    },
+    {
+      "id": "s11_extract",
+      "action": "extract",
+      "intent": "read savings_balance",
+      "target": {
+        "description": "cell 'Current Balance' in row 'S01'",
+        "frame": [
+          "main"
+        ],
+        "strategies": [
+          {
+            "kind": "table_cell",
+            "value": {
+              "row_anchor": "S01",
+              "column_header": "Current Balance",
+              "table": "body > table:nth-of-type(2) > tbody > tr:nth-of-type(2) > td > table"
+            },
+            "robustness": "row label + column header; independent of the cell's value and of row order"
+          },
+          {
+            "kind": "near_text",
+            "value": {
+              "anchor": "Regular Savings",
+              "role": "cell",
+              "direction": "right_or_below"
+            },
+            "robustness": "cell immediately right of a unique label cell; independent of the value"
+          },
+          {
+            "kind": "css",
+            "value": {
+              "css": "body > table:nth-of-type(2) > tbody > tr:nth-of-type(2) > td > table > tbody > tr:nth-of-type(3) > td:nth-of-type(3)"
+            },
+            "robustness": "structural path; exact on an unchanged page"
+          },
+          {
+            "kind": "bbox",
+            "value": {
+              "x": 0.5396,
+              "y": 0.2708,
+              "role": "cell"
+            },
+            "robustness": "normalized position; last resort"
+          }
+        ]
+      },
+      "value": null,
+      "wait": {
+        "load_state": "load",
+        "settle_ms": 150,
+        "timeout_ms": 15000
+      },
+      "risk": "read",
+      "expect": [],
+      "extract_to": "savings_balance",
+      "dialog_response": null
+    },
+    {
+      "id": "s12_extract",
+      "action": "extract",
+      "intent": "read member_name",
+      "target": {
+        "description": "cell 'Doe, Jane'",
+        "frame": [
+          "main"
+        ],
+        "strategies": [
+          {
+            "kind": "near_text",
+            "value": {
+              "anchor": "Name",
+              "role": "cell",
+              "direction": "right_or_below"
+            },
+            "robustness": "cell immediately right of a unique label cell; independent of the value"
+          },
+          {
+            "kind": "css",
+            "value": {
+              "css": "body > table:nth-of-type(2) > tbody > tr:nth-of-type(1) > td > table > tbody > tr:nth-of-type(3) > td:nth-of-type(2)"
+            },
+            "robustness": "structural path; exact on an unchanged page"
+          },
+          {
+            "kind": "bbox",
+            "value": {
+              "x": 0.4618,
+              "y": 0.1555,
+              "role": "cell"
+            },
+            "robustness": "normalized position; last resort"
+          }
+        ]
+      },
+      "value": null,
+      "wait": {
+        "load_state": "load",
+        "settle_ms": 150,
+        "timeout_ms": 15000
+      },
+      "risk": "read",
+      "expect": [],
+      "extract_to": "member_name",
+      "dialog_response": null
+    }
+  ],
+  "success": [
+    {
+      "kind": "text_visible",
+      "value": "Share Accounts",
+      "regex": false,
+      "target": null,
+      "frame": [],
+      "timeout_ms": 8000
+    },
+    {
+      "kind": "text_visible",
+      "value": "Regular Savings",
+      "regex": false,
+      "target": null,
+      "frame": [],
+      "timeout_ms": 8000
+    }
+  ],
+  "outcomes": [
+    {
+      "code": "MEMBER_NOT_FOUND",
+      "description": "No member record matched the number",
+      "detect": {
+        "kind": "text_visible",
+        "value": "No member record matched",
+        "regex": false,
+        "target": null,
+        "frame": [],
+        "timeout_ms": 0
+      },
+      "terminal": true
+    }
+  ],
+  "recoveries": [
+    {
+      "name": "session_expired",
+      "detect": {
+        "kind": "text_visible",
+        "value": "session has expired",
+        "regex": false,
+        "target": null,
+        "frame": [],
+        "timeout_ms": 0
+      },
+      "actions": [],
+      "then": "restart_capability",
+      "max_attempts": 2
+    }
+  ],
+  "failure_signals": [
+    {
+      "kind": "text_visible",
+      "value": "Application Error",
+      "regex": false,
+      "target": null,
+      "frame": [],
+      "timeout_ms": 0
+    },
+    {
+      "kind": "http_status",
+      "value": "^5\\d\\d$",
+      "regex": false,
+      "target": null,
+      "frame": [],
+      "timeout_ms": 0
+    }
+  ],
+  "max_risk": "reversible",
+  "provenance": {
+    "discovery_run_id": "discovery-20260912T054223-d45e4b",
+    "recorded_at": "2026-09-12T05:42:26.459558Z",
+    "model": "scripted",
+    "surface": "PlaywrightSurface",
+    "transcript_sha256": "66fc0cf035becd4b89e2ecbc69a080101db5eda4f945ab74cd5427caf13a6607",
+    "recorded_by": "glovebox-recorder"
+  },
+  "review": {
+    "status": "draft",
+    "reviewed_by": null,
+    "reviewed_at": null,
+    "notes": null,
+    "replays": 0,
+    "replay_successes": 0
+  },
+  "overrides": [],
+  "created_at": "2026-09-12T05:42:26.459665Z"
+}

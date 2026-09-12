@@ -41,6 +41,7 @@ class PlaywrightSurface:
         self._ctx: BrowserContext = self._browser.new_context(
             viewport={"width": viewport[0], "height": viewport[1]}
         )
+        self._viewport = viewport
         self._trace = trace
         if trace:
             self._ctx.tracing.start(screenshots=True, snapshots=True)
@@ -84,6 +85,19 @@ class PlaywrightSurface:
         walk(self.page.main_frame, [])
         return out
 
+    def _frame_offset(self, fr: Frame) -> tuple[float, float]:
+        """Offset of a frame's viewport within the page, so element boxes can be drawn on a screenshot."""
+        if fr == self.page.main_frame:
+            return 0.0, 0.0
+        try:
+            handle = fr.frame_element()
+            box = handle.bounding_box()
+            parent = fr.parent_frame
+            px, py = self._frame_offset(parent) if parent is not None else (0.0, 0.0)
+            return (box["x"] + px, box["y"] + py) if box else (px, py)
+        except PlaywrightError:
+            return 0.0, 0.0
+
     def _frame(self, path: list[str]) -> Frame:
         for p, fr in self._frames():
             if p == path:
@@ -99,6 +113,7 @@ class PlaywrightSurface:
         title = self.page.title()
         for path, fr in self._frames():
             frames.append(path)
+            ox, oy = self._frame_offset(fr)
             try:
                 data = fr.evaluate(_WALKER)
             except Exception as exc:
@@ -118,6 +133,12 @@ class PlaywrightSurface:
                         css=raw["css"],
                         bbox=(raw["bbox"][0], raw["bbox"][1], raw["bbox"][2], raw["bbox"][3]),
                         nbox=(raw["nbox"][0], raw["nbox"][1]),
+                        page_box=(
+                            raw["bbox"][0] + ox,
+                            raw["bbox"][1] + oy,
+                            raw["bbox"][2],
+                            raw["bbox"][3],
+                        ),
                         interactive=bool(raw["interactive"]),
                         value=raw["value"],
                         href=raw["href"],
@@ -143,6 +164,7 @@ class PlaywrightSurface:
             dialog=self._last_dialog,
             last_status=self._last_status,
             screenshot=shot,
+            viewport=self._viewport,
         )
         self._last_dialog = None
         self._last_obs = obs

@@ -1,0 +1,8 @@
+{
+  "fault_injected": null,
+  "status": "business_outcome",
+  "outputs": {},
+  "outcome_code": "MEMBER_NOT_FOUND",
+  "failure": null,
+  "handoff": null
+}

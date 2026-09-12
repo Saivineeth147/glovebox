@@ -1,0 +1,110 @@
+{
+  "run_id": "replay-20260912T054310-b70a2c",
+  "capability_id": "member_savings_balance",
+  "capability_version": "1.0.0",
+  "tenant": "alpha",
+  "status": "failed",
+  "outputs": {},
+  "outcome_code": null,
+  "outcome_description": null,
+  "failure": {
+    "failure_class": "target_not_found",
+    "step_id": "s09_click",
+    "message": "click e24 failed: another element covers the target (modal/interstitial?)",
+    "expected": "button 'Find Member'",
+    "observed": "url=http://127.0.0.1:8089/t/alpha/ title='Meridian Core \u2014 Alpine Credit Union' text='[nav]\\nMeridian Core \u2014 Alpine Credit Union Not signed in\\n\\n[menu]\\nMENU\\nHome\\nMember Inquiry\\nTransactions\\nReports\\nAdministration\\n\\n[main]\\nMeridian Core \u2014 Alpine Credit Union \\xa0 v7.2.1\\nSystem Notice\\nNightly batch posting completed. Balances shown are as of 06:00.\\nMember Inquiry\\nMember No. \\n \\nMeridian Core '",
+    "evidence": {
+      "screenshot": "/home/user/glovebox/runs/replay-20260912T054310-b70a2c/screenshots/[REDACTED:card_pan]failure-s09_click.png",
+      "snapshot:top": "/home/user/glovebox/runs/replay-20260912T054310-b70a2c/snapshots/[REDACTED:card_pan]failure-s09_click-top.html",
+      "snapshot:nav": "/home/user/glovebox/runs/replay-20260912T054310-b70a2c/snapshots/[REDACTED:card_pan]failure-s09_click-nav.html",
+      "snapshot:menu": "/home/user/glovebox/runs/replay-20260912T054310-b70a2c/snapshots/[REDACTED:card_pan]failure-s09_click-menu.html",
+      "snapshot:main": "/home/user/glovebox/runs/replay-20260912T054310-b70a2c/snapshots/[REDACTED:card_pan]failure-s09_click-main.html"
+    }
+  },
+  "handoff": null,
+  "steps": [
+    {
+      "step_id": "s01_navigate",
+      "action": "navigate",
+      "status": "ok",
+      "started_at": "2026-09-12T05:43:11.003380Z",
+      "duration_ms": 375,
+      "strategy_used": "url",
+      "recoveries": [],
+      "note": null
+    },
+    {
+      "step_id": "s02_fill",
+      "action": "fill",
+      "status": "ok",
+      "started_at": "2026-09-12T05:43:11.379392Z",
+      "duration_ms": 348,
+      "strategy_used": "role_name",
+      "recoveries": [],
+      "note": null
+    },
+    {
+      "step_id": "s03_fill",
+      "action": "fill",
+      "status": "ok",
+      "started_at": "2026-09-12T05:43:11.728436Z",
+      "duration_ms": 333,
+      "strategy_used": "role_name",
+      "recoveries": [],
+      "note": null
+    },
+    {
+      "step_id": "s04_click",
+      "action": "click",
+      "status": "ok",
+      "started_at": "2026-09-12T05:43:12.062296Z",
+      "duration_ms": 366,
+      "strategy_used": "role_name",
+      "recoveries": [],
+      "note": null
+    },
+    {
+      "step_id": "s05_assert",
+      "action": "assert",
+      "status": "ok",
+      "started_at": "2026-09-12T05:43:12.428840Z",
+      "duration_ms": 298,
+      "strategy_used": null,
+      "recoveries": [],
+      "note": null
+    },
+    {
+      "step_id": "s06_click",
+      "action": "click",
+      "status": "ok",
+      "started_at": "2026-09-12T05:43:12.727459Z",
+      "duration_ms": 368,
+      "strategy_used": "role_name",
+      "recoveries": [],
+      "note": null
+    },
+    {
+      "step_id": "s07_assert",
+      "action": "assert",
+      "status": "ok",
+      "started_at": "2026-09-12T05:43:13.096371Z",
+      "duration_ms": 316,
+      "strategy_used": null,
+      "recoveries": [],
+      "note": null
+    },
+    {
+      "step_id": "s08_fill",
+      "action": "fill",
+      "status": "ok",
+      "started_at": "2026-09-12T05:43:13.412781Z",
+      "duration_ms": 350,
+      "strategy_used": "role_name",
+      "recoveries": [],
+      "note": null
+    }
+  ],
+  "started_at": "2026-09-12T05:43:11.003065Z",
+  "finished_at": "2026-09-12T05:43:19.023325Z",
+  "evidence_dir": "/home/user/glovebox/runs/replay-20260912T054310-b70a2c"
+}
