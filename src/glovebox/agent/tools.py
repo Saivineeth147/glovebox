@@ -174,6 +174,25 @@ TOOLS: list[dict[str, Any]] = [
         },
     },
     {
+        "name": "begin_probe",
+        "description": "Pause recording so you can go and look at a state you declared but have "
+        "not seen — the 'no record found' screen, for example — and confirm the text that "
+        "identifies it. Nothing you do between this and `end_probe` is recorded into the "
+        "capability. Return to the screen the goal ends on before calling `end_probe`.",
+        "input_schema": {
+            "type": "object",
+            "properties": {"why": {"type": "string"}},
+            "required": ["why"],
+            "additionalProperties": False,
+        },
+    },
+    {
+        "name": "end_probe",
+        "description": "Resume recording. Call this once you are back on the screen the goal "
+        "ends on. You cannot finish while a probe is open.",
+        "input_schema": {"type": "object", "properties": {}, "additionalProperties": False},
+    },
+    {
         "name": "escalate",
         "description": "You are stuck or the next step needs a human decision. A human operator takes over the live "
         "session and hands it back; you will then get a fresh observation.",
@@ -219,6 +238,9 @@ How to work
   resolve with one obvious retry, call `escalate`. Do not guess in a bank system.
 - `declare_outcome` is only for results that are NOT success. Never declare the goal's own
   success as an outcome; it would end replay before the outputs are read.
+- A `declare_outcome` detector you have not actually seen on screen is a guess, and a guess
+  never fires. Use `begin_probe` to go and look at that state, read the exact wording, then
+  return to the goal's final screen and `end_probe`. Probed steps are not recorded.
 - `extract` every value the goal asks for before `finish`. Finishing without them returns a
   capability that answers nothing.
 - Before `finish`, `declare_outcome` for non-success results this flow can show (e.g. "no record

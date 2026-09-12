@@ -62,6 +62,9 @@ class Recorder:
         self.recoveries: list[Recovery] = []
         self._n = 0
         # Values this run used or saw. Conditions built from them cannot generalize.
+        # While paused the run is looking, not doing: observations still count, actions
+        # are not recorded. Confirming an outcome detector needs the former, not the latter.
+        self.paused = False
         self.dropped_outcomes: list[str] = []
         self._seen_text: list[str] = []
         self._literals: list[str] = [
@@ -157,7 +160,7 @@ class Recorder:
     def extract(
         self, target: Target, name: str, description: str, type_: str, regex: str | None
     ) -> Step:
-        if all(o.name != name for o in self.outputs):
+        if not self.paused and all(o.name != name for o in self.outputs):
             self.outputs.append(
                 OutputSpec(name=name, type=ParamType(type_), description=description)
             )
@@ -193,7 +196,8 @@ class Recorder:
         return None
 
     def _add(self, step: Step) -> Step:
-        self.steps.append(step)
+        if not self.paused:
+            self.steps.append(step)
         return step
 
     def _usable_steps(self) -> list[Step]:
@@ -253,6 +257,8 @@ class Recorder:
 
     # ------------------------------------------------------------------ contract
     def declare_outcome(self, code: str, description: str, detect_text: str) -> None:
+        if self.paused:
+            return
         if all(o.code != code for o in self.outcomes):
             self.outcomes.append(
                 Outcome(
@@ -300,6 +306,11 @@ class Recorder:
                 inputs.append(p)
         highest = max((s.risk for s in self.steps), key=_rank, default=RiskClass.READ)
         recoveries = [*self.recoveries, _session_expired_recovery()]
+        if self.paused:
+            raise RuntimeError(
+                "still probing: end the probe before finishing, or the capability would be "
+                "missing every step taken since it began"
+            )
         success = [
             Condition(kind=ConditionKind.TEXT_VISIBLE, value=t, timeout_ms=8000)
             for t in success_text

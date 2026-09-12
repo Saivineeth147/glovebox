@@ -365,6 +365,20 @@ class DiscoveryAgent:
         self.log.emit(EventKind.ACTION, f"extract {output} from {target.description}", value=value)
         return f"{output} = {value!r} (from {target.description})"
 
+    def _t_begin_probe(self, why: str) -> str:
+        if self.recorder.paused:
+            raise ValueError("a probe is already open; call end_probe first")
+        self.recorder.paused = True
+        self.log.emit(EventKind.MODEL_DECISION, f"probe started: {why}")
+        return "Recording paused. Nothing until end_probe becomes part of the capability."
+
+    def _t_end_probe(self) -> str:
+        if not self.recorder.paused:
+            raise ValueError("no probe is open")
+        self.recorder.paused = False
+        self.log.emit(EventKind.MODEL_DECISION, "probe ended; recording resumed")
+        return "Recording resumed."
+
     def _t_declare_outcome(self, code: str, description: str, detect_text: str) -> str:
         if reason := self.recorder.overfit_reason(detect_text):
             raise ValueError(f"detect_text rejected: {reason}")
@@ -389,6 +403,11 @@ class DiscoveryAgent:
     ) -> str:
         from glovebox.schema.capability import Condition, ConditionKind
 
+        if self.recorder.paused:
+            raise ValueError(
+                "a probe is still open: return to the screen the goal ends on and call "
+                "end_probe before finishing"
+            )
         for t in success_text:
             if reason := self.recorder.overfit_reason(t):
                 raise ValueError(f"success_text rejected: {reason}")
