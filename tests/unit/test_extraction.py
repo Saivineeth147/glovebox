@@ -20,3 +20,19 @@ def test_should_return_the_whole_match_when_the_regex_has_no_group() -> None:
 def test_should_return_none_when_the_recorded_shape_is_absent() -> None:
     """The failed capability read a member number where a balance was promised."""
     assert extracted_value("100234", r"S01 Regular Savings \$([\d,.]+)") is None
+
+
+def test_should_refuse_to_record_an_extraction_whose_regex_misses_the_element() -> None:
+    """The model anchored on 'Member No.' and wrote a balance regex; catch it at record time."""
+    from types import SimpleNamespace
+
+    import pytest
+
+    from glovebox.agent.loop import DiscoveryAgent
+
+    agent = object.__new__(DiscoveryAgent)
+    agent._el = lambda ref: SimpleNamespace(text="100234", value=None)  # type: ignore[method-assign]
+    with pytest.raises(ValueError, match="does not match"):
+        DiscoveryAgent._t_extract(
+            agent, "e1", "savings_balance", "balance", "string", r"S01 Regular Savings \$([\d,.]+)"
+        )
