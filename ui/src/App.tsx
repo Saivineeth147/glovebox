@@ -7,7 +7,8 @@ import Capabilities from "./pages/Capabilities";
 import CapabilityDetail from "./pages/CapabilityDetail";
 import Discover from "./pages/Discover";
 import Policy from "./pages/Policy";
-import { api } from "./api";
+import SignIn from "./pages/SignIn";
+import { api, NotSignedIn } from "./api";
 
 export function useRoute() {
   const [hash, setHash] = useState(window.location.hash || "#/");
@@ -47,13 +48,27 @@ function Reading({ tone, label, value }: { tone: string; label: string; value: s
 export default function App() {
   const route = useRoute();
   const [ov, setOv] = useState<any>(null);
+  // undefined while we are still asking; null once we know nobody is signed in.
+  const [user, setUser] = useState<{ email: string; role: string } | null | undefined>(undefined);
 
   useEffect(() => {
-    const load = () => api.overview().then(setOv).catch(() => setOv({ target: { up: false } }));
+    api.me().then(setUser).catch(() => setUser(null));
+  }, []);
+
+  useEffect(() => {
+    if (!user) return;
+    const load = () =>
+      api
+        .overview()
+        .then(setOv)
+        .catch((e) => (e instanceof NotSignedIn ? setUser(null) : setOv({ target: { up: false } })));
     load();
     const timer = setInterval(load, OVERVIEW_POLL_MS);
     return () => clearInterval(timer);
-  }, []);
+  }, [user]);
+
+  if (user === undefined) return <div className="h-full" />;
+  if (user === null) return <SignIn onSignedIn={setUser} />;
 
   let page: React.ReactElement;
   const match = (re: RegExp) => route.match(re);
@@ -95,6 +110,17 @@ export default function App() {
             value={ov?.has_api_key ? ov.model : "offline mode"}
           />
           <Reading tone="text-ink-500" label="policy" value={ov?.policy ?? "—"} />
+          <span className="flex items-center gap-2 whitespace-nowrap border-l border-ink-700 pl-4">
+            <span className="text-ink-200">{user.email}</span>
+            <span className="text-ink-400">{user.role}</span>
+            <button
+              type="button"
+              className="text-ink-400 hover:text-ink-100"
+              onClick={() => api.signOut().then(() => setUser(null))}
+            >
+              Sign out
+            </button>
+          </span>
         </div>
       </header>
 

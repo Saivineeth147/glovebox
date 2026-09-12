@@ -5,19 +5,34 @@ async function req<T = Json>(path: string, init?: RequestInit): Promise<T> {
   if (!r.ok) {
     let msg = r.statusText;
     try { msg = (await r.json()).detail ?? msg; } catch {}
-    throw new Error(msg);
+    throw r.status === 401 ? new NotSignedIn(msg) : new Error(msg);
   }
   return r.json();
 }
 
+/** Thrown for 401 so the shell can show the sign-in screen instead of an error. */
+export class NotSignedIn extends Error {}
+
 export const api = {
+  me: () => req<{ email: string; role: string }>("/api/auth/me"),
+  signIn: (email: string, password: string) =>
+    req<{ email: string; role: string }>("/api/auth/login", {
+      method: "POST",
+      body: JSON.stringify({ email, password }),
+    }),
+  register: (email: string, password: string) =>
+    req<{ email: string; role: string }>("/api/auth/register", {
+      method: "POST",
+      body: JSON.stringify({ email, password }),
+    }),
+  signOut: () => req("/api/auth/logout", { method: "POST" }),
   overview: () => req("/api/overview"),
   runs: () => req<Json[]>("/api/runs"),
   run: (id: string) => req(`/api/runs/${id}`),
   capabilities: () => req<Json[]>("/api/capabilities"),
   capability: (id: string) => req(`/api/capabilities/${id}`),
   tools: () => req<Json[]>("/api/capabilities/tools"),
-  approve: (id: string, reviewer: string, notes?: string) => req(`/api/capabilities/${id}/approve`, { method: "POST", body: JSON.stringify({ reviewer, notes }) }),
+  approve: (id: string, notes?: string) => req(`/api/capabilities/${id}/approve`, { method: "POST", body: JSON.stringify({ notes }) }),
   discover: (body: Json) => req("/api/discover", { method: "POST", body: JSON.stringify(body) }),
   replay: (body: Json) => req("/api/replay", { method: "POST", body: JSON.stringify(body) }),
   jobs: () => req<Json[]>("/api/jobs"),

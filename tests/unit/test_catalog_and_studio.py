@@ -72,3 +72,22 @@ def test_committed_capability_is_valid_and_approved():
     )
     assert cap.review.status == "approved"
     assert cap.steps[0].value == "{{ app.entry_path }}"
+
+
+def test_approval_is_recorded_against_the_signed_in_admin_not_the_request_body(tmp_path: Path):
+    """Approval is the gate to unattended replay; the name on it must not be typed in."""
+    cat_dir = tmp_path / "caps"
+    Catalog(cat_dir).save(_cap())
+    app = create_studio(tmp_path / "runs", cat_dir, ROOT / "policies" / "default.yaml")
+    c = TestClient(app)
+    c.post(
+        "/api/auth/register",
+        json={"email": "admin@example.com", "password": "a-long-enough-password"},
+    )
+
+    approved = c.post(
+        "/api/capabilities/demo/approve",
+        json={"reviewer": "somebody-else", "notes": "looked fine"},
+    ).json()
+
+    assert approved["review"]["reviewed_by"] == "admin@example.com"

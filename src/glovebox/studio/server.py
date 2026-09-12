@@ -65,7 +65,8 @@ class ReplayBody(BaseModel):
 
 
 class ApproveBody(BaseModel):
-    reviewer: str
+    # No reviewer field: approval is recorded against the signed-in admin, because a
+    # name typed into the request is not an audit trail.
     notes: str | None = None
 
 
@@ -193,9 +194,13 @@ def create_studio(runs_dir: Path, catalog_dir: Path, policy_path: Path) -> FastA
         except FileNotFoundError as exc:
             raise HTTPException(404, str(exc)) from exc
 
-    @api.post("/api/capabilities/{cap_id}/approve", dependencies=[Depends(require_role("admin"))])
-    def approve(cap_id: str, body: ApproveBody) -> dict[str, Any]:
-        return cap_public(catalog.approve(cap_id, body.reviewer, body.notes))
+    @api.post("/api/capabilities/{cap_id}/approve")
+    def approve(
+        cap_id: str,
+        body: ApproveBody,
+        user: Annotated[Account, Depends(require_role("admin"))],
+    ) -> dict[str, Any]:
+        return cap_public(catalog.approve(cap_id, user.email, body.notes))
 
     # ------------------------------------------------------------------ jobs
     @api.post("/api/discover", dependencies=[Depends(require_role("operator"))])

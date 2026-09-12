@@ -27,10 +27,10 @@ export default function CapabilityDetail({ id }: { id: string }) {
     } catch (e: any) { setErr(e.message); setBusy(false); }
   };
   const approve = async () => {
-    const reviewer = window.prompt("Reviewer name", localStorage.getItem("gb-operator") || "") || "";
-    if (!reviewer) return;
-    const notes = window.prompt("Review notes (optional)") || undefined;
-    setC(await api.approve(c.id, reviewer, notes));
+    // The reviewer is whoever is signed in — asking them to type a name would put a
+    // self-declared identity on the record that lets this run unattended.
+    const notes = window.prompt("What did you check? (recorded on the capability)") || undefined;
+    setC(await api.approve(c.id, notes));
   };
 
   return (
