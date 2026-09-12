@@ -11,7 +11,7 @@ from datetime import UTC, datetime
 from pathlib import Path
 from typing import Any
 
-from glovebox.schema.capability import Capability, ParamType, ReviewStatus
+from glovebox.schema.capability import Capability, ParamType, ReviewState, ReviewStatus
 
 
 class Catalog:
@@ -22,8 +22,17 @@ class Catalog:
     def path(self, cap_id: str) -> Path:
         return self.dir / f"{cap_id}.json"
 
-    def save(self, cap: Capability) -> Path:
+    def save(self, cap: Capability, *, bump: bool = True) -> Path:
+        """Persist an artifact. A re-recording of an existing id gets the next patch version and
+        a fresh draft review state, so approval never silently carries over to new steps."""
         p = self.path(cap.id)
+        if bump and p.exists():
+            existing = self.load(cap.id)
+            if existing.provenance.discovery_run_id != cap.provenance.discovery_run_id:
+                major, minor, patch = (int(x) for x in existing.version.split("."))
+                cap = cap.model_copy(
+                    update={"version": f"{major}.{minor}.{patch + 1}", "review": ReviewState()}
+                )
         p.write_text(cap.model_dump_json(indent=2), encoding="utf-8")
         return p
 
@@ -42,14 +51,14 @@ class Catalog:
         cap.review.reviewed_by = reviewer
         cap.review.reviewed_at = datetime.now(UTC)
         cap.review.notes = notes
-        self.save(cap)
+        self.save(cap, bump=False)
         return cap
 
     def record_replay(self, cap_id: str, success: bool) -> Capability:
         cap = self.load(cap_id)
         cap.review.replays += 1
         cap.review.replay_successes += int(success)
-        self.save(cap)
+        self.save(cap, bump=False)
         return cap
 
     def tool_definitions(self, include_drafts: bool = False) -> list[dict[str, Any]]:

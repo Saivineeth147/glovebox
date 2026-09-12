@@ -94,6 +94,30 @@ def target_serve(port: int = 8089, host: str = "127.0.0.1") -> None:
     uvicorn.run(create_app(), host=host, port=port, log_level="warning")
 
 
+# ----------------------------------------------------------------------------- studio
+@app.command()
+def studio(
+    port: int = 8800,
+    host: str = "127.0.0.1",
+    runs_dir: Path = Path("runs"),
+    catalog_dir: Path = Path("capabilities"),
+    policy: Path | None = None,
+) -> None:
+    """Run Glovebox Studio: the workspace UI (runs, live agent view, catalog, takeover, policy)."""
+    import uvicorn
+
+    from glovebox.studio.server import create_studio
+
+    runs_dir.mkdir(parents=True, exist_ok=True)
+    rprint(f"[bold]Glovebox Studio[/bold] on http://{host}:{port}/   (API docs: /api/docs)")
+    uvicorn.run(
+        create_studio(runs_dir, catalog_dir, policy or DEFAULT_POLICY),
+        host=host,
+        port=port,
+        log_level="warning",
+    )
+
+
 # ----------------------------------------------------------------------------- discover
 @app.command()
 def discover(

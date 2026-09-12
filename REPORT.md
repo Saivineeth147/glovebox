@@ -50,7 +50,12 @@ Key decisions and trade-offs:
   clean DOM, because it is what an accessibility tree provides.
 - **Single process, synchronous.** A run is one browser, one thread. Queues, workers and a
   service boundary are deliberate non-goals (brief §7); the seams are where they would go
-  (`runner.py` is the unit of work a queue would dispatch).
+  (`runner.py` is the unit of work a queue would dispatch; `studio/jobs.py` already runs each
+  job on its own thread with its own bridge, which is the shape a worker pool would keep).
+- **Studio is a client, not a second implementation.** The workspace UI (`studio/`, `ui/`)
+  reads the same `events.jsonl` every run writes, streams it over SSE for live views, and
+  drives takeover through the same `OperatorBridge` verbs the CLI console uses. Nothing in
+  the UI can do what the CLI cannot; it makes the control model and the evidence visible.
 - **Model boundary is a protocol.** `AnthropicLLM` (Claude Opus 5 via the Anthropic SDK,
   adaptive thinking, prompt caching on the frozen system prompt, streaming) and `ScriptedLLM`
   produce identical tool-call shapes. Every test and every replay evidence bundle runs offline;
@@ -204,7 +209,14 @@ rather than pinning a worker. The evidence for both directions is in
 `evidence/replay-escalated-handoff-interstitial/` and the console path is tested over HTTP.
 
 **Who is in control** is always answerable: `ControlSession.owner`, the `control.transition`
-events, and `/api/state` on the console.
+events, and the owner chip on every run in Studio.
+
+**The operator's surface** (Studio, run page) shows the intervention with its reason, step,
+capability and what the automation saw; the live session as a screenshot with a clickable
+hotspot for every interactive element (drawn from the same element list the model sees, so
+the human and the model literally share a perception); an action bar; the hand-back verbs
+with one-line explanations; and the human's own actions as they are recorded. A stuck run
+is a purple banner at the top of its page, and open interventions are counted in the sidebar.
 
 What a production console adds on the same seam: a screencast (CDP `Page.screencast` or VNC
 to a headed browser) instead of polled screenshots, operator identity/authorisation, and a

@@ -24,7 +24,7 @@ production:  agent ──▶ replay(capability, params) ──▶ success{output
 | 3.3 Deterministic replay, error taxonomy, result contract | `src/glovebox/replay/engine.py`, `src/glovebox/schema/results.py` |
 | 3.4 Allowlist, risk classes, redaction | `policies/default.yaml`, `src/glovebox/policy/`, `src/glovebox/evidence/redaction.py` |
 | 3.5 Evidence | `runs/<run_id>/` → `evidence/` (events.jsonl, screenshots, DOM snapshots, trace) |
-| 3.6 Human escalation & handoff on the live session | `src/glovebox/control/` (lease model, bridge, console) |
+| 3.6 Human escalation & handoff on the live session | `src/glovebox/control/` (lease model, bridge), Studio takeover panel |
 | 3.7 Heterogeneity & multi-tenant | `Surface` protocol, `TenantOverride` in the schema, [REPORT.md §4](./REPORT.md) |
 | Stretch: agent-facing catalog, stability, cross-tenant | `src/glovebox/catalog/`, `glovebox stability`, `evidence/replay-tenant-bravo-override/` |
 
@@ -42,15 +42,30 @@ labels and an extra post-login notice. A **fault injector** arms one-shot runtim
 `validation` — so replay error handling is demonstrated against real failures rather than
 described. All data is fictional; credentials are fake.
 
-## The operator console
+## Glovebox Studio
 
-When automation is stuck, needs approval for an irreversible step, or a policy blocks it, the
-run does not die: it raises an intervention and *serves* the human. The console shows the same
-browser session with clickable hotspots on every control, the context of why it stopped, and
-the six ways to hand control back. Every human action is recorded with the same locator
-description the recorder uses.
+The workspace for engineers and operators: `make studio` → http://127.0.0.1:8800/.
 
-<p align="center"><img src="docs/operator-console.png" alt="Glovebox operator console during a handoff: intervention context, live screenshot with element hotspots, action bar, hand-back verbs, timeline" width="900"></p>
+<p align="center"><img src="docs/studio/run-live.png" alt="Glovebox Studio: a live run with the agent's decisions streaming beside the screen" width="920"></p>
+
+- **Runs** — every discovery and replay, live. Model decisions, actions, policy verdicts,
+  locator resolutions, conditions, recoveries and control transfers stream in beside the
+  screenshot of that moment. Result contract, outputs, failure detail and evidence files on the right.
+- **Capabilities** — the catalog as a reviewer sees it: contract, every step with its ranked
+  locator strategies and robustness notes, outcomes, recoveries, provenance. Approve for
+  unattended replay, or invoke with parameters, a tenant override and an injected fault.
+- **Discover** — give the model a goal and watch it work inside policy.
+- **Takeover** — when a run is stuck, needs approval for an irreversible step, or is blocked,
+  the takeover panel appears on the run page: the *same* browser session with clickable
+  hotspots on every control, why it stopped, what the automation saw, and six ways to hand
+  control back. Every human action is recorded with the recorder's own locator description.
+
+<p align="center"><img src="docs/studio/handoff.png" alt="Glovebox Studio takeover panel during a handoff" width="920"></p>
+
+The UI is a React + Tailwind single-page app (`ui/`), built assets are committed under
+`src/glovebox/studio/static` so Python is the only runtime dependency. A bare HTML console
+(`glovebox replay --console-port`) remains for headless/CLI use; both are clients of the same
+`OperatorBridge`.
 
 ## Setup
 
@@ -103,6 +118,8 @@ No key? Run the same loop with scripted decisions to see the artifact path end t
 uv run glovebox discover --goal "..." --app-url http://127.0.0.1:8089/ \
   --capability-name member_savings_balance --param member_id=100234 --offline-script member_savings_balance
 ```
+
+Or do all of it from the UI: `make studio`.
 
 Other commands: `glovebox catalog list|tools` (the catalog as Claude tool definitions),
 `glovebox stability <cap> --runs 5`, `glovebox validate <cap.json>`, `glovebox schema`.

@@ -9,3 +9,7 @@ runs/
 dist/
 htmlcov/
 .coverage
+
+# frontend
+ui/node_modules/
+ui/dist/

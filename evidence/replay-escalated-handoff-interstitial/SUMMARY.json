@@ -8,7 +8,7 @@
   "outcome_code": null,
   "failure": null,
   "handoff": {
-    "intervention_id": "int_5a96351943",
+    "intervention_id": "int_52c61cf9cd",
     "reason": "click e24 failed: another element covers the target (modal/interstitial?) (expected button 'Find Member')",
     "step_id": "s09_click",
     "resolution": "resume",

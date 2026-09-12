@@ -81,6 +81,7 @@ def run_replay(
     handoff_timeout_s: float = 300.0,
     trace: bool = True,
     on_context: Callable[[RunContext], None] | None = None,
+    on_start: Callable[[str, Path], None] | None = None,
 ) -> ReplayResult:
     ctx = _context(
         "replay",
@@ -96,6 +97,8 @@ def run_replay(
     )
     if on_context:
         on_context(ctx)
+    if on_start:
+        on_start(ctx.run_id, ctx.run_dir.root)
     try:
         engine = ReplayEngine(
             capability,
@@ -131,6 +134,7 @@ def run_discovery(
     max_steps: int | None = None,
     screenshots: bool = True,
     trace: bool = True,
+    on_start: Callable[[str, Path], None] | None = None,
 ) -> DiscoveryResult:
     ctx = _context(
         "discovery",
@@ -144,6 +148,8 @@ def run_discovery(
         goal=goal,
         trace=trace,
     )
+    if on_start:
+        on_start(ctx.run_id, ctx.run_dir.root)
     agent_holder: dict[str, DiscoveryAgent] = {}
     llm = llm_factory(lambda: agent_holder["agent"].last_obs if "agent" in agent_holder else None)
     try:

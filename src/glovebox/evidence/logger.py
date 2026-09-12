@@ -13,7 +13,6 @@ from __future__ import annotations
 
 import json
 import secrets
-import time
 from dataclasses import dataclass
 from datetime import UTC, datetime
 from pathlib import Path
@@ -31,6 +30,11 @@ def new_run_id(prefix: str) -> str:
 @dataclass
 class RunDir:
     root: Path
+    _seq: int = 0
+
+    def _next(self) -> str:
+        self._seq += 1
+        return f"{self._seq:04d}"
 
     @classmethod
     def create(cls, base: str | Path, run_id: str) -> RunDir:
@@ -44,10 +48,10 @@ class RunDir:
         return self.root / "events.jsonl"
 
     def screenshot_path(self, label: str) -> Path:
-        return self.root / "screenshots" / f"{int(time.time() * 1000)}-{_safe(label)}.png"
+        return self.root / "screenshots" / f"{self._next()}-{_safe(label)}.png"
 
     def snapshot_path(self, label: str) -> Path:
-        return self.root / "snapshots" / f"{int(time.time() * 1000)}-{_safe(label)}.html"
+        return self.root / "snapshots" / f"{self._next()}-{_safe(label)}.html"
 
     def write_json(self, name: str, data: Any, redactor: Redactor | None = None) -> Path:
         p = self.root / name
