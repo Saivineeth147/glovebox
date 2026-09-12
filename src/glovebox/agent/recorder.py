@@ -25,6 +25,7 @@ from glovebox.schema.capability import (
     RiskClass,
     Step,
     Target,
+    shadowing_outcome,
 )
 
 DEFAULT_FAILURE_SIGNALS = [
@@ -61,6 +62,7 @@ class Recorder:
         self.recoveries: list[Recovery] = []
         self._n = 0
         # Values this run used or saw. Conditions built from them cannot generalize.
+        self.dropped_outcomes: list[str] = []
         self._literals: list[str] = [
             str(v) for v in (param_values or {}).values() if len(str(v)) >= MIN_LITERAL_LENGTH
         ]
@@ -193,6 +195,22 @@ class Recorder:
         self.steps.append(step)
         return step
 
+    def _usable_outcomes(self, success: list[Condition]) -> list[Outcome]:
+        """Drop outcomes that would fire on the success screen.
+
+        A terminal outcome detected there ends the run before the extract steps, so the
+        capability reports a business outcome and returns nothing. The model reliably
+        declares the goal's own success this way, and no detector would make that valid —
+        so this refuses to record it rather than erroring and looping the model.
+        """
+        kept: list[Outcome] = []
+        for outcome in self.outcomes:
+            if shadowing_outcome(success, [outcome]):
+                self.dropped_outcomes.append(outcome.code)
+            else:
+                kept.append(outcome)
+        return kept
+
     def note_observed_value(self, value: str | None) -> None:
         """Remember a value read off the screen so a condition cannot be built from it."""
         if value and len(value) >= MIN_LITERAL_LENGTH:
@@ -251,6 +269,10 @@ class Recorder:
                 inputs.append(p)
         highest = max((s.risk for s in self.steps), key=_rank, default=RiskClass.READ)
         recoveries = [*self.recoveries, _session_expired_recovery()]
+        success = [
+            Condition(kind=ConditionKind.TEXT_VISIBLE, value=t, timeout_ms=8000)
+            for t in success_text
+        ]
         digest = hashlib.sha256(
             json.dumps(transcript, sort_keys=True, default=str).encode()
         ).hexdigest()
@@ -268,11 +290,8 @@ class Recorder:
             inputs=inputs,
             outputs=self.outputs,
             steps=self.steps,
-            success=[
-                Condition(kind=ConditionKind.TEXT_VISIBLE, value=t, timeout_ms=8000)
-                for t in success_text
-            ],
-            outcomes=self.outcomes,
+            success=success,
+            outcomes=self._usable_outcomes(success),
             recoveries=recoveries,
             failure_signals=list(DEFAULT_FAILURE_SIGNALS),
             max_risk=highest,

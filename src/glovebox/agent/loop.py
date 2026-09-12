@@ -14,6 +14,8 @@ from dataclasses import dataclass
 from pathlib import Path
 from typing import Any, Literal
 
+from pydantic import ValidationError
+
 from glovebox.control.session import ControlSession, InterventionKind
 from glovebox.evidence.logger import EvidenceLogger
 from glovebox.policy.guardrails import Guardrails, Verdict
@@ -130,17 +132,30 @@ class DiscoveryAgent:
         )
         cap = None
         if status == "success" and self._finish:
-            cap = self.recorder.build(
-                title=self._finish["title"],
-                description=self._finish["summary"],
-                success_text=self._finish["success_text"],
-                transcript=self.log.redactor.obj(self.messages),
-                surface_name=type(self.surface).__name__,
-                param_descriptions=self._finish.get("parameter_descriptions"),
-            )
-            self.log.run_dir.write_json(
-                "capability.json", cap.model_dump(mode="json"), self.log.redactor
-            )
+            try:
+                cap = self.recorder.build(
+                    title=self._finish["title"],
+                    description=self._finish["summary"],
+                    success_text=self._finish["success_text"],
+                    transcript=self.log.redactor.obj(self.messages),
+                    surface_name=type(self.surface).__name__,
+                    param_descriptions=self._finish.get("parameter_descriptions"),
+                )
+                for code in self.recorder.dropped_outcomes:
+                    self.log.emit(
+                        EventKind.ERROR,
+                        f"outcome {code} not recorded: its detector matches the success screen, "
+                        "so it would end replay before outputs are extracted",
+                    )
+                self.log.run_dir.write_json(
+                    "capability.json", cap.model_dump(mode="json"), self.log.redactor
+                )
+            except ValidationError as exc:
+                # A recorded artifact that cannot validate is a failed run, not a crashed CLI.
+                cap = None
+                status = "failed"
+                summary = f"recorded capability is invalid: {exc.errors()[0]['msg']}"
+
         self.log.emit(
             EventKind.RUN_FINISHED, f"{status}: {summary}", status=status, actions=self._actions
         )

@@ -258,7 +258,7 @@ class TenantOverride(_Strict):
     notes: str | None = None
 
 
-def _shadowing_outcome(success: list[Condition], outcomes: list[Outcome]) -> str | None:
+def shadowing_outcome(success: list[Condition], outcomes: list[Outcome]) -> str | None:
     """The code of a terminal outcome that would fire on the success screen, if any.
 
     Such an outcome ends the run before the extract steps execute, so the capability
@@ -328,7 +328,7 @@ class Capability(_Strict):
             for sid in list(o.step_targets) + list(o.step_values):
                 if sid not in ids:
                     raise ValueError(f"override for {o.tenant!r} names unknown step {sid!r}")
-        if code := _shadowing_outcome(self.success, self.outcomes):
+        if code := shadowing_outcome(self.success, self.outcomes):
             raise ValueError(
                 f"terminal outcome {code!r} is detected by text that also appears in the "
                 "success conditions; it would end the run on the success screen before "

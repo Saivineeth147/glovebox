@@ -10,7 +10,13 @@ import pytest
 from glovebox.agent.loop import DiscoveryAgent
 from glovebox.agent.overfit import overfit_reason
 from glovebox.agent.recorder import Recorder
-from glovebox.schema.capability import Capability, Parameter, ParamType
+from glovebox.schema.capability import (
+    Capability,
+    Parameter,
+    ParamType,
+    Target,
+    TargetStrategy,
+)
 
 ROOT = Path(__file__).resolve().parents[2]
 
@@ -97,3 +103,38 @@ def test_should_reject_a_terminal_outcome_that_matches_the_success_screen() -> N
 
 def test_should_keep_accepting_the_committed_artifact() -> None:
     assert Capability.model_validate(_committed_artifact()).id == "member_savings_balance"
+
+
+def _target() -> Target:
+    return Target(
+        description="Regular Savings balance cell",
+        strategies=[TargetStrategy(kind="text", value={"text": "Regular Savings"}, robustness="r")],
+    )
+
+
+def _built_with_outcome(detect_text: str, success_text: list[str]) -> tuple:
+    rec = _recorder(param_values={"member_id": "100234"})
+    rec.navigate("http://127.0.0.1:8089/t/alpha/", "open the application entry point")
+    rec.extract(_target(), "savings_balance", "current balance", "string", None)
+    rec.declare_outcome("MEMBER_FOUND", "found", detect_text)
+    cap = rec.build(
+        title="t",
+        description="d",
+        success_text=success_text,
+        transcript=[],
+        surface_name="TestSurface",
+    )
+    return cap, rec
+
+
+def test_should_drop_a_terminal_outcome_detected_by_a_success_condition() -> None:
+    """The model declares the happy path as a business outcome; no detector makes that valid."""
+    cap, rec = _built_with_outcome("Share Accounts", ["Share Accounts"])
+    assert [o.code for o in cap.outcomes] == []
+    assert rec.dropped_outcomes == ["MEMBER_FOUND"]
+
+
+def test_should_keep_an_outcome_that_describes_a_genuinely_different_screen() -> None:
+    cap, rec = _built_with_outcome("No member record matched", ["Share Accounts"])
+    assert [o.code for o in cap.outcomes] == ["MEMBER_FOUND"]
+    assert rec.dropped_outcomes == []
