@@ -37,7 +37,15 @@ Two rules, added to capability validation:
    `value` contains a parameter value or an extracted output value from the recording run is
    rejected. Comparison is case-insensitive substring, and only values of **three characters or
    more** participate, so a parameter that happens to be `"1"` cannot poison every condition.
-   Kills `"$1250.75"` and `"Member No. 100234"`.
+   Kills `"Member No. 100234"`.
+
+   This alone is **not sufficient**, and the failed run proves it: its extract step targeted
+   `link 'New Inquiry'`, so the extracted value was the string `"New Inquiry"`, not the balance.
+   A second half is required: **a replay condition may not contain a run of two or more digits.**
+   Balances, identifiers and dates are precisely what varies per input, so a condition built on
+   one cannot generalize. This kills `"$1250.75"`. It is a heuristic and will also reject a
+   version string such as `"Meridian Core v7.2.1"`; that false positive is accepted, because the
+   error message tells the model to pick static text and version strings change too.
 2. **A terminal outcome may not match the success path.** Concretely: a terminal outcome is
    rejected when its `detect.value` contains, or is contained by, any `success[].value` in the same
    artifact. `MEMBER_FOUND`'s detector `"Regular Savings $1250.75"` contains the success condition
