@@ -1,0 +1,66 @@
+"""Two independent recordings of the same goal rarely match; what they share is what holds.
+
+Six live discovery runs of one goal produced six different artifacts on 2026-09-12. Comparing
+runs is how a reviewer separates the parts that are a property of the application from the
+parts that are an accident of one model sample.
+"""
+
+from __future__ import annotations
+
+import json
+from pathlib import Path
+from typing import Any
+
+from glovebox.agreement import agreement, compare
+from glovebox.schema.capability import Capability
+
+ROOT = Path(__file__).resolve().parents[2]
+
+
+def _artifact(**changes: Any) -> Capability:
+    doc = json.loads((ROOT / "capabilities" / "member_savings_balance.json").read_text())
+    doc.update(changes)
+    return Capability.model_validate(doc)
+
+
+def test_should_find_nothing_between_a_recording_and_itself() -> None:
+    assert compare(_artifact(), _artifact()) == []
+    assert agreement(_artifact(), _artifact()) == 1.0
+
+
+def test_should_report_a_different_sequence_of_actions() -> None:
+    base = _artifact()
+    shortened = base.model_copy(update={"steps": base.steps[:-1]})
+    aspects = {d.aspect for d in compare(base, shortened)}
+    assert "steps" in aspects
+
+
+def test_should_report_success_conditions_only_one_run_recorded() -> None:
+    base = _artifact()
+    extra = base.model_copy(update={"success": [*base.success, base.success[0]]})
+    divergences = compare(base, extra)
+    assert not divergences or all(d.aspect != "success" for d in divergences), (
+        "a duplicated condition is the same set and must not read as disagreement"
+    )
+
+
+def test_should_report_an_outcome_only_one_run_declared() -> None:
+    base = _artifact()
+    without = base.model_copy(update={"outcomes": []})
+    detail = next(d for d in compare(base, without) if d.aspect == "outcomes").detail
+    assert "MEMBER_NOT_FOUND" in detail
+
+
+def test_should_report_an_output_whose_type_changed_between_runs() -> None:
+    base = _artifact()
+    retyped = base.model_copy(
+        update={"outputs": [base.outputs[0].model_copy(update={"type": "number"})]}
+    )
+    detail = next(d for d in compare(base, retyped) if d.aspect == "outputs").detail
+    assert "savings_balance" in detail
+
+
+def test_should_score_full_disagreement_below_full_agreement() -> None:
+    base = _artifact()
+    different = base.model_copy(update={"outcomes": [], "steps": base.steps[:-1]})
+    assert 0.0 <= agreement(base, different) < 1.0

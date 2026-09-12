@@ -19,15 +19,14 @@ from typing import Annotated, Any
 
 import typer
 from rich import print as rprint
-from rich.table import Table
 
+from glovebox.cli_catalog import catalog_cli
 from glovebox.envfile import load_env_file
 from glovebox.schema.capability import Capability, Parameter, ParamType
 from glovebox.schema.policy import Policy
 
 app = typer.Typer(no_args_is_help=True, add_completion=False, help=__doc__)
 target_cli = typer.Typer(help="Simulated legacy target app (Meridian Core).")
-catalog_cli = typer.Typer(help="Capability catalog.")
 app.add_typer(target_cli, name="target")
 app.add_typer(catalog_cli, name="catalog")
 
@@ -303,66 +302,6 @@ def replay(
 
 
 # ----------------------------------------------------------------------------- catalog
-@catalog_cli.command("list")
-def catalog_list(catalog_dir: Path = Path("capabilities")) -> None:
-    from glovebox.catalog import Catalog
-
-    t = Table("id", "version", "status", "risk", "inputs", "outputs", "confidence", "title")
-    for c in Catalog(catalog_dir).all():
-        conf = c.review.confidence
-        t.add_row(
-            c.id,
-            c.version,
-            str(c.review.status),
-            str(c.max_risk),
-            ", ".join(p.name for p in c.inputs),
-            ", ".join(o.name for o in c.outputs),
-            "-" if conf is None else f"{conf:.0%} ({c.review.replays})",
-            c.title,
-        )
-    rprint(t)
-
-
-@catalog_cli.command("tools")
-def catalog_tools(catalog_dir: Path = Path("capabilities"), include_drafts: bool = False) -> None:
-    """Print the catalog as Claude tool definitions an agent can call."""
-    from glovebox.catalog import Catalog
-
-    print(json.dumps(Catalog(catalog_dir).tool_definitions(include_drafts), indent=2))
-
-
-@catalog_cli.command("approve")
-def catalog_approve(
-    capability_id: str,
-    reviewer: str,
-    notes: str | None = None,
-    catalog_dir: Path = Path("capabilities"),
-    accept_unverified: bool = False,
-) -> None:
-    """Approve a capability for unattended replay.
-
-    Refuses an unverified terminal outcome by default: its detector is wording the run never
-    saw, so it never fires and the capability reports a hard failure where the catalog
-    promised a business outcome. Pass --accept-unverified to approve it anyway.
-    """
-    from glovebox.catalog import Catalog
-
-    catalog = Catalog(catalog_dir)
-    unverified = [
-        o.code for o in catalog.load(capability_id).outcomes if o.terminal and not o.verified
-    ]
-    if unverified and not accept_unverified:
-        rprint(
-            f"[red]refusing to approve {capability_id}[/red]: unverified terminal outcome(s) "
-            f"{', '.join(unverified)}. Their detector text was never observed during discovery, "
-            "so replay would report a hard failure instead. Re-record having exercised that "
-            "state, or approve with --accept-unverified."
-        )
-        raise typer.Exit(code=1)
-    c = catalog.approve(capability_id, reviewer, notes)
-    rprint(f"{c.id}@{c.version} approved by {reviewer}")
-
-
 # ----------------------------------------------------------------------------- misc
 @app.command()
 def stability(
@@ -431,6 +370,25 @@ def drift(
         raise typer.Exit(code=1)
     rprint(format_report(baseline, results, f"{capability}: survival under redesign"))
     rprint(f"survived {survival_rate(results):.0%} of {len(results)} redesigns")
+
+
+@app.command()
+def compare(first: Path, second: Path) -> None:
+    """Compare two recordings of the same goal; what they agree on is what holds.
+
+    A single discovery run says less than it looks like it does — parts of it are properties
+    of the application and parts are one model sample. Recording twice and comparing is what
+    separates them.
+    """
+    from glovebox.agreement import format_agreement
+
+    rprint(
+        format_agreement(
+            Capability.model_validate_json(first.read_text()),
+            Capability.model_validate_json(second.read_text()),
+            (first.parent.name or first.name, second.parent.name or second.name),
+        )
+    )
 
 
 @app.command()
