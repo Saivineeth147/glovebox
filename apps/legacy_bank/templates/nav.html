@@ -1,0 +1,4 @@
+<html><body style="margin:0;background:{{ t.color }};color:white;font-family:Verdana;font-size:12px">
+<table width="100%" height="48"><tr><td><b>{{ t.name }}</b></td>
+<td align="right">{% if session %}Operator: {{ session.user }} ({{ session.role }}) &nbsp; <a style="color:#fff" href="{{ base }}/app/logout" target="main">Sign out</a>{% else %}Not signed in{% endif %}</td></tr></table>
+</body></html>

@@ -1,0 +1,7 @@
+{% extends "_layout.html" %}{% block body %}
+<br>
+<table class="frm" border="1" cellspacing="0" bgcolor="#ffffff">
+<tr><td class="err">Access denied: your role is not authorized to perform this action for member {{ m.member_id }}. Contact a supervisor.</td></tr>
+<tr><td><a href="{{ base }}/app/members/{{ m.member_id }}">Return to Member Detail</a></td></tr>
+</table>
+{% endblock %}

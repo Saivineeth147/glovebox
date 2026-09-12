@@ -1,0 +1,11 @@
+{% extends "_layout.html" %}{% block body %}
+<br>
+<table class="frm" border="1" cellspacing="0" bgcolor="#ffffff">
+<tr><td colspan="2"><b>Sub-Account Opened</b></td></tr>
+<tr><td>Reference</td><td><b>{{ ref }}</b></td></tr>
+<tr><td>Member</td><td>{{ m.member_id }}</td></tr>
+<tr><td>Product</td><td>{{ product }}</td></tr>
+<tr><td>Nickname</td><td>{{ nickname }}</td></tr>
+<tr><td colspan="2"><a href="{{ base }}/app/members/{{ m.member_id }}">Return to Member Detail</a></td></tr>
+</table>
+{% endblock %}

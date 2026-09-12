@@ -1,0 +1,21 @@
+{% extends "_layout.html" %}{% block body %}
+<br>
+<table border="0" cellpadding="2" width="620"><tr><td>
+<table class="frm" border="1" cellspacing="0" bgcolor="#ffffff" width="100%">
+<tr><td colspan="4"><b>Member Detail</b></td></tr>
+<tr><td>{{ t.member_label }}</td><td>{{ m.member_id }}</td><td>Status</td><td>{{ m.status }}</td></tr>
+<tr><td>Name</td><td colspan="3">{{ m.last_name }}, {{ m.first_name }}</td></tr>
+</table>
+</td></tr><tr><td>
+<table class="frm" border="1" cellspacing="0" bgcolor="#ffffff" width="100%">
+<tr><td colspan="3"><b>Share Accounts</b></td></tr>
+<tr bgcolor="#dddddd"><td>Share</td><td>Description</td><td align="right">Current Balance</td></tr>
+<tr><td>S01</td><td>Regular Savings</td><td align="right">${{ '%.2f' % m.savings_balance }}</td></tr>
+<tr><td>S09</td><td>Checking</td><td align="right">${{ '%.2f' % m.checking_balance }}</td></tr>
+{% for s in m.sub_accounts %}<tr><td>{{ s.ref }}</td><td>{{ s.product }} ({{ s.nickname }})</td><td align="right">$0.00</td></tr>{% endfor %}
+</table>
+</td></tr><tr><td>
+<a href="{{ base }}/app/members/{{ m.member_id }}/subaccount/new">Open Sub-Account</a> &nbsp;|&nbsp;
+<a href="{{ base }}/app/members/search">New Inquiry</a>
+</td></tr></table>
+{% endblock %}

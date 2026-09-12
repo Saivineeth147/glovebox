@@ -1,0 +1,8 @@
+{% extends "_layout.html" %}{% block body %}
+<br>
+<table class="frm" border="1" cellspacing="0" bgcolor="#ffffff">
+<tr><td><b>Member Inquiry</b></td></tr>
+<tr><td class="err">No member record matched number {{ member_no }}.</td></tr>
+<tr><td><a href="{{ base }}/app/members/search">Back to search</a></td></tr>
+</table>
+{% endblock %}

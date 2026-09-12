@@ -1,0 +1,13 @@
+{% extends "_layout.html" %}{% block body %}
+<br>
+<table class="frm" border="1" cellspacing="0" bgcolor="#ffffff">
+<tr><td colspan="2"><b>Open Sub-Account</b> &mdash; {{ m.last_name }}, {{ m.first_name }} ({{ m.member_id }})</td></tr>
+{% if error %}<tr><td colspan="2" class="err">{{ error }}</td></tr>{% endif %}
+<form method="post" action="{{ base }}/app/members/{{ m.member_id }}/subaccount/new" onsubmit="return confirm('Open a new sub-account for member {{ m.member_id }}? This will create a share record.');">
+<tr><td>Product</td><td><select name="product"><option value="">-- select --</option>{% for p in products %}<option value="{{ p }}">{{ p }}</option>{% endfor %}</select></td></tr>
+<tr><td>Nickname</td><td><input type="text" name="nickname" size="20"></td></tr>
+<tr><td>Initial Deposit</td><td><input type="text" name="initial_deposit" size="8" value="0.00"></td></tr>
+<tr><td></td><td><input type="submit" value="Open Account"> <input type="button" value="Cancel" onclick="location.href='{{ base }}/app/members/{{ m.member_id }}'"></td></tr>
+</form>
+</table>
+{% endblock %}

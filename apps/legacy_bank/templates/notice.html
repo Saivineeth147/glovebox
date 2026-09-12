@@ -1,0 +1,7 @@
+{% extends "_layout.html" %}{% block body %}
+<div class="overlay"></div>
+<div class="notice">
+<b>System Notice</b><br><br>{{ text }}<br><br>
+<form method="post" action="{{ base }}/app/notice"><input type="submit" value="Acknowledge"></form>
+</div>
+{% endblock %}

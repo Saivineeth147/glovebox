@@ -1,0 +1,12 @@
+{% extends "_layout.html" %}{% block body %}
+<br>
+<table class="frm" border="1" cellspacing="0" bgcolor="#ffffff">
+<tr><td colspan="2"><b>Operator Sign-In</b></td></tr>
+{% if msg %}<tr><td colspan="2" class="err">{{ msg }}</td></tr>{% endif %}
+<form method="post" action="{{ base }}/app/login">
+<tr><td>Operator ID</td><td><input type="text" name="username" size="20"></td></tr>
+<tr><td>Password</td><td><input type="password" name="password" size="20"></td></tr>
+<tr><td></td><td><input type="submit" value="Sign In"></td></tr>
+</form>
+</table>
+{% endblock %}

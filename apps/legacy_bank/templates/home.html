@@ -1,0 +1,7 @@
+{% extends "_layout.html" %}{% block body %}
+<br><b>Welcome, {{ session.user }}.</b><br><br>
+<table class="frm" border="1" cellspacing="0" bgcolor="#ffffff">
+<tr><td>Use the menu on the left to begin. Common tasks:</td></tr>
+<tr><td><a href="{{ base }}/app/members/search">Member Inquiry</a> &mdash; look up a member and view balances.</td></tr>
+</table>
+{% endblock %}
