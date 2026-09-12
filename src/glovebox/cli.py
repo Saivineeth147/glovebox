@@ -21,6 +21,7 @@ import typer
 from rich import print as rprint
 from rich.table import Table
 
+from glovebox.envfile import load_env_file
 from glovebox.schema.capability import Capability, Parameter, ParamType
 from glovebox.schema.policy import Policy
 
@@ -30,7 +31,18 @@ catalog_cli = typer.Typer(help="Capability catalog.")
 app.add_typer(target_cli, name="target")
 app.add_typer(catalog_cli, name="catalog")
 
-DEFAULT_POLICY = Path(__file__).resolve().parents[2] / "policies" / "default.yaml"
+PROJECT_ROOT = Path(__file__).resolve().parents[2]
+DEFAULT_POLICY = PROJECT_ROOT / "policies" / "default.yaml"
+
+
+@app.callback()
+def _bootstrap_environment() -> None:
+    """Load `.env` before any command runs, so the README's setup path works.
+
+    Keys reach the model client and the target app through `os.environ`; without this
+    the documented `cp .env.example .env` would be inert.
+    """
+    load_env_file(PROJECT_ROOT / ".env")
 
 
 def _kv(items: list[str] | None) -> dict[str, str]:

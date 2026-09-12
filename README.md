@@ -74,8 +74,12 @@ Requirements: Python ≥ 3.11, [uv](https://docs.astral.sh/uv/), Chromium via Pl
 ```bash
 git clone https://github.com/Saivineeth147/glovebox && cd glovebox
 make setup                      # uv sync + playwright chromium
-cp .env.example .env            # ANTHROPIC_API_KEY only needed for a live discovery run
+cp .env.example .env            # a model key is only needed for a live discovery run
 ```
+
+Every CLI command loads `.env` from the repo root before it runs. A variable already
+exported in your shell wins over the file, so a CI secret is never shadowed by a stale
+checkout.
 
 Everything except a live discovery run works **offline**: the target app, replay, error
 injection, handoff, tests and evidence generation need no key and no network.
@@ -91,7 +95,7 @@ make target                     # http://127.0.0.1:8089/  (tenants /t/alpha/, /t
 Terminal 2 — discovery (real LLM), then deterministic replay:
 
 ```bash
-export ANTHROPIC_API_KEY=sk-ant-...            # or OPENROUTER_API_KEY=sk-or-... (see .env.example)
+export ANTHROPIC_API_KEY=sk-ant-...            # or OPENROUTER_API_KEY=sk-or-..., or put either in .env
 uv run glovebox discover \
   --goal "Look up member 100234 and read their current savings balance" \
   --app-url http://127.0.0.1:8089/ --capability-name member_savings_balance \
