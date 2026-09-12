@@ -15,6 +15,7 @@ from __future__ import annotations
 
 import math
 import re
+from collections.abc import Callable
 
 from glovebox.schema.capability import Target, TargetStrategy
 from glovebox.surface.base import Element, Resolved, SurfaceError
@@ -40,7 +41,11 @@ def describe(el: Element, all_elements: list[Element]) -> Target:
                 )
             )
         strategies.append(
-            TargetStrategy(kind="css", value={"css": el.css}, robustness="structural path; exact on an unchanged page")
+            TargetStrategy(
+                kind="css",
+                value={"css": el.css},
+                robustness="structural path; exact on an unchanged page",
+            )
         )
         strategies.append(
             TargetStrategy(
@@ -49,10 +54,12 @@ def describe(el: Element, all_elements: list[Element]) -> Target:
                 robustness="normalized position; last resort",
             )
         )
-        return Target(description=_describe_cell(el, tc), frame=list(el.frame), strategies=strategies)
+        return Target(
+            description=_describe_cell(el, tc), frame=list(el.frame), strategies=strategies
+        )
 
-    def unique(pred: object) -> bool:
-        return sum(1 for e in same_frame if pred(e)) == 1  # type: ignore[operator]
+    def unique(pred: Callable[[Element], bool]) -> bool:
+        return sum(1 for e in same_frame if pred(e)) == 1
 
     if el.name:
         strategies.append(
@@ -61,8 +68,11 @@ def describe(el: Element, all_elements: list[Element]) -> Target:
                 value={"role": el.role, "name": el.name},
                 robustness=(
                     "accessible role+name; stable across layout and styling changes"
-                    + ("" if unique(lambda e: e.role == el.role and e.name == el.name) else
-                       " (NOT unique at record time — kept for cross-tenant hints only)")
+                    + (
+                        ""
+                        if unique(lambda e: e.role == el.role and e.name == el.name)
+                        else " (NOT unique at record time — kept for cross-tenant hints only)"
+                    )
                 ),
             )
         )
@@ -131,7 +141,9 @@ def resolve(target: Target, elements: list[Element]) -> Resolved:
         if len(matches) > 1:
             ambiguous.append(f"{s.kind} matched {len(matches)}")
     detail = f"; ambiguous: {', '.join(ambiguous)}" if ambiguous else ""
-    raise SurfaceError(f"could not resolve {target.description!r}: no strategy matched exactly one element{detail}")
+    raise SurfaceError(
+        f"could not resolve {target.description!r}: no strategy matched exactly one element{detail}"
+    )
 
 
 def _match(s: TargetStrategy, els: list[Element]) -> list[Element]:
@@ -139,7 +151,11 @@ def _match(s: TargetStrategy, els: list[Element]) -> list[Element]:
     if s.kind == "role_name":
         return [e for e in els if e.role == v["role"] and _norm(e.name) == _norm(v["name"])]
     if s.kind == "label":
-        return [e for e in els if e.interactive and e.role == v["role"] and _norm(e.label or "") == _norm(v["label"])]
+        return [
+            e
+            for e in els
+            if e.interactive and e.role == v["role"] and _norm(e.label or "") == _norm(v["label"])
+        ]
     if s.kind == "name_attr":
         return [e for e in els if e.name_attr == v["name"] and e.tag == v.get("tag", e.tag)]
     if s.kind == "text":
@@ -151,14 +167,24 @@ def _match(s: TargetStrategy, els: list[Element]) -> list[Element]:
         a = anchors[0]
         ax, ay = a.bbox[0] + a.bbox[2], a.bbox[1]
         pool = [
-            e for e in els
-            if e.role == v["role"] and (e.interactive or e.role == "cell") and e is not a
-            and (e.bbox[0] >= ax - 2 and abs(e.bbox[1] - ay) < 30 or e.bbox[1] > ay + a.bbox[3] - 2)
+            e
+            for e in els
+            if e.role == v["role"]
+            and (e.interactive or e.role == "cell")
+            and e is not a
+            and ((e.bbox[0] >= ax - 2 and _same_row(e, a)) or e.bbox[1] >= ay + a.bbox[3] - 2)
         ]
-        pool.sort(key=lambda e: math.hypot(e.bbox[0] - ax, e.bbox[1] - ay))
+        # same-row candidates first (closest to the right), then the nearest below
+        pool.sort(
+            key=lambda e: (0 if _same_row(e, a) else 1, math.hypot(e.bbox[0] - ax, e.bbox[1] - ay))
+        )
         return pool[:1]
     if s.kind == "table_cell":
-        cells = [e for e in els if e.role == "cell" and e.table == v["table"]] if v.get("table") else [e for e in els if e.role == "cell"]
+        cells = (
+            [e for e in els if e.role == "cell" and e.table == v["table"]]
+            if v.get("table")
+            else [e for e in els if e.role == "cell"]
+        )
         tables = {e.table for e in cells}
         found: list[Element] = []
         for t in tables:
@@ -178,16 +204,26 @@ def _match(s: TargetStrategy, els: list[Element]) -> list[Element]:
         pool.sort(key=lambda e: math.hypot(e.nbox[0] - v["x"], e.nbox[1] - v["y"]))
         best = pool[0]
         return [best] if math.hypot(best.nbox[0] - v["x"], best.nbox[1] - v["y"]) < 0.05 else []
-    return []
+    raise ValueError(f"unknown strategy kind {s.kind!r}")
 
 
 def _nearest_anchor(el: Element, els: list[Element]) -> Element | None:
     if not el.interactive and el.role != "cell":
         return None
-    texts = [e for e in els if not e.interactive and e.text and e.role in {"cell", "text", "heading"} and e is not el]
+    texts = [
+        e
+        for e in els
+        if not e.interactive and e.text and e.role in {"cell", "text", "heading"} and e is not el
+    ]
+    if el.role == "cell" and el.table is not None:  # cells: only label cells in the same table row
+        texts = [
+            t
+            for t in texts
+            if t.role == "cell" and t.table == el.table and t.row == el.row and t.col < el.col
+        ]
     best, best_d = None, 1e9
     for t in texts:
-        if t.bbox[0] + t.bbox[2] <= el.bbox[0] + 2 and abs(t.bbox[1] - el.bbox[1]) < 30:
+        if t.bbox[0] + t.bbox[2] <= el.bbox[0] + 2 and _same_row(t, el):
             d = el.bbox[0] - (t.bbox[0] + t.bbox[2])
             if d < best_d:
                 best, best_d = t, d
@@ -200,8 +236,18 @@ def _table_cell_strategy(el: Element, els: list[Element]) -> TargetStrategy | No
     if el.table is None or el.row < 0:
         return None
     tcells = [e for e in els if e.role == "cell" and e.table == el.table]
-    row_cells = sorted((e for e in tcells if e.row == el.row and e.col != el.col), key=lambda e: e.col)
-    anchor = next((e for e in row_cells if e.text and sum(1 for x in tcells if _norm(x.text) == _norm(e.text)) == 1), None)
+    row_cells = sorted(
+        (e for e in tcells if e.row == el.row and e.col != el.col), key=lambda e: e.col
+    )
+    anchor = next(
+        (
+            e
+            for e in row_cells
+            if e.text and sum(1 for x in tcells if _norm(x.text) == _norm(e.text)) == 1
+        ),
+        None,
+    )
+
     def header_like(e: Element) -> bool:
         if e.tag == "th":
             return True
@@ -209,8 +255,15 @@ def _table_cell_strategy(el: Element, els: list[Element]) -> TargetStrategy | No
         return len(row_cells) > 1 and not any(any(ch.isdigit() for ch in x.text) for x in row_cells)
 
     header = next(
-        (e for e in tcells if e.col == el.col and e.row < el.row and e.text and header_like(e)
-         and sum(1 for x in tcells if _norm(x.text) == _norm(e.text)) == 1),
+        (
+            e
+            for e in tcells
+            if e.col == el.col
+            and e.row < el.row
+            and e.text
+            and header_like(e)
+            and sum(1 for x in tcells if _norm(x.text) == _norm(e.text)) == 1
+        ),
         None,
     )
     if anchor is None or header is None:
@@ -226,6 +279,11 @@ def _describe_cell(el: Element, tc: TargetStrategy | None) -> str:
     if tc is not None:
         return f"cell '{tc.value['column_header']}' in row '{tc.value['row_anchor']}'"
     return f"cell right of '{el.label}'" if el.label else f"cell '{el.text}'"
+
+
+def _same_row(a: Element, b: Element) -> bool:
+    """Vertical overlap of the two boxes — robust to 18px table rows where a fixed tolerance is not."""
+    return a.bbox[1] < b.bbox[1] + b.bbox[3] and a.bbox[1] + a.bbox[3] > b.bbox[1]
 
 
 def _describe(el: Element) -> str:

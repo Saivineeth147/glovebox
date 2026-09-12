@@ -49,10 +49,12 @@ src = ["src", "tests", "apps"]
 
 [tool.ruff.lint]
 select = ["E", "F", "I", "B", "UP", "N", "SIM", "RUF", "PL", "PTH", "S"]
-ignore = ["PLR0913", "PLR2004", "S101", "S104", "S311", "RUF012", "PLR0912", "PLR0915", "PLR0911", "S108"]
+ignore = ["PLR0913", "PLR2004", "S101", "S104", "S311", "RUF012", "PLR0912", "PLR0915", "PLR0911", "S108",
+  "PLC0415", "N818", "PLR0917", "E501", "PLW2901"]
 
 [tool.ruff.lint.per-file-ignores]
-"tests/**" = ["S", "PLR", "B011"]
+"tests/**" = ["S", "PLR", "B011", "E741"]
+"scripts/**" = ["E402"]
 
 [tool.mypy]
 python_version = "3.11"
@@ -63,7 +65,7 @@ mypy_path = "src"
 packages = ["glovebox"]
 
 [[tool.mypy.overrides]]
-module = ["playwright.*", "uvicorn.*"]
+module = ["playwright.*", "uvicorn.*", "legacy_bank", "legacy_bank.*"]
 ignore_missing_imports = true
 
 [tool.pytest.ini_options]

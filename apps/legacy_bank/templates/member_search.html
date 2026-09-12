@@ -2,7 +2,7 @@
 {% if interstitial %}
 <div class="overlay"></div>
 <div class="notice"><b>System Notice</b><br><br>Nightly batch posting completed. Balances shown are as of 06:00.<br><br>
-<form method="get" action="{{ base }}/app/members/search"><input type="submit" value="OK"></form></div>
+<input type="button" value="OK" onclick="document.querySelector('.overlay').remove(); this.closest('.notice').remove();"></div>
 {% endif %}
 <br>
 <table class="frm" border="1" cellspacing="0" bgcolor="#ffffff">

@@ -37,6 +37,7 @@ img{max-width:100%;border:1px solid #999} .el{cursor:pointer;font-family:monospa
 <div>url <input id="nav" size="40"><button onclick="cmd('navigate')">navigate</button></div>
 <h3>Hand control back</h3>
 <button onclick="cmd('resume')">resume automation (retry current step)</button>
+<button onclick="cmd('restart')">restart the flow from the top</button>
 <button onclick="cmd('complete')">I finished the flow — verify &amp; complete</button>
 <button onclick="cmd('abort')">abort run</button><br>
 <button onclick="cmd('approve')">approve irreversible step</button>
@@ -82,7 +83,9 @@ class OperatorConsole:
             return JSONResponse(
                 {
                     "owner": "human" if cur else "automation",
-                    "intervention": cur.model_dump(mode="json", exclude={"observation_summary"}) if cur else None,
+                    "intervention": cur.model_dump(mode="json", exclude={"observation_summary"})
+                    if cur
+                    else None,
                     "url": obs.url if obs else None,
                     "screenshot": str(obs.screenshot) if obs and obs.screenshot else None,
                     "elements": [e.summary() for e in obs.elements if e.interactive] if obs else [],
@@ -100,7 +103,9 @@ class OperatorConsole:
         def command(body: dict[str, Any]) -> JSONResponse:
             op = body.pop("op")
             args = {k: v for k, v in body.items() if v not in (None, "")}
-            return JSONResponse(bridge.submit(op, operator=body.get("operator", "console-user"), **args))
+            return JSONResponse(
+                bridge.submit(op, operator=body.get("operator", "console-user"), **args)
+            )
 
     def start(self) -> OperatorConsole:
         config = uvicorn.Config(self.app, host=self.host, port=self.port, log_level="warning")

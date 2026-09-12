@@ -27,7 +27,17 @@ target: ## run the hostile legacy target app on :8089
 
 discover: ## real LLM-driven discovery run (needs ANTHROPIC_API_KEY)
 	$(RUN) glovebox discover --goal "Look up member 100234 and read their current savings balance" \
-		--app-url http://127.0.0.1:8089/ --capability-name member_savings_balance --evidence-dir evidence/discovery
+		--app-url http://127.0.0.1:8089/ --capability-name member_savings_balance \
+		--param member_id=100234 --evidence-dir evidence/discovery
+	$(RUN) glovebox validate capabilities/member_savings_balance.json
+
+approve: ## mark the recorded capability as reviewed (gate for unattended replay)
+	$(RUN) glovebox catalog approve member_savings_balance $${USER:-reviewer} --notes "reviewed steps, outcomes and risk"
+
+discover-offline: ## same loop with scripted decisions (no key) — for seeing the artifact path
+	$(RUN) glovebox discover --goal "Look up member 100234 and read their current savings balance" \
+		--app-url http://127.0.0.1:8089/ --capability-name member_savings_balance \
+		--param member_id=100234 --offline-script member_savings_balance --console-port 8791
 
 replay: ## deterministic replay of the saved capability
 	$(RUN) glovebox replay capabilities/member_savings_balance.json --param member_id=100234 --evidence-dir evidence/replay-success

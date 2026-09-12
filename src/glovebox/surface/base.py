@@ -74,15 +74,19 @@ class Observation:
         for e in self.elements:
             if e.ref == ref:
                 return e
-        raise SurfaceError(f"unknown element ref {ref!r} (refs are only valid for the latest observation)")
+        raise SurfaceError(
+            f"unknown element ref {ref!r} (refs are only valid for the latest observation)"
+        )
 
     def render_for_model(self, max_elements: int = 120, max_text: int = 3000) -> str:
         lines = [f"URL: {self.url}", f"TITLE: {self.title}"]
         if self.last_status:
             lines.append(f"LAST HTTP STATUS: {self.last_status}")
         if self.dialog:
-            lines.append(f"NATIVE DIALOG ({self.dialog.kind}): {self.dialog.message!r} -> {self.dialog.handled}")
-        lines.append(f"FRAMES: {[ '/'.join(f) or '(top)' for f in self.frames ]}")
+            lines.append(
+                f"NATIVE DIALOG ({self.dialog.kind}): {self.dialog.message!r} -> {self.dialog.handled}"
+            )
+        lines.append(f"FRAMES: {['/'.join(f) or '(top)' for f in self.frames]}")
         lines.append("INTERACTIVE ELEMENTS:")
         shown = [e for e in self.elements if e.interactive][:max_elements]
         lines += [f"  {e.summary()}" for e in shown]

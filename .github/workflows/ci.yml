@@ -1,0 +1,39 @@
+name: ci
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+      - uses: astral-sh/setup-uv@v5
+        with:
+          enable-cache: true
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Install
+        run: uv sync --extra dev
+      - name: Install Chromium
+        run: uv run playwright install --with-deps chromium
+      - name: Lint
+        run: |
+          uv run ruff check .
+          uv run ruff format --check .
+      - name: Type-check
+        run: uv run mypy
+      - name: Validate committed artifacts
+        run: for f in capabilities/*.json; do uv run glovebox validate "$f"; done
+      - name: Tests (unit + browser integration against the simulated app)
+        run: uv run pytest -q --timeout=300
+      - name: Upload run evidence on failure
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: test-runs
+          path: /tmp/pytest-of-runner/**/runs*/**
+          if-no-files-found: ignore

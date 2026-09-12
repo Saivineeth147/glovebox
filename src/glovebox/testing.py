@@ -5,8 +5,8 @@ from __future__ import annotations
 import socket
 import threading
 import time
-from contextlib import contextmanager
 from collections.abc import Iterator
+from contextlib import contextmanager
 
 import httpx
 import uvicorn

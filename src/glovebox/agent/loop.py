@@ -12,14 +12,14 @@ import hashlib
 import time
 from dataclasses import dataclass
 from pathlib import Path
-from typing import Any
+from typing import Any, Literal
 
 from glovebox.control.session import ControlSession, InterventionKind
 from glovebox.evidence.logger import EvidenceLogger
 from glovebox.policy.guardrails import Guardrails, Verdict
 from glovebox.schema.capability import ActionKind, Capability, Parameter, RiskClass
 from glovebox.schema.events import EventKind
-from glovebox.surface.base import Observation, Surface, SurfaceError
+from glovebox.surface.base import Element, Observation, Surface, SurfaceError
 
 from .llm import LLM
 from .recorder import Recorder
@@ -63,10 +63,23 @@ class DiscoveryAgent:
     ) -> None:
         self.goal, self.entry_url = goal, entry_url
         self.params, self.param_specs = params, param_specs
-        self.llm, self.surface, self.guardrails, self.log, self.control = llm, surface, guardrails, logger, control
+        self.llm, self.surface, self.guardrails, self.log, self.control = (
+            llm,
+            surface,
+            guardrails,
+            logger,
+            control,
+        )
         self.max_steps, self.timeout_s, self.screenshots = max_steps, timeout_s, screenshots
-        self.recorder = Recorder(capability_id=capability_id, app_id=app_id, tenant=tenant, entry_url=entry_url,
-                                 params=param_specs, model_name=llm.name, run_id=logger.run_id)
+        self.recorder = Recorder(
+            capability_id=capability_id,
+            app_id=app_id,
+            tenant=tenant,
+            entry_url=entry_url,
+            params=param_specs,
+            model_name=llm.name,
+            run_id=logger.run_id,
+        )
         self.messages: list[dict[str, Any]] = []
         self.last_obs: Observation | None = None
         self._fingerprints: list[str] = []
@@ -78,7 +91,12 @@ class DiscoveryAgent:
         for p in self.param_specs:
             if p.sensitive and p.name in self.params:
                 self.log.redactor.register_secret(str(self.params[p.name]), p.name)
-        self.log.emit(EventKind.RUN_STARTED, f"discovery: {self.goal}", entry=self.entry_url, model=self.llm.name)
+        self.log.emit(
+            EventKind.RUN_STARTED,
+            f"discovery: {self.goal}",
+            entry=self.entry_url,
+            model=self.llm.name,
+        )
         self.guardrails.require_url(self.entry_url)
         self.surface.navigate(self.entry_url)
         self.surface.wait_settled("load", 200, 15000)
@@ -91,7 +109,9 @@ class DiscoveryAgent:
                 if time.monotonic() - t0 > self.timeout_s:
                     raise _Finished("timeout", f"run exceeded {self.timeout_s}s")
                 turn = self.llm.turn(SYSTEM_PROMPT, self.messages, TOOLS)
-                self.log.emit(EventKind.MODEL_USAGE, f"turn {turn_no}", **turn.usage, model=turn.model)
+                self.log.emit(
+                    EventKind.MODEL_USAGE, f"turn {turn_no}", usage=turn.usage, model=turn.model
+                )
                 self.messages.append({"role": "assistant", "content": turn.content})
                 if turn.text:
                     self.log.emit(EventKind.MODEL_DECISION, turn.text[:500])
@@ -104,22 +124,41 @@ class DiscoveryAgent:
             status, summary = f.status, f.summary
         except SurfaceError as exc:
             status, summary = "failed", f"surface error: {exc}"
-        transcript = self.log.run_dir.write_json("transcript.json", self.messages, self.log.redactor)
+        transcript = self.log.run_dir.write_json(
+            "transcript.json", self.messages, self.log.redactor
+        )
         cap = None
         if status == "success" and self._finish:
             cap = self.recorder.build(
-                title=self._finish["title"], description=self._finish["summary"],
-                success_text=self._finish["success_text"], transcript=self.log.redactor.obj(self.messages),
-                surface_name=type(self.surface).__name__, param_descriptions=self._finish.get("parameter_descriptions"),
+                title=self._finish["title"],
+                description=self._finish["summary"],
+                success_text=self._finish["success_text"],
+                transcript=self.log.redactor.obj(self.messages),
+                surface_name=type(self.surface).__name__,
+                param_descriptions=self._finish.get("parameter_descriptions"),
             )
-            self.log.run_dir.write_json("capability.json", cap.model_dump(mode="json"), self.log.redactor)
-        self.log.emit(EventKind.RUN_FINISHED, f"{status}: {summary}", status=status, actions=self._actions)
-        return DiscoveryResult(status=status, capability=cap, summary=summary, steps=self._actions,
-                               transcript_path=transcript, evidence_dir=self.log.run_dir.root)
+            self.log.run_dir.write_json(
+                "capability.json", cap.model_dump(mode="json"), self.log.redactor
+            )
+        self.log.emit(
+            EventKind.RUN_FINISHED, f"{status}: {summary}", status=status, actions=self._actions
+        )
+        return DiscoveryResult(
+            status=status,
+            capability=cap,
+            summary=summary,
+            steps=self._actions,
+            transcript_path=transcript,
+            evidence_dir=self.log.run_dir.root,
+        )
 
     # ------------------------------------------------------------------ prompts
     def _task_prompt(self) -> str:
-        lines = [f"GOAL: {self.goal}", f"ENTRY URL: {self.entry_url}", "INPUT PARAMETERS (use `param` when typing these):"]
+        lines = [
+            f"GOAL: {self.goal}",
+            f"ENTRY URL: {self.entry_url}",
+            "INPUT PARAMETERS (use `param` when typing these):",
+        ]
         for p in self.param_specs:
             shown = "<hidden: sensitive>" if p.sensitive else repr(self.params.get(p.name))
             lines.append(f"  - {p.name} ({p.type}): {p.description} = {shown}")
@@ -130,7 +169,7 @@ class DiscoveryAgent:
     def _dispatch(self, tu: dict[str, Any]) -> dict[str, Any]:
         name, inp = tu["name"], tu.get("input", {})
         try:
-            content = getattr(self, f"_t_{name}")(**inp)
+            content: Any = getattr(self, f"_t_{name}")(**inp)
             is_error = False
         except _Finished:
             raise
@@ -147,19 +186,27 @@ class DiscoveryAgent:
         self.last_obs = obs
         fp = hashlib.sha1((obs.url + obs.text).encode()).hexdigest()  # noqa: S324 — fingerprint, not security
         self._fingerprints.append(fp)
-        self.log.emit(EventKind.OBSERVATION, f"seq={obs.seq} url={obs.url} elements={len(obs.elements)}",
-                      screenshot=str(obs.screenshot) if obs.screenshot else None)
+        self.log.emit(
+            EventKind.OBSERVATION,
+            f"seq={obs.seq} url={obs.url} elements={len(obs.elements)}",
+            screenshot=str(obs.screenshot) if obs.screenshot else None,
+        )
         return obs
 
-    def _obs_content(self, obs: Observation, with_image: bool) -> Any:
+    def _obs_content(self, obs: Observation, with_image: bool) -> str | list[dict[str, Any]]:
         text = obs.render_for_model()
         if with_image and obs.screenshot:
             data = base64.b64encode(Path(obs.screenshot).read_bytes()).decode()
-            return [{"type": "text", "text": text},
-                    {"type": "image", "source": {"type": "base64", "media_type": "image/png", "data": data}}]
+            return [
+                {"type": "text", "text": text},
+                {
+                    "type": "image",
+                    "source": {"type": "base64", "media_type": "image/png", "data": data},
+                },
+            ]
         return text
 
-    def _el(self, ref: str) -> Any:
+    def _el(self, ref: str) -> Element:
         if self.last_obs is None:
             raise ValueError("call observe first")
         return self.last_obs.element(ref)
@@ -169,17 +216,23 @@ class DiscoveryAgent:
         obs = self._observe(False, what)
         if len(self._fingerprints) >= 5 and len(set(self._fingerprints[-5:])) == 1:
             self._escalate_internal("no progress: the last 4 actions did not change the screen")
-        return f"done: {what}\n\n" + self._obs_content(obs, False)
+        return f"done: {what}\n\n{obs.render_for_model()}"
 
     def _policy(self, action: ActionKind, risk: RiskClass, intent: str) -> None:
         d = self.guardrails.check_action(action, risk, attended=self.control.bridge is not None)
-        self.log.emit(EventKind.POLICY_DECISION, f"{d.verdict}: {d.reason}", risk=str(risk), intent=intent)
+        self.log.emit(
+            EventKind.POLICY_DECISION, f"{d.verdict}: {d.reason}", risk=str(risk), intent=intent
+        )
         if d.verdict == Verdict.BLOCK:
             raise ValueError(f"policy blocked {action}: {d.reason}")
         if d.verdict == Verdict.CONFIRM:
-            res = self.control.request_intervention(InterventionKind.CONFIRM, f"irreversible action requested: {intent}")
+            res = self.control.request_intervention(
+                InterventionKind.CONFIRM, f"irreversible action requested: {intent}"
+            )
             if res.action != "approve":
-                raise ValueError(f"operator {res.action} the irreversible action; choose another path, finish, or escalate")
+                raise ValueError(
+                    f"operator {res.action} the irreversible action; choose another path, finish, or escalate"
+                )
 
     def _escalate_internal(self, reason: str) -> str:
         res = self.control.request_intervention(InterventionKind.STUCK, reason)
@@ -189,8 +242,10 @@ class DiscoveryAgent:
         if res.action == "resume":
             return f"A human operator intervened ({len(res.human_actions)} actions recorded) and handed control back. Observe and continue."
         if res.action == "complete":
-            return ("The operator completed the flow manually; their actions were recorded as steps. "
-                    "Observe, extract the outputs, and call finish with the success condition.")
+            return (
+                "The operator completed the flow manually; their actions were recorded as steps. "
+                "Observe, extract the outputs, and call finish with the success condition."
+            )
         raise _Finished("escalated", f"operator resolved escalation with '{res.action}' ({reason})")
 
     # ------------------------------------------------------------------ tools
@@ -214,7 +269,9 @@ class DiscoveryAgent:
         self.surface.click(el)
         self._actions += 1
         self.recorder.click(target, why, r)
-        self.log.emit(EventKind.ACTION, f"click {target.description}: {why}", target=target.description)
+        self.log.emit(
+            EventKind.ACTION, f"click {target.description}: {why}", target=target.description
+        )
         return self._after_action(f"clicked {target.description}")
 
     def _t_fill(self, ref: str, why: str, text: str | None = None, param: str | None = None) -> str:
@@ -228,7 +285,9 @@ class DiscoveryAgent:
         self.log.emit(EventKind.ACTION, f"fill {target.description} <- {template}: {why}")
         return self._after_action(f"filled {target.description}")
 
-    def _t_select(self, ref: str, why: str, option: str | None = None, param: str | None = None) -> str:
+    def _t_select(
+        self, ref: str, why: str, option: str | None = None, param: str | None = None
+    ) -> str:
         el = self._el(ref)
         value, template = self._value(option, param)
         self._policy(ActionKind.SELECT, RiskClass.REVERSIBLE, why)
@@ -247,21 +306,30 @@ class DiscoveryAgent:
         self.recorder.press(key, target, why)
         return self._after_action(f"pressed {key}")
 
-    def _t_expect_dialog(self, response: str, why: str) -> str:
-        self.surface.arm_dialog(response)  # type: ignore[arg-type]
+    def _t_expect_dialog(self, response: Literal["accept", "dismiss"], why: str) -> str:
+        self.surface.arm_dialog(response)
         self.recorder.expect_dialog(response, why)
         return f"next native dialog will be {response}ed"
 
     def _t_assert_text(self, text: str, why: str) -> str:
         from glovebox.schema.capability import Condition, ConditionKind
 
-        ok, observed = self.surface.check(Condition(kind=ConditionKind.TEXT_VISIBLE, value=text, timeout_ms=5000))
+        ok, observed = self.surface.check(
+            Condition(kind=ConditionKind.TEXT_VISIBLE, value=text, timeout_ms=5000)
+        )
         if not ok:
             raise ValueError(f"assertion failed: {text!r} is not visible ({observed})")
         self.recorder.assert_text(text, why)
         return f"checkpoint recorded: {text!r} is visible"
 
-    def _t_extract(self, ref: str, output: str, description: str, type: str = "string", regex: str | None = None) -> str:  # noqa: A002
+    def _t_extract(
+        self,
+        ref: str,
+        output: str,
+        description: str,
+        type: str = "string",
+        regex: str | None = None,
+    ) -> str:
         el = self._el(ref)
         target = self.surface.describe_target(el)
         self.recorder.extract(target, output, description, type, regex)
@@ -282,16 +350,29 @@ class DiscoveryAgent:
         self.log.emit(EventKind.CONTROL, f"model requested escalation: {reason}")
         return self._escalate_internal(reason)
 
-    def _t_finish(self, success_text: list[str], summary: str, title: str,
-                  parameter_descriptions: dict[str, str] | None = None) -> str:
+    def _t_finish(
+        self,
+        success_text: list[str],
+        summary: str,
+        title: str,
+        parameter_descriptions: dict[str, str] | None = None,
+    ) -> str:
         from glovebox.schema.capability import Condition, ConditionKind
 
         for t in success_text:
-            ok, observed = self.surface.check(Condition(kind=ConditionKind.TEXT_VISIBLE, value=t, timeout_ms=3000))
+            ok, observed = self.surface.check(
+                Condition(kind=ConditionKind.TEXT_VISIBLE, value=t, timeout_ms=3000)
+            )
             if not ok:
-                raise ValueError(f"success_text {t!r} is not visible on the current screen ({observed})")
-        self._finish = {"success_text": success_text, "summary": summary, "title": title,
-                        "parameter_descriptions": parameter_descriptions}
+                raise ValueError(
+                    f"success_text {t!r} is not visible on the current screen ({observed})"
+                )
+        self._finish = {
+            "success_text": success_text,
+            "summary": summary,
+            "title": title,
+            "parameter_descriptions": parameter_descriptions,
+        }
         raise _Finished("success", summary)
 
     # ------------------------------------------------------------------ helpers

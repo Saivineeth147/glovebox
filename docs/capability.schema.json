@@ -1,0 +1,853 @@
+{
+  "$defs": {
+    "ActionKind": {
+      "enum": [
+        "navigate",
+        "click",
+        "fill",
+        "select",
+        "press",
+        "expect_dialog",
+        "wait",
+        "extract",
+        "assert"
+      ],
+      "title": "ActionKind",
+      "type": "string"
+    },
+    "AppRef": {
+      "additionalProperties": false,
+      "properties": {
+        "app_id": {
+          "description": "Vendor product identity shared across tenants.",
+          "title": "App Id",
+          "type": "string"
+        },
+        "vendor_version": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Vendor Version"
+        },
+        "tenant": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "Institution this was recorded on.",
+          "title": "Tenant"
+        },
+        "origin": {
+          "description": "Scheme+host[:port] the flow runs against.",
+          "title": "Origin",
+          "type": "string"
+        },
+        "entry_path": {
+          "description": "Path template of the first navigation.",
+          "title": "Entry Path",
+          "type": "string"
+        }
+      },
+      "required": [
+        "app_id",
+        "origin",
+        "entry_path"
+      ],
+      "title": "AppRef",
+      "type": "object"
+    },
+    "Condition": {
+      "additionalProperties": false,
+      "properties": {
+        "kind": {
+          "$ref": "#/$defs/ConditionKind"
+        },
+        "value": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "Text/regex/status per kind.",
+          "title": "Value"
+        },
+        "regex": {
+          "default": false,
+          "title": "Regex",
+          "type": "boolean"
+        },
+        "target": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/Target"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
+        },
+        "frame": {
+          "items": {
+            "type": "string"
+          },
+          "title": "Frame",
+          "type": "array"
+        },
+        "timeout_ms": {
+          "default": 5000,
+          "minimum": 0,
+          "title": "Timeout Ms",
+          "type": "integer"
+        }
+      },
+      "required": [
+        "kind"
+      ],
+      "title": "Condition",
+      "type": "object"
+    },
+    "ConditionKind": {
+      "enum": [
+        "text_visible",
+        "text_absent",
+        "element_visible",
+        "url_matches",
+        "title_matches",
+        "dialog_open",
+        "http_status"
+      ],
+      "title": "ConditionKind",
+      "type": "string"
+    },
+    "Outcome": {
+      "additionalProperties": false,
+      "description": "A legitimate business result that is not success and not a failure.",
+      "properties": {
+        "code": {
+          "pattern": "^[A-Z][A-Z0-9_]*$",
+          "title": "Code",
+          "type": "string"
+        },
+        "description": {
+          "title": "Description",
+          "type": "string"
+        },
+        "detect": {
+          "$ref": "#/$defs/Condition"
+        },
+        "terminal": {
+          "default": true,
+          "title": "Terminal",
+          "type": "boolean"
+        }
+      },
+      "required": [
+        "code",
+        "description",
+        "detect"
+      ],
+      "title": "Outcome",
+      "type": "object"
+    },
+    "OutputSpec": {
+      "additionalProperties": false,
+      "properties": {
+        "name": {
+          "pattern": "^[a-z][a-z0-9_]*$",
+          "title": "Name",
+          "type": "string"
+        },
+        "type": {
+          "$ref": "#/$defs/ParamType"
+        },
+        "description": {
+          "title": "Description",
+          "type": "string"
+        },
+        "sensitive": {
+          "default": false,
+          "title": "Sensitive",
+          "type": "boolean"
+        }
+      },
+      "required": [
+        "name",
+        "type",
+        "description"
+      ],
+      "title": "OutputSpec",
+      "type": "object"
+    },
+    "ParamType": {
+      "enum": [
+        "string",
+        "integer",
+        "number",
+        "boolean",
+        "enum"
+      ],
+      "title": "ParamType",
+      "type": "string"
+    },
+    "Parameter": {
+      "additionalProperties": false,
+      "properties": {
+        "name": {
+          "pattern": "^[a-z][a-z0-9_]*$",
+          "title": "Name",
+          "type": "string"
+        },
+        "type": {
+          "$ref": "#/$defs/ParamType"
+        },
+        "description": {
+          "title": "Description",
+          "type": "string"
+        },
+        "required": {
+          "default": true,
+          "title": "Required",
+          "type": "boolean"
+        },
+        "default": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "integer"
+            },
+            {
+              "type": "number"
+            },
+            {
+              "type": "boolean"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Default"
+        },
+        "pattern": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "Regex the value must match.",
+          "title": "Pattern"
+        },
+        "enum": {
+          "anyOf": [
+            {
+              "items": {
+                "type": "string"
+              },
+              "type": "array"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Enum"
+        },
+        "sensitive": {
+          "default": false,
+          "description": "Never persisted in logs, evidence or artifacts; only a hash is kept.",
+          "title": "Sensitive",
+          "type": "boolean"
+        },
+        "example": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Example"
+        }
+      },
+      "required": [
+        "name",
+        "type",
+        "description"
+      ],
+      "title": "Parameter",
+      "type": "object"
+    },
+    "Provenance": {
+      "additionalProperties": false,
+      "properties": {
+        "discovery_run_id": {
+          "title": "Discovery Run Id",
+          "type": "string"
+        },
+        "recorded_at": {
+          "format": "date-time",
+          "title": "Recorded At",
+          "type": "string"
+        },
+        "model": {
+          "title": "Model",
+          "type": "string"
+        },
+        "surface": {
+          "title": "Surface",
+          "type": "string"
+        },
+        "transcript_sha256": {
+          "description": "Hash of the (redacted) transcript, not content.",
+          "title": "Transcript Sha256",
+          "type": "string"
+        },
+        "recorded_by": {
+          "default": "glovebox-recorder",
+          "title": "Recorded By",
+          "type": "string"
+        }
+      },
+      "required": [
+        "discovery_run_id",
+        "recorded_at",
+        "model",
+        "surface",
+        "transcript_sha256"
+      ],
+      "title": "Provenance",
+      "type": "object"
+    },
+    "Recovery": {
+      "additionalProperties": false,
+      "description": "A known exceptional state with a scripted, bounded response.",
+      "properties": {
+        "name": {
+          "title": "Name",
+          "type": "string"
+        },
+        "detect": {
+          "$ref": "#/$defs/Condition"
+        },
+        "actions": {
+          "items": {
+            "$ref": "#/$defs/Step"
+          },
+          "title": "Actions",
+          "type": "array"
+        },
+        "then": {
+          "default": "retry_step",
+          "enum": [
+            "retry_step",
+            "continue",
+            "restart_capability",
+            "escalate"
+          ],
+          "title": "Then",
+          "type": "string"
+        },
+        "max_attempts": {
+          "default": 2,
+          "maximum": 5,
+          "minimum": 1,
+          "title": "Max Attempts",
+          "type": "integer"
+        }
+      },
+      "required": [
+        "name",
+        "detect"
+      ],
+      "title": "Recovery",
+      "type": "object"
+    },
+    "ReviewState": {
+      "additionalProperties": false,
+      "properties": {
+        "status": {
+          "$ref": "#/$defs/ReviewStatus",
+          "default": "draft"
+        },
+        "reviewed_by": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Reviewed By"
+        },
+        "reviewed_at": {
+          "anyOf": [
+            {
+              "format": "date-time",
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Reviewed At"
+        },
+        "notes": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Notes"
+        },
+        "replays": {
+          "default": 0,
+          "title": "Replays",
+          "type": "integer"
+        },
+        "replay_successes": {
+          "default": 0,
+          "title": "Replay Successes",
+          "type": "integer"
+        }
+      },
+      "title": "ReviewState",
+      "type": "object"
+    },
+    "ReviewStatus": {
+      "enum": [
+        "draft",
+        "approved",
+        "deprecated"
+      ],
+      "title": "ReviewStatus",
+      "type": "string"
+    },
+    "RiskClass": {
+      "enum": [
+        "read",
+        "reversible",
+        "irreversible"
+      ],
+      "title": "RiskClass",
+      "type": "string"
+    },
+    "Step": {
+      "additionalProperties": false,
+      "properties": {
+        "id": {
+          "pattern": "^[a-z0-9_]+$",
+          "title": "Id",
+          "type": "string"
+        },
+        "action": {
+          "$ref": "#/$defs/ActionKind"
+        },
+        "intent": {
+          "description": "Why this step exists, in the operator's words.",
+          "title": "Intent",
+          "type": "string"
+        },
+        "target": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/Target"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
+        },
+        "value": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "Literal or template. `{{ params.member_id }}` substitutes an input.",
+          "title": "Value"
+        },
+        "wait": {
+          "$ref": "#/$defs/WaitSpec"
+        },
+        "risk": {
+          "$ref": "#/$defs/RiskClass",
+          "default": "reversible"
+        },
+        "expect": {
+          "description": "Post-conditions; all must hold or the step fails.",
+          "items": {
+            "$ref": "#/$defs/Condition"
+          },
+          "title": "Expect",
+          "type": "array"
+        },
+        "extract_to": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "Output name (EXTRACT only).",
+          "title": "Extract To"
+        },
+        "dialog_response": {
+          "anyOf": [
+            {
+              "enum": [
+                "accept",
+                "dismiss"
+              ],
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "EXPECT_DIALOG only: how to answer the native dialog.",
+          "title": "Dialog Response"
+        }
+      },
+      "required": [
+        "id",
+        "action",
+        "intent"
+      ],
+      "title": "Step",
+      "type": "object"
+    },
+    "Target": {
+      "additionalProperties": false,
+      "properties": {
+        "description": {
+          "description": "Human-readable name, e.g. 'Member No. input'.",
+          "title": "Description",
+          "type": "string"
+        },
+        "frame": {
+          "description": "Frame path from the top document by frame name.",
+          "items": {
+            "type": "string"
+          },
+          "title": "Frame",
+          "type": "array"
+        },
+        "strategies": {
+          "items": {
+            "$ref": "#/$defs/TargetStrategy"
+          },
+          "minItems": 1,
+          "title": "Strategies",
+          "type": "array"
+        }
+      },
+      "required": [
+        "description",
+        "strategies"
+      ],
+      "title": "Target",
+      "type": "object"
+    },
+    "TargetStrategy": {
+      "additionalProperties": false,
+      "description": "One way of finding a control. Strategies are tried in order; each must resolve to\nexactly one visible element to be accepted (uniqueness is the safety check that turns\n'a locator matched' into 'the right control matched').",
+      "properties": {
+        "kind": {
+          "enum": [
+            "role_name",
+            "label",
+            "text",
+            "name_attr",
+            "near_text",
+            "table_cell",
+            "css",
+            "bbox"
+          ],
+          "title": "Kind",
+          "type": "string"
+        },
+        "value": {
+          "additionalProperties": true,
+          "title": "Value",
+          "type": "object"
+        },
+        "robustness": {
+          "description": "Recorder's note on why/when this strategy holds.",
+          "title": "Robustness",
+          "type": "string"
+        }
+      },
+      "required": [
+        "kind",
+        "value",
+        "robustness"
+      ],
+      "title": "TargetStrategy",
+      "type": "object"
+    },
+    "TenantOverride": {
+      "additionalProperties": false,
+      "description": "Per-tenant specialisation of a shared capability. Applied by step id; only the\nlisted fields change. This is how 'same vendor app, different institution' is handled\nwithout re-recording (REPORT.md \u00a74).",
+      "properties": {
+        "tenant": {
+          "title": "Tenant",
+          "type": "string"
+        },
+        "origin": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Origin"
+        },
+        "entry_path": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Entry Path"
+        },
+        "step_targets": {
+          "additionalProperties": {
+            "$ref": "#/$defs/Target"
+          },
+          "title": "Step Targets",
+          "type": "object"
+        },
+        "step_values": {
+          "additionalProperties": {
+            "type": "string"
+          },
+          "title": "Step Values",
+          "type": "object"
+        },
+        "extra_recoveries": {
+          "items": {
+            "$ref": "#/$defs/Recovery"
+          },
+          "title": "Extra Recoveries",
+          "type": "array"
+        },
+        "notes": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Notes"
+        }
+      },
+      "required": [
+        "tenant"
+      ],
+      "title": "TenantOverride",
+      "type": "object"
+    },
+    "WaitSpec": {
+      "additionalProperties": false,
+      "properties": {
+        "load_state": {
+          "default": "load",
+          "enum": [
+            "load",
+            "domcontentloaded",
+            "networkidle",
+            "none"
+          ],
+          "title": "Load State",
+          "type": "string"
+        },
+        "settle_ms": {
+          "default": 150,
+          "description": "Quiet time after load.",
+          "minimum": 0,
+          "title": "Settle Ms",
+          "type": "integer"
+        },
+        "timeout_ms": {
+          "default": 15000,
+          "minimum": 100,
+          "title": "Timeout Ms",
+          "type": "integer"
+        }
+      },
+      "title": "WaitSpec",
+      "type": "object"
+    }
+  },
+  "additionalProperties": false,
+  "properties": {
+    "schema_version": {
+      "const": "1.0",
+      "default": "1.0",
+      "title": "Schema Version",
+      "type": "string"
+    },
+    "id": {
+      "description": "Stable capability name.",
+      "pattern": "^[a-z][a-z0-9_]*$",
+      "title": "Id",
+      "type": "string"
+    },
+    "version": {
+      "description": "Semver of this artifact.",
+      "pattern": "^\\d+\\.\\d+\\.\\d+$",
+      "title": "Version",
+      "type": "string"
+    },
+    "title": {
+      "title": "Title",
+      "type": "string"
+    },
+    "description": {
+      "description": "What it does, for a calling agent and a reviewer.",
+      "title": "Description",
+      "type": "string"
+    },
+    "app": {
+      "$ref": "#/$defs/AppRef"
+    },
+    "inputs": {
+      "items": {
+        "$ref": "#/$defs/Parameter"
+      },
+      "title": "Inputs",
+      "type": "array"
+    },
+    "outputs": {
+      "items": {
+        "$ref": "#/$defs/OutputSpec"
+      },
+      "title": "Outputs",
+      "type": "array"
+    },
+    "steps": {
+      "items": {
+        "$ref": "#/$defs/Step"
+      },
+      "minItems": 1,
+      "title": "Steps",
+      "type": "array"
+    },
+    "success": {
+      "description": "Terminal checkpoint. All must hold for status=success.",
+      "items": {
+        "$ref": "#/$defs/Condition"
+      },
+      "minItems": 1,
+      "title": "Success",
+      "type": "array"
+    },
+    "outcomes": {
+      "items": {
+        "$ref": "#/$defs/Outcome"
+      },
+      "title": "Outcomes",
+      "type": "array"
+    },
+    "recoveries": {
+      "items": {
+        "$ref": "#/$defs/Recovery"
+      },
+      "title": "Recoveries",
+      "type": "array"
+    },
+    "failure_signals": {
+      "description": "If any holds after a step, stop with a hard failure (app error page...).",
+      "items": {
+        "$ref": "#/$defs/Condition"
+      },
+      "title": "Failure Signals",
+      "type": "array"
+    },
+    "max_risk": {
+      "$ref": "#/$defs/RiskClass",
+      "default": "reversible",
+      "description": "Highest risk class this capability performs; policy checks it."
+    },
+    "provenance": {
+      "$ref": "#/$defs/Provenance"
+    },
+    "review": {
+      "$ref": "#/$defs/ReviewState"
+    },
+    "overrides": {
+      "items": {
+        "$ref": "#/$defs/TenantOverride"
+      },
+      "title": "Overrides",
+      "type": "array"
+    },
+    "created_at": {
+      "format": "date-time",
+      "title": "Created At",
+      "type": "string"
+    }
+  },
+  "required": [
+    "id",
+    "version",
+    "title",
+    "description",
+    "app",
+    "steps",
+    "success",
+    "provenance"
+  ],
+  "title": "Capability",
+  "type": "object"
+}

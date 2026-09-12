@@ -122,7 +122,11 @@ def create_app() -> FastAPI:
             return _render(request, "login.html", tenant, msg="Invalid operator credentials.")
         sid = secrets.token_hex(16)
         _sessions[sid] = {"user": username, "role": "teller", "tenant": tenant}
-        target = f"/t/{tenant}/app/notice" if TENANTS[tenant]["post_login_notice"] else f"/t/{tenant}/app/home"
+        target = (
+            f"/t/{tenant}/app/notice"
+            if TENANTS[tenant]["post_login_notice"]
+            else f"/t/{tenant}/app/home"
+        )
         resp = RedirectResponse(target, status_code=303)
         resp.set_cookie(SESSION_COOKIE, sid, httponly=True)
         return resp
@@ -257,7 +261,13 @@ def create_app() -> FastAPI:
         ref = next_reference()
         m.sub_accounts.append({"ref": ref, "product": product, "nickname": nickname.strip()})
         return _render(
-            request, "subaccount_confirm.html", tenant, m=m, ref=ref, product=product, nickname=nickname
+            request,
+            "subaccount_confirm.html",
+            tenant,
+            m=m,
+            ref=ref,
+            product=product,
+            nickname=nickname,
         )
 
     return app

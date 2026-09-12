@@ -24,7 +24,7 @@ from typing import Any, Literal
 
 from pydantic import BaseModel, ConfigDict, Field, field_validator, model_validator
 
-SCHEMA_VERSION = "1.0"
+SCHEMA_VERSION: Literal["1.0"] = "1.0"
 
 
 class _Strict(BaseModel):
@@ -154,9 +154,9 @@ class Step(_Strict):
         needs_target = {ActionKind.CLICK, ActionKind.FILL, ActionKind.SELECT, ActionKind.EXTRACT}
         if self.action in needs_target and self.target is None:
             raise ValueError(f"step {self.id!r}: {self.action} requires a target")
-        if self.action in {ActionKind.FILL, ActionKind.SELECT, ActionKind.NAVIGATE, ActionKind.PRESS}:
-            if self.value is None:
-                raise ValueError(f"step {self.id!r}: {self.action} requires a value")
+        needs_value = {ActionKind.FILL, ActionKind.SELECT, ActionKind.NAVIGATE, ActionKind.PRESS}
+        if self.action in needs_value and self.value is None:
+            raise ValueError(f"step {self.id!r}: {self.action} requires a value")
         if self.action == ActionKind.EXTRACT and not self.extract_to:
             raise ValueError(f"step {self.id!r}: extract requires extract_to")
         if self.action == ActionKind.EXPECT_DIALOG and self.dialog_response is None:

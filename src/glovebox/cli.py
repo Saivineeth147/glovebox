@@ -1,12 +1,12 @@
 """Glovebox command line.
 
-    glovebox target serve                 run the simulated legacy app
-    glovebox discover ...                 LLM-driven discovery → capability artifact
-    glovebox replay <cap> --param k=v     deterministic replay (the production path)
-    glovebox catalog list|tools|approve   the agent-facing capability catalog
-    glovebox stability <cap> --runs N     replay N times, report flakiness
-    glovebox validate <cap.json>          schema-check an artifact
-    glovebox schema                       print the JSON Schema of the artifact
+glovebox target serve                 run the simulated legacy app
+glovebox discover ...                 LLM-driven discovery → capability artifact
+glovebox replay <cap> --param k=v     deterministic replay (the production path)
+glovebox catalog list|tools|approve   the agent-facing capability catalog
+glovebox stability <cap> --runs N     replay N times, report flakiness
+glovebox validate <cap.json>          schema-check an artifact
+glovebox schema                       print the JSON Schema of the artifact
 """
 
 from __future__ import annotations
@@ -43,7 +43,9 @@ def _kv(items: list[str] | None) -> dict[str, str]:
     return out
 
 
-def _params(param: list[str] | None, secret: list[str] | None) -> tuple[dict[str, Any], list[Parameter]]:
+def _params(
+    param: list[str] | None, secret: list[str] | None
+) -> tuple[dict[str, Any], list[Parameter]]:
     """--param name=value (plain) and --secret name=ENV_VAR (sensitive, read from env)."""
     values: dict[str, Any] = {}
     specs: list[Parameter] = []
@@ -54,7 +56,11 @@ def _params(param: list[str] | None, secret: list[str] | None) -> tuple[dict[str
         if env not in os.environ:
             raise typer.BadParameter(f"secret {k}: environment variable {env} is not set")
         values[k] = os.environ[env]
-        specs.append(Parameter(name=k, type=ParamType.STRING, description=f"Sensitive input {k}", sensitive=True))
+        specs.append(
+            Parameter(
+                name=k, type=ParamType.STRING, description=f"Sensitive input {k}", sensitive=True
+            )
+        )
     return values, specs
 
 
@@ -82,7 +88,9 @@ def target_serve(port: int = 8089, host: str = "127.0.0.1") -> None:
 
     from legacy_bank import create_app
 
-    rprint(f"Meridian Core on http://{host}:{port}/  (tenants: /t/alpha/, /t/bravo/; faults: /__sim/faults)")
+    rprint(
+        f"Meridian Core on http://{host}:{port}/  (tenants: /t/alpha/, /t/bravo/; faults: /__sim/faults)"
+    )
     uvicorn.run(create_app(), host=host, port=port, log_level="warning")
 
 
@@ -93,12 +101,16 @@ def discover(
     app_url: Annotated[str, typer.Option(help="Entry URL of the target application.")],
     capability_name: Annotated[str, typer.Option(help="Stable id for the recorded capability.")],
     param: Annotated[list[str] | None, typer.Option(help="name=value input parameter.")] = None,
-    secret: Annotated[list[str] | None, typer.Option(help="name=ENV_VAR sensitive parameter.")] = None,
+    secret: Annotated[
+        list[str] | None, typer.Option(help="name=ENV_VAR sensitive parameter.")
+    ] = None,
     app_id: str = "meridian-core",
     tenant: str | None = "alpha",
     policy: Path | None = None,
     model: str | None = None,
-    offline_script: Annotated[str | None, typer.Option(help="Use a scripted policy instead of the model (name or path).")] = None,
+    offline_script: Annotated[
+        str | None, typer.Option(help="Use a scripted policy instead of the model (name or path).")
+    ] = None,
     catalog_dir: Path = Path("capabilities"),
     runs_dir: Path = Path("runs"),
     evidence_dir: Path | None = None,
@@ -124,7 +136,11 @@ def discover(
         from glovebox.agent.llm import ScriptedLLM
         from glovebox.agent.scripts import SCRIPTS
 
-        script = SCRIPTS[offline_script] if offline_script in SCRIPTS else json.loads(Path(offline_script).read_text())
+        script = (
+            SCRIPTS[offline_script]
+            if offline_script in SCRIPTS
+            else json.loads(Path(offline_script).read_text())
+        )
         rprint("[yellow]offline mode: scripted decisions, no model[/yellow]")
 
         def llm_factory(obs: Any) -> Any:
@@ -136,14 +152,27 @@ def discover(
             return AnthropicLLM(model)
 
     res = run_discovery(
-        goal=goal, entry_url=app_url if "/t/" in app_url else app_url.rstrip("/") + f"/t/{tenant}/",
-        params=values, param_specs=specs, llm_factory=llm_factory, policy=pol, capability_id=capability_name,
-        app_id=app_id, tenant=tenant, runs_dir=runs_dir, bridge=bridge, headless=not headed, echo=True,
-        max_steps=max_steps, screenshots=not no_screenshots,
+        goal=goal,
+        entry_url=app_url if "/t/" in app_url else app_url.rstrip("/") + f"/t/{tenant}/",
+        params=values,
+        param_specs=specs,
+        llm_factory=llm_factory,
+        policy=pol,
+        capability_id=capability_name,
+        app_id=app_id,
+        tenant=tenant,
+        runs_dir=runs_dir,
+        bridge=bridge,
+        headless=not headed,
+        echo=True,
+        max_steps=max_steps,
+        screenshots=not no_screenshots,
     )
     if console:
         console.stop()
-    rprint(f"\n[bold]discovery {res.status}[/bold]: {res.summary}  ({res.steps} actions)  evidence: {res.evidence_dir}")
+    rprint(
+        f"\n[bold]discovery {res.status}[/bold]: {res.summary}  ({res.steps} actions)  evidence: {res.evidence_dir}"
+    )
     if res.capability:
         from glovebox.catalog import Catalog
 
@@ -159,17 +188,23 @@ def discover(
 def replay(
     capability: Annotated[str, typer.Argument(help="Capability id (in catalog) or path to .json")],
     param: Annotated[list[str] | None, typer.Option(help="name=value input parameter.")] = None,
-    secret: Annotated[list[str] | None, typer.Option(help="name=ENV_VAR sensitive parameter.")] = None,
+    secret: Annotated[
+        list[str] | None, typer.Option(help="name=ENV_VAR sensitive parameter.")
+    ] = None,
     tenant: str | None = None,
     policy: Path | None = None,
     catalog_dir: Path = Path("capabilities"),
     runs_dir: Path = Path("runs"),
     evidence_dir: Path | None = None,
-    attended: Annotated[bool, typer.Option(help="A human is reachable via the operator console.")] = False,
+    attended: Annotated[
+        bool, typer.Option(help="A human is reachable via the operator console.")
+    ] = False,
     console_port: int | None = None,
     allow_draft: bool = False,
     headed: bool = False,
-    fault: Annotated[list[str] | None, typer.Option(help="Arm a simulated fault on the target before replay.")] = None,
+    fault: Annotated[
+        list[str] | None, typer.Option(help="Arm a simulated fault on the target before replay.")
+    ] = None,
     handoff_timeout: float = 300.0,
 ) -> None:
     """Deterministically replay a capability with input parameters (no model involved)."""
@@ -192,8 +227,19 @@ def replay(
         for f in fault:
             httpx.post(f"{cap.app.origin}/__sim/faults/{f}", timeout=5).raise_for_status()
             rprint(f"[yellow]armed simulated fault: {f}[/yellow]")
-    res = run_replay(cap, values, pol, runs_dir=runs_dir, tenant=tenant, bridge=bridge, attended=attended or bridge is not None,
-                     allow_draft=allow_draft, headless=not headed, echo=True, handoff_timeout_s=handoff_timeout)
+    res = run_replay(
+        cap,
+        values,
+        pol,
+        runs_dir=runs_dir,
+        tenant=tenant,
+        bridge=bridge,
+        attended=attended or bridge is not None,
+        allow_draft=allow_draft,
+        headless=not headed,
+        echo=True,
+        handoff_timeout_s=handoff_timeout,
+    )
     if console:
         console.stop()
     if not capability.endswith(".json"):
@@ -211,10 +257,18 @@ def catalog_list(catalog_dir: Path = Path("capabilities")) -> None:
     from glovebox.catalog import Catalog
 
     t = Table("id", "version", "status", "risk", "inputs", "outputs", "confidence", "title")
-    for c in Catalog(catalog_dir).list():
+    for c in Catalog(catalog_dir).all():
         conf = c.review.confidence
-        t.add_row(c.id, c.version, str(c.review.status), str(c.max_risk), ", ".join(p.name for p in c.inputs),
-                  ", ".join(o.name for o in c.outputs), "-" if conf is None else f"{conf:.0%} ({c.review.replays})", c.title)
+        t.add_row(
+            c.id,
+            c.version,
+            str(c.review.status),
+            str(c.max_risk),
+            ", ".join(p.name for p in c.inputs),
+            ", ".join(o.name for o in c.outputs),
+            "-" if conf is None else f"{conf:.0%} ({c.review.replays})",
+            c.title,
+        )
     rprint(t)
 
 
@@ -227,8 +281,12 @@ def catalog_tools(catalog_dir: Path = Path("capabilities"), include_drafts: bool
 
 
 @catalog_cli.command("approve")
-def catalog_approve(capability_id: str, reviewer: str, notes: str | None = None,
-                    catalog_dir: Path = Path("capabilities")) -> None:
+def catalog_approve(
+    capability_id: str,
+    reviewer: str,
+    notes: str | None = None,
+    catalog_dir: Path = Path("capabilities"),
+) -> None:
     from glovebox.catalog import Catalog
 
     c = Catalog(catalog_dir).approve(capability_id, reviewer, notes)
@@ -237,9 +295,16 @@ def catalog_approve(capability_id: str, reviewer: str, notes: str | None = None,
 
 # ----------------------------------------------------------------------------- misc
 @app.command()
-def stability(capability: str, runs: int = 3, param: list[str] | None = None, tenant: str | None = None,
-              policy: Path | None = None, catalog_dir: Path = Path("capabilities"), runs_dir: Path = Path("runs"),
-              allow_draft: bool = False) -> None:
+def stability(
+    capability: str,
+    runs: int = 3,
+    param: list[str] | None = None,
+    tenant: str | None = None,
+    policy: Path | None = None,
+    catalog_dir: Path = Path("capabilities"),
+    runs_dir: Path = Path("runs"),
+    allow_draft: bool = False,
+) -> None:
     """Replay N times and report a stability signal."""
     from glovebox.catalog import Catalog
     from glovebox.runner import run_replay
@@ -251,9 +316,19 @@ def stability(capability: str, runs: int = 3, param: list[str] | None = None, te
             values[p.name] = os.environ.get(f"GLOVEBOX_APP_{p.name.upper()}", "")
     statuses = []
     for i in range(runs):
-        r = run_replay(cap, values, _policy(policy), runs_dir=runs_dir, tenant=tenant, allow_draft=allow_draft, trace=False)
+        r = run_replay(
+            cap,
+            values,
+            _policy(policy),
+            runs_dir=runs_dir,
+            tenant=tenant,
+            allow_draft=allow_draft,
+            trace=False,
+        )
         statuses.append(r.status)
-        rprint(f"run {i + 1}/{runs}: {r.status} {r.outputs or r.outcome_code or (r.failure.message if r.failure else '')}")
+        rprint(
+            f"run {i + 1}/{runs}: {r.status} {r.outputs or r.outcome_code or (r.failure.message if r.failure else '')}"
+        )
     ok = sum(s == "success" for s in statuses)
     rprint(f"\nstability: {ok}/{runs} successful ({ok / runs:.0%})")
 
@@ -262,7 +337,9 @@ def stability(capability: str, runs: int = 3, param: list[str] | None = None, te
 def validate(path: Path) -> None:
     """Validate a capability artifact against the schema."""
     cap = Capability.model_validate_json(path.read_text())
-    rprint(f"OK {cap.id}@{cap.version}: {len(cap.steps)} steps, {len(cap.inputs)} inputs, {len(cap.outputs)} outputs")
+    rprint(
+        f"OK {cap.id}@{cap.version}: {len(cap.steps)} steps, {len(cap.inputs)} inputs, {len(cap.outputs)} outputs"
+    )
 
 
 @app.command()

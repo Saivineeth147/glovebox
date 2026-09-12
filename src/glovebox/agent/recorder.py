@@ -6,7 +6,7 @@ from __future__ import annotations
 import hashlib
 import json
 from datetime import UTC, datetime
-from typing import Any
+from typing import Any, Literal
 from urllib.parse import urlsplit
 
 from glovebox.schema.capability import (
@@ -67,34 +67,102 @@ class Recorder:
     def navigate(self, url: str, intent: str) -> Step:
         parts = urlsplit(url)
         path = parts.path + (f"?{parts.query}" if parts.query else "")
-        return self._add(Step(id=self._id("navigate"), action=ActionKind.NAVIGATE, intent=intent, value=path,
-                              risk=RiskClass.READ))
+        if path == self.entry_path:  # the entry point is tenant-specific: keep it a template
+            path = "{{ app.entry_path }}"
+        return self._add(
+            Step(
+                id=self._id("navigate"),
+                action=ActionKind.NAVIGATE,
+                intent=intent,
+                value=path,
+                risk=RiskClass.READ,
+            )
+        )
 
     def click(self, target: Target, intent: str, risk: RiskClass) -> Step:
-        return self._add(Step(id=self._id("click"), action=ActionKind.CLICK, intent=intent, target=target, risk=risk))
+        return self._add(
+            Step(
+                id=self._id("click"),
+                action=ActionKind.CLICK,
+                intent=intent,
+                target=target,
+                risk=risk,
+            )
+        )
 
     def fill(self, target: Target, value: str, intent: str) -> Step:
-        return self._add(Step(id=self._id("fill"), action=ActionKind.FILL, intent=intent, target=target, value=value))
+        return self._add(
+            Step(
+                id=self._id("fill"),
+                action=ActionKind.FILL,
+                intent=intent,
+                target=target,
+                value=value,
+            )
+        )
 
     def select(self, target: Target, value: str, intent: str) -> Step:
-        return self._add(Step(id=self._id("select"), action=ActionKind.SELECT, intent=intent, target=target, value=value))
+        return self._add(
+            Step(
+                id=self._id("select"),
+                action=ActionKind.SELECT,
+                intent=intent,
+                target=target,
+                value=value,
+            )
+        )
 
     def press(self, key: str, target: Target | None, intent: str) -> Step:
-        return self._add(Step(id=self._id("press"), action=ActionKind.PRESS, intent=intent, target=target, value=key))
+        return self._add(
+            Step(
+                id=self._id("press"),
+                action=ActionKind.PRESS,
+                intent=intent,
+                target=target,
+                value=key,
+            )
+        )
 
-    def expect_dialog(self, response: str, intent: str) -> Step:
-        return self._add(Step(id=self._id("dialog"), action=ActionKind.EXPECT_DIALOG, intent=intent,
-                              dialog_response=response, risk=RiskClass.READ))  # type: ignore[arg-type]
+    def expect_dialog(self, response: Literal["accept", "dismiss"], intent: str) -> Step:
+        return self._add(
+            Step(
+                id=self._id("dialog"),
+                action=ActionKind.EXPECT_DIALOG,
+                intent=intent,
+                dialog_response=response,
+                risk=RiskClass.READ,
+            )
+        )
 
     def assert_text(self, text: str, intent: str) -> Step:
-        return self._add(Step(id=self._id("assert"), action=ActionKind.ASSERT, intent=intent, risk=RiskClass.READ,
-                              expect=[Condition(kind=ConditionKind.TEXT_VISIBLE, value=text, timeout_ms=8000)]))
+        return self._add(
+            Step(
+                id=self._id("assert"),
+                action=ActionKind.ASSERT,
+                intent=intent,
+                risk=RiskClass.READ,
+                expect=[Condition(kind=ConditionKind.TEXT_VISIBLE, value=text, timeout_ms=8000)],
+            )
+        )
 
-    def extract(self, target: Target, name: str, description: str, type_: str, regex: str | None) -> Step:
+    def extract(
+        self, target: Target, name: str, description: str, type_: str, regex: str | None
+    ) -> Step:
         if all(o.name != name for o in self.outputs):
-            self.outputs.append(OutputSpec(name=name, type=ParamType(type_), description=description))
-        return self._add(Step(id=self._id("extract"), action=ActionKind.EXTRACT, intent=f"read {name}", target=target,
-                              extract_to=name, value=regex, risk=RiskClass.READ))
+            self.outputs.append(
+                OutputSpec(name=name, type=ParamType(type_), description=description)
+            )
+        return self._add(
+            Step(
+                id=self._id("extract"),
+                action=ActionKind.EXTRACT,
+                intent=f"read {name}",
+                target=target,
+                extract_to=name,
+                value=regex,
+                risk=RiskClass.READ,
+            )
+        )
 
     def human_step(self, record: dict[str, Any]) -> Step | None:
         """Fold an action a human performed during handoff into the flow."""
@@ -122,22 +190,43 @@ class Recorder:
     # ------------------------------------------------------------------ contract
     def declare_outcome(self, code: str, description: str, detect_text: str) -> None:
         if all(o.code != code for o in self.outcomes):
-            self.outcomes.append(Outcome(code=code, description=description,
-                                         detect=Condition(kind=ConditionKind.TEXT_VISIBLE, value=detect_text, timeout_ms=0)))
+            self.outcomes.append(
+                Outcome(
+                    code=code,
+                    description=description,
+                    detect=Condition(
+                        kind=ConditionKind.TEXT_VISIBLE, value=detect_text, timeout_ms=0
+                    ),
+                )
+            )
 
     def declare_recovery(self, name: str, detect_text: str, dismiss: Target) -> None:
         self.recoveries.append(
             Recovery(
                 name=name,
                 detect=Condition(kind=ConditionKind.TEXT_VISIBLE, value=detect_text, timeout_ms=0),
-                actions=[Step(id=f"r_{len(self.recoveries) + 1}_dismiss", action=ActionKind.CLICK,
-                              intent=f"dismiss {name}", target=dismiss)],
+                actions=[
+                    Step(
+                        id=f"r_{len(self.recoveries) + 1}_dismiss",
+                        action=ActionKind.CLICK,
+                        intent=f"dismiss {name}",
+                        target=dismiss,
+                    )
+                ],
                 then="retry_step",
             )
         )
 
-    def build(self, *, title: str, description: str, success_text: list[str], transcript: Any,
-              surface_name: str, param_descriptions: dict[str, str] | None = None) -> Capability:
+    def build(
+        self,
+        *,
+        title: str,
+        description: str,
+        success_text: list[str],
+        transcript: Any,
+        surface_name: str,
+        param_descriptions: dict[str, str] | None = None,
+    ) -> Capability:
         used = {ref for s in self.steps for ref in _refs(s.value)}
         inputs = []
         for p in self.params:
@@ -147,30 +236,47 @@ class Recorder:
                 inputs.append(p)
         highest = max((s.risk for s in self.steps), key=_rank, default=RiskClass.READ)
         recoveries = [*self.recoveries, _session_expired_recovery()]
-        digest = hashlib.sha256(json.dumps(transcript, sort_keys=True, default=str).encode()).hexdigest()
+        digest = hashlib.sha256(
+            json.dumps(transcript, sort_keys=True, default=str).encode()
+        ).hexdigest()
         return Capability(
             id=self.capability_id,
             version="1.0.0",
             title=title,
             description=description,
-            app=AppRef(app_id=self.app_id, tenant=self.tenant, origin=self.origin, entry_path=self.entry_path),
+            app=AppRef(
+                app_id=self.app_id,
+                tenant=self.tenant,
+                origin=self.origin,
+                entry_path=self.entry_path,
+            ),
             inputs=inputs,
             outputs=self.outputs,
             steps=self.steps,
-            success=[Condition(kind=ConditionKind.TEXT_VISIBLE, value=t, timeout_ms=8000) for t in success_text],
+            success=[
+                Condition(kind=ConditionKind.TEXT_VISIBLE, value=t, timeout_ms=8000)
+                for t in success_text
+            ],
             outcomes=self.outcomes,
             recoveries=recoveries,
             failure_signals=list(DEFAULT_FAILURE_SIGNALS),
             max_risk=highest,
-            provenance=Provenance(discovery_run_id=self.run_id, recorded_at=datetime.now(UTC), model=self.model_name,
-                                  surface=surface_name, transcript_sha256=digest),
+            provenance=Provenance(
+                discovery_run_id=self.run_id,
+                recorded_at=datetime.now(UTC),
+                model=self.model_name,
+                surface=surface_name,
+                transcript_sha256=digest,
+            ),
         )
 
 
 def _session_expired_recovery() -> Recovery:
     return Recovery(
         name="session_expired",
-        detect=Condition(kind=ConditionKind.TEXT_VISIBLE, value="session has expired", timeout_ms=0),
+        detect=Condition(
+            kind=ConditionKind.TEXT_VISIBLE, value="session has expired", timeout_ms=0
+        ),
         actions=[],
         then="restart_capability",
         max_attempts=2,

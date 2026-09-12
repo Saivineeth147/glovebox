@@ -34,7 +34,11 @@ TOOLS: list[dict[str, Any]] = [
             "type": "object",
             "properties": {
                 "ref": {"type": "string"},
-                "risk": {"type": "string", "enum": ["reversible", "irreversible"], "default": "reversible"},
+                "risk": {
+                    "type": "string",
+                    "enum": ["reversible", "irreversible"],
+                    "default": "reversible",
+                },
                 "why": {"type": "string", "description": "One sentence: the intent of this click."},
             },
             "required": ["ref", "why"],
@@ -77,7 +81,11 @@ TOOLS: list[dict[str, Any]] = [
         "description": "Press a keyboard key (e.g. Enter) optionally focused on a ref.",
         "input_schema": {
             "type": "object",
-            "properties": {"key": {"type": "string"}, "ref": {"type": "string"}, "why": {"type": "string"}},
+            "properties": {
+                "key": {"type": "string"},
+                "ref": {"type": "string"},
+                "why": {"type": "string"},
+            },
             "required": ["key", "why"],
             "additionalProperties": False,
         },
@@ -87,7 +95,10 @@ TOOLS: list[dict[str, Any]] = [
         "description": "Before an action that will raise a native confirm/alert dialog, declare how it must be answered.",
         "input_schema": {
             "type": "object",
-            "properties": {"response": {"type": "string", "enum": ["accept", "dismiss"]}, "why": {"type": "string"}},
+            "properties": {
+                "response": {"type": "string", "enum": ["accept", "dismiss"]},
+                "why": {"type": "string"},
+            },
             "required": ["response", "why"],
             "additionalProperties": False,
         },
@@ -112,8 +123,15 @@ TOOLS: list[dict[str, Any]] = [
                 "ref": {"type": "string"},
                 "output": {"type": "string", "pattern": "^[a-z][a-z0-9_]*$"},
                 "description": {"type": "string"},
-                "type": {"type": "string", "enum": ["string", "number", "integer", "boolean"], "default": "string"},
-                "regex": {"type": "string", "description": "Optional regex; capture group 1 is the value."},
+                "type": {
+                    "type": "string",
+                    "enum": ["string", "number", "integer", "boolean"],
+                    "default": "string",
+                },
+                "regex": {
+                    "type": "string",
+                    "description": "Optional regex; capture group 1 is the value.",
+                },
             },
             "required": ["ref", "output", "description"],
             "additionalProperties": False,

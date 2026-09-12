@@ -66,7 +66,7 @@ class Intervention(BaseModel):
 class OperatorCommand:
     """What a human may do while they own the session."""
 
-    op: str  # observe | click | fill | select | press | navigate | resume | complete | abort | approve | decline
+    op: str  # observe | click | fill | select | press | navigate | resume | restart | complete | abort | approve | decline
     args: dict[str, Any] = field(default_factory=dict)
     operator: str = "operator"
     reply: queue.Queue[dict[str, Any]] = field(default_factory=lambda: queue.Queue(maxsize=1))
@@ -74,7 +74,7 @@ class OperatorCommand:
 
 @dataclass
 class Resolution:
-    action: str  # resume | complete | abort | approve | decline | timed_out
+    action: str  # resume | restart | complete | abort | approve | decline | timed_out
     operator: str | None
     note: str | None
     human_actions: list[dict[str, Any]]
@@ -90,7 +90,9 @@ class OperatorBridge:
         self.last_observation: Observation | None = None
         self.history: list[Intervention] = []
 
-    def submit(self, op: str, operator: str = "operator", timeout: float = 30, **args: Any) -> dict[str, Any]:
+    def submit(
+        self, op: str, operator: str = "operator", timeout: float = 30, **args: Any
+    ) -> dict[str, Any]:
         cmd = OperatorCommand(op=op, args=args, operator=operator)
         self._q.put(cmd)
         try:
@@ -138,7 +140,10 @@ class ControlSession:
     # ------------------------------------------------------------------ transitions
     def _transfer(self, to: Controller, reason: str) -> None:
         self.logger.emit(
-            EventKind.CONTROL, f"control {self.owner} -> {to}: {reason}", from_=str(self.owner), to=str(to)
+            EventKind.CONTROL,
+            f"control {self.owner} -> {to}: {reason}",
+            from_=str(self.owner),
+            to=str(to),
         )
         self.owner = to
 
@@ -148,7 +153,7 @@ class ControlSession:
         """Detect-and-route + take-control + hand-back, in one blocking call on the automation thread."""
         evidence = self.surface.capture(f"handoff-{kind}")
         try:
-            obs = self.surface.observe(label="handoff")
+            obs = self.surface.observe(screenshot=True, label="handoff")
             summary = obs.render_for_model(max_elements=40, max_text=1200)
             url = obs.url
         except SurfaceError as exc:
@@ -185,7 +190,9 @@ class ControlSession:
         intervention.resolution = resolution.action
         intervention.operator = resolution.operator
         self.bridge.current = None
-        self._transfer(Controller.AUTOMATION, f"{resolution.action} by {resolution.operator or 'timeout'}")
+        self._transfer(
+            Controller.AUTOMATION, f"{resolution.action} by {resolution.operator or 'timeout'}"
+        )
         self.surface.capture(f"handback-{resolution.action}")
         return resolution
 
@@ -194,7 +201,7 @@ class ControlSession:
         assert self.bridge is not None
         deadline = time.monotonic() + self.handoff_timeout_s
         actions: list[dict[str, Any]] = []
-        terminal = {"resume", "complete", "abort", "approve", "decline"}
+        terminal = {"resume", "restart", "complete", "abort", "approve", "decline"}
         while time.monotonic() < deadline:
             cmd = self.bridge._next(timeout=0.25)
             if cmd is None:
@@ -214,7 +221,8 @@ class ControlSession:
         try:
             if cmd.op == "observe":
                 obs = s.observe(screenshot=True, label="operator")
-                self.bridge.last_observation = obs  # type: ignore[union-attr]
+                assert self.bridge is not None
+                self.bridge.last_observation = obs
                 return {
                     "ok": True,
                     "url": obs.url,
@@ -222,11 +230,14 @@ class ControlSession:
                     "elements": [e.summary() for e in obs.elements if e.interactive],
                     "text": obs.text[:2000],
                 }
-            obs = self.bridge.last_observation  # type: ignore[union-attr]
-            if obs is None:
-                obs = s.observe(label="operator")
-                self.bridge.last_observation = obs  # type: ignore[union-attr]
-            record: dict[str, Any] = {"op": cmd.op, "operator": cmd.operator, "ts": datetime.now(UTC).isoformat()}
+            assert self.bridge is not None
+            obs = self.bridge.last_observation or s.observe(label="operator")
+            self.bridge.last_observation = obs
+            record: dict[str, Any] = {
+                "op": cmd.op,
+                "operator": cmd.operator,
+                "ts": datetime.now(UTC).isoformat(),
+            }
             if cmd.op == "navigate":
                 s.navigate(cmd.args["url"])
                 record["url"] = cmd.args["url"]
@@ -254,12 +265,15 @@ class ControlSession:
             actions.append(record)
             intervention.human_actions.append(record)
             self.logger.emit(
-                EventKind.HUMAN_ACTION, f"human {cmd.op} by {cmd.operator}", step_id=intervention.step_id, **record
+                EventKind.HUMAN_ACTION,
+                f"human {cmd.op} by {cmd.operator}",
+                step_id=intervention.step_id,
+                **record,
             )
             obs = s.observe(screenshot=True, label="after-human")
-            self.bridge.last_observation = obs  # type: ignore[union-attr]
+            self.bridge.last_observation = obs
             return {"ok": True, "url": obs.url, "screenshot": str(obs.screenshot)}
-        except Exception as exc:  # noqa: BLE001 — surface errors are reported to the operator, not raised
+        except Exception as exc:
             return {"ok": False, "error": f"{type(exc).__name__}: {exc}"}
 
 
@@ -267,7 +281,12 @@ class ScriptedOperator:
     """A stand-in human for tests and offline evidence. Waits for an intervention, performs the
     scripted commands on the live session through the bridge, then resolves it."""
 
-    def __init__(self, bridge: OperatorBridge, commands: list[dict[str, Any]], operator: str = "scripted-operator") -> None:
+    def __init__(
+        self,
+        bridge: OperatorBridge,
+        commands: list[dict[str, Any]],
+        operator: str = "scripted-operator",
+    ) -> None:
         self.bridge = bridge
         self.commands = commands
         self.operator = operator
@@ -295,5 +314,7 @@ class ScriptedOperator:
                     obs = self.bridge.last_observation
                 spec = c.pop("find")
                 assert obs is not None
-                c["ref"] = next(e.ref for e in obs.elements if all(getattr(e, k) == v for k, v in spec.items()))
+                c["ref"] = next(
+                    e.ref for e in obs.elements if all(getattr(e, k) == v for k, v in spec.items())
+                )
             self.results.append(self.bridge.submit(op, self.operator, **c))

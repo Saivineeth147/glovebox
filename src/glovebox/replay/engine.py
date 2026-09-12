@@ -42,7 +42,7 @@ from glovebox.schema.results import (
     ReplayStatus,
     StepRecord,
 )
-from glovebox.surface.base import Surface, SurfaceError
+from glovebox.surface.base import Resolved, Surface, SurfaceError
 
 from .templating import InputError, coerce_output, render_template, validate_inputs
 
@@ -104,7 +104,7 @@ class ReplayEngine:
                     self.log.redactor.register_secret(str(params[p.name]), p.name)
             self._params = params
             self._execute_all()
-            return self._finish_success()
+            return self._done(self._finish_success())
         except _Stop as stop:
             return self._done(stop.result)
         except InputError as exc:
@@ -144,13 +144,32 @@ class ReplayEngine:
     def _run_step(self, step: Step, attempt: int = 1) -> str:
         t0 = time.monotonic()
         started = datetime.now(UTC)
-        self.log.emit(EventKind.STEP_STARTED, f"{step.action} — {step.intent}", step_id=step.id, attempt=attempt)
-        rec = StepRecord(step_id=step.id, action=str(step.action), status="ok", started_at=started, duration_ms=0)
+        self.log.emit(
+            EventKind.STEP_STARTED,
+            f"{step.action} — {step.intent}",
+            step_id=step.id,
+            attempt=attempt,
+        )
+        rec = StepRecord(
+            step_id=step.id, action=str(step.action), status="ok", started_at=started, duration_ms=0
+        )
         try:
             self._policy(step)
-            strategy = self._act(step)
+            try:
+                strategy = self._act(step)
+            except SurfaceError as exc:
+                self._stuck(
+                    step,
+                    rec,
+                    FailureClass.SURFACE_ERROR,
+                    str(exc),
+                    expected=step.target.description if step.target else str(step.action),
+                )
+                strategy = None
             rec.strategy_used = strategy
-            self.surface.wait_settled(step.wait.load_state, step.wait.settle_ms, step.wait.timeout_ms)
+            self.surface.wait_settled(
+                step.wait.load_state, step.wait.settle_ms, step.wait.timeout_ms
+            )
             self._classify_after(step, rec)
             if self.opt.screenshot_each_step:
                 self.surface.observe(screenshot=True, label=f"after-{step.id}")
@@ -159,6 +178,29 @@ class ReplayEngine:
             rec.recoveries.append(r.recovery.name)
             self._record(rec, t0)
             return self._apply_recovery(step, r.recovery, attempt)
+        except _RetryAfterHuman:
+            rec.status = "recovered"
+            rec.recoveries.append("human")
+            self._record(rec, t0)
+            if attempt >= 3:
+                raise _Stop(
+                    self._fail(
+                        FailureClass.CHECKPOINT_FAILED,
+                        step.id,
+                        "still failing after human intervention",
+                    )
+                ) from None
+            return self._run_step(step, attempt + 1)
+        except _RestartAfterHuman:
+            rec.status = "recovered"
+            rec.recoveries.append("human:restart")
+            self._record(rec, t0)
+            self._restarts += 1
+            if self._restarts > 2:
+                raise _Stop(
+                    self._fail(FailureClass.RECOVERY_EXHAUSTED, step.id, "too many restarts")
+                ) from None
+            return "restart"
         except _Stop:
             rec.status = "failed"
             self._record(rec, t0)
@@ -180,16 +222,25 @@ class ReplayEngine:
     # ------------------------------------------------------------------ policy
     def _policy(self, step: Step) -> None:
         d = self.guardrails.check_action(step.action, step.risk, attended=self.opt.attended)
-        self.log.emit(EventKind.POLICY_DECISION, f"{d.verdict}: {d.reason}", step_id=step.id, risk=str(step.risk))
+        self.log.emit(
+            EventKind.POLICY_DECISION,
+            f"{d.verdict}: {d.reason}",
+            step_id=step.id,
+            risk=str(step.risk),
+        )
         if d.verdict == Verdict.BLOCK:
             raise _Stop(self._fail(FailureClass.POLICY_VIOLATION, step.id, d.reason))
         if d.verdict == Verdict.CONFIRM:
             res = self.control.request_intervention(
-                InterventionKind.CONFIRM, f"irreversible step needs approval: {step.intent}", step.id
+                InterventionKind.CONFIRM,
+                f"irreversible step needs approval: {step.intent}",
+                step.id,
             )
             self._note_handoff(res, step.id)
             if res.action != "approve":
-                raise _Stop(self._escalated(step.id, f"operator {res.action} the irreversible step"))
+                raise _Stop(
+                    self._escalated(step.id, f"operator {res.action} the irreversible step")
+                )
         if step.action == ActionKind.NAVIGATE:
             url = self._url(step)
             d = self.guardrails.check_url(url)
@@ -199,7 +250,7 @@ class ReplayEngine:
     # ------------------------------------------------------------------ acting
     def _url(self, step: Step) -> str:
         assert step.value is not None
-        v = render_template(step.value, self._params)
+        v = render_template(step.value, self._params, self.cap.app.model_dump())
         return v if v.startswith("http") else self.cap.app.origin + v
 
     def _act(self, step: Step) -> str | None:
@@ -227,35 +278,22 @@ class ReplayEngine:
             s.click(el)
         elif step.action == ActionKind.FILL:
             assert step.value is not None
-            s.fill(el, render_template(step.value, self._params))
+            s.fill(el, render_template(step.value, self._params, self.cap.app.model_dump()))
         elif step.action == ActionKind.SELECT:
             assert step.value is not None
-            s.select(el, render_template(step.value, self._params))
+            s.select(el, render_template(step.value, self._params, self.cap.app.model_dump()))
         elif step.action == ActionKind.EXTRACT:
             assert step.extract_to is not None
             self._extract(step, el.text if el.value is None else (el.value or el.text))
-        return resolved.strategy_kind
+        return str(resolved.strategy_kind)
 
-    def _resolve(self, step: Step) -> Any:
+    def _resolve(self, step: Step) -> Resolved:
         assert step.target is not None
         try:
             r = self.surface.resolve(step.target)
         except SurfaceError as exc:
             self.log.emit(EventKind.TARGET_RESOLVED, f"unresolved: {exc}", step_id=step.id)
-            # a covering interstitial or an error page is the usual cause: give recoveries a chance
-            self._check_signals_and_outcomes(step)
-            rec = self._matching_recovery()
-            if rec is not None:
-                raise _Recover(rec) from exc
-            raise _Stop(
-                self._fail(
-                    FailureClass.TARGET_NOT_FOUND,
-                    step.id,
-                    str(exc),
-                    expected=step.target.description,
-                    observed=self._observed_summary(),
-                )
-            ) from exc
+            raise SurfaceError(f"target not found: {exc}") from exc
         self.log.emit(
             EventKind.TARGET_RESOLVED,
             f"{step.target.description} via {r.strategy_kind}#{r.strategy_index}",
@@ -277,7 +315,9 @@ class ReplayEngine:
         self.outputs[step.extract_to] = coerce_output(str(value), spec.type)
         if spec.sensitive:
             self.log.redactor.register_secret(str(value), step.extract_to)
-        self.log.emit(EventKind.ACTION, f"extracted {step.extract_to}", step_id=step.id, value=str(value))
+        self.log.emit(
+            EventKind.ACTION, f"extracted {step.extract_to}", step_id=step.id, value=str(value)
+        )
 
     # ------------------------------------------------------------------ classification
     def _classify_after(self, step: Step, rec: StepRecord) -> None:
@@ -286,53 +326,96 @@ class ReplayEngine:
         if failed is None:
             return
         cond, observed = failed
-        self.log.emit(EventKind.CONDITION, f"expectation failed: {cond.describe()} ({observed})", step_id=step.id)
+        self.log.emit(
+            EventKind.CONDITION,
+            f"expectation failed: {cond.describe()} ({observed})",
+            step_id=step.id,
+        )
+        self._stuck(
+            step,
+            rec,
+            FailureClass.CHECKPOINT_FAILED,
+            f"post-condition not met after '{step.intent}'",
+            expected=cond.describe(),
+            observed=observed,
+        )
+
+    def _stuck(
+        self,
+        step: Step,
+        rec: StepRecord,
+        cls: FailureClass,
+        message: str,
+        *,
+        expected: str | None,
+        observed: str | None = None,
+    ) -> None:
+        """The step cannot proceed. In order: failure signals / outcomes, a declared recovery,
+        a human (attended), else a debuggable hard failure. Returns only if a human resolved it
+        with `resume` (the caller then retries the step's expectations)."""
+        self._check_signals_and_outcomes(step)
         recovery = self._matching_recovery()
         if recovery is not None:
             raise _Recover(recovery)
-        if self.opt.attended:
-            res = self.control.request_intervention(
-                InterventionKind.STUCK, f"expected {cond.describe()} after '{step.intent}', saw: {observed}", step.id
+        observed = observed or self._observed_summary()
+        if not self.opt.attended:
+            raise _Stop(
+                self._fail(
+                    cls if cls != FailureClass.SURFACE_ERROR else FailureClass.TARGET_NOT_FOUND,
+                    step.id,
+                    message,
+                    expected=expected,
+                    observed=observed,
+                )
             )
-            self._note_handoff(res, step.id)
-            if res.action == "resume":
-                ok = self._first_failed(step.expect) is None
-                if ok:
-                    rec.note = "expectation satisfied after human intervention"
-                    return
-                raise _Stop(self._fail(FailureClass.CHECKPOINT_FAILED, step.id, "still failing after human resume",
-                                       expected=cond.describe(), observed=self._observed_summary()))
-            if res.action == "complete":
-                raise _Stop(self._finish_success(human_completed=True))
-            raise _Stop(self._escalated(step.id, f"operator chose {res.action}"))
-        raise _Stop(
-            self._fail(
-                FailureClass.CHECKPOINT_FAILED,
-                step.id,
-                f"post-condition not met after '{step.intent}'",
-                expected=cond.describe(),
-                observed=observed,
-            )
+        res = self.control.request_intervention(
+            InterventionKind.STUCK,
+            f"{message}; expected {expected}, saw: {observed[:200]}",
+            step.id,
         )
+        self._note_handoff(res, step.id)
+        if res.action == "resume":
+            rec.note = "human intervened; step retried"
+            raise _RetryAfterHuman
+        if res.action == "restart":
+            rec.note = "human intervened; capability restarted"
+            raise _RestartAfterHuman
+        if res.action == "complete":
+            raise _Stop(self._finish_success(human_completed=True))
+        raise _Stop(self._escalated(step.id, f"operator chose {res.action}"))
 
     def _check_signals_and_outcomes(self, step: Step) -> None:
         for sig in self.cap.failure_signals:
             ok, obs = self.surface.check(sig.model_copy(update={"timeout_ms": 0}))
             if ok:
                 raise _Stop(
-                    self._fail(FailureClass.FAILURE_SIGNAL, step.id, f"failure signal fired: {sig.describe()}",
-                               expected="no failure signal", observed=obs)
+                    self._fail(
+                        FailureClass.FAILURE_SIGNAL,
+                        step.id,
+                        f"failure signal fired: {sig.describe()}",
+                        expected="no failure signal",
+                        observed=obs,
+                    )
                 )
         for out in self.cap.outcomes:
             ok, _ = self.surface.check(out.detect.model_copy(update={"timeout_ms": 0}))
             if ok:
-                self.log.emit(EventKind.OUTCOME, f"business outcome {out.code}", step_id=step.id, code=out.code)
+                self.log.emit(
+                    EventKind.OUTCOME,
+                    f"business outcome {out.code}",
+                    step_id=step.id,
+                    code=out.code,
+                )
                 raise _Stop(self._outcome(out.code, out.description))
 
     def _first_failed(self, conds: list[Condition]) -> tuple[Condition, str] | None:
         for c in conds:
             ok, observed = self.surface.check(c)
-            self.log.emit(EventKind.CONDITION, f"{'ok' if ok else 'FAIL'} {c.describe()}", observed=observed[:300])
+            self.log.emit(
+                EventKind.CONDITION,
+                f"{'ok' if ok else 'FAIL'} {c.describe()}",
+                observed=observed[:300],
+            )
             if not ok:
                 return c, observed
         return None
@@ -363,9 +446,13 @@ class ReplayEngine:
         if recovery.then == "restart_capability":
             self._restarts += 1
             if self._restarts > 2:
-                raise _Stop(self._fail(FailureClass.RECOVERY_EXHAUSTED, step.id, "too many restarts"))
+                raise _Stop(
+                    self._fail(FailureClass.RECOVERY_EXHAUSTED, step.id, "too many restarts")
+                )
             return "restart"
-        res = self.control.request_intervention(InterventionKind.STUCK, f"recovery '{recovery.name}' escalates", step.id)
+        res = self.control.request_intervention(
+            InterventionKind.STUCK, f"recovery '{recovery.name}' escalates", step.id
+        )
         self._note_handoff(res, step.id)
         if res.action == "resume":
             return self._run_step(step, attempt + 1)
@@ -382,8 +469,13 @@ class ReplayEngine:
                 ok, _ = self.surface.check(out.detect.model_copy(update={"timeout_ms": 0}))
                 if ok:
                     return self._outcome(out.code, out.description)
-            return self._fail(FailureClass.CHECKPOINT_FAILED, None, "success condition not met",
-                              expected=cond.describe(), observed=observed)
+            return self._fail(
+                FailureClass.CHECKPOINT_FAILED,
+                None,
+                "success condition not met",
+                expected=cond.describe(),
+                observed=observed,
+            )
         missing = [o.name for o in self.cap.outputs if o.name not in self.outputs]
         if missing and human_completed:
             # the human finished the flow; run the extraction steps so the caller still gets outputs
@@ -395,25 +487,48 @@ class ReplayEngine:
                         continue
             missing = [o.name for o in self.cap.outputs if o.name not in self.outputs]
         if missing:
-            return self._fail(FailureClass.CHECKPOINT_FAILED, None, f"outputs not extracted: {missing}")
+            return self._fail(
+                FailureClass.CHECKPOINT_FAILED, None, f"outputs not extracted: {missing}"
+            )
         return self._result(ReplayStatus.SUCCESS)
 
     def _outcome(self, code: str, description: str) -> ReplayResult:
-        return self._result(ReplayStatus.BUSINESS_OUTCOME, outcome_code=code, outcome_description=description)
+        return self._result(
+            ReplayStatus.BUSINESS_OUTCOME, outcome_code=code, outcome_description=description
+        )
 
     def _escalated(self, step_id: str | None, why: str) -> ReplayResult:
         self.log.emit(EventKind.CONTROL, f"run escalated: {why}", step_id=step_id)
         return self._result(ReplayStatus.ESCALATED)
 
-    def _fail(self, cls: FailureClass, step_id: str | None, message: str, *, expected: str | None = None,
-              observed: str | None = None) -> ReplayResult:
+    def _fail(
+        self,
+        cls: FailureClass,
+        step_id: str | None,
+        message: str,
+        *,
+        expected: str | None = None,
+        observed: str | None = None,
+    ) -> ReplayResult:
         evidence = self.surface.capture(f"failure-{step_id or 'run'}")
         self.log.emit(EventKind.EVIDENCE, "failure evidence captured", step_id=step_id, **evidence)
-        self.log.emit(EventKind.ERROR, f"{cls}: {message}", step_id=step_id, expected=expected, observed=observed)
+        self.log.emit(
+            EventKind.ERROR,
+            f"{cls}: {message}",
+            step_id=step_id,
+            expected=expected,
+            observed=observed,
+        )
         return self._result(
             ReplayStatus.FAILED,
-            failure=Failure(failure_class=cls, step_id=step_id, message=message, expected=expected,
-                            observed=observed, evidence=evidence),
+            failure=Failure(
+                failure_class=cls,
+                step_id=step_id,
+                message=message,
+                expected=expected,
+                observed=observed,
+                evidence=evidence,
+            ),
         )
 
     def _result(self, status: ReplayStatus, **kw: Any) -> ReplayResult:
@@ -433,16 +548,26 @@ class ReplayEngine:
         )
 
     def _done(self, result: ReplayResult) -> ReplayResult:
-        self.log.run_dir.write_json("result.json", result.model_dump(mode="json"), self.log.redactor)
-        self.log.emit(EventKind.RUN_FINISHED, f"{result.status}" + (f" ({result.outcome_code})" if result.outcome_code else ""),
-                      status=str(result.status), outputs=result.outputs)
+        self.log.run_dir.write_json(
+            "result.json", result.model_dump(mode="json"), self.log.redactor
+        )
+        self.log.emit(
+            EventKind.RUN_FINISHED,
+            f"{result.status}" + (f" ({result.outcome_code})" if result.outcome_code else ""),
+            status=str(result.status),
+            outputs=result.outputs,
+        )
         return result
 
     def _note_handoff(self, res: Any, step_id: str | None) -> None:
         last = self.control.interventions[-1]
         self.handoff = HandoffRecord(
-            intervention_id=last.id, reason=last.reason, step_id=step_id, resolution=res.action,
-            human_actions=len(res.human_actions), operator=res.operator,
+            intervention_id=last.id,
+            reason=last.reason,
+            step_id=step_id,
+            resolution=res.action,
+            human_actions=len(res.human_actions),
+            operator=res.operator,
         )
 
     def _observed_summary(self) -> str:
@@ -456,3 +581,11 @@ class ReplayEngine:
 class _Recover(Exception):
     def __init__(self, recovery: Recovery) -> None:
         self.recovery = recovery
+
+
+class _RetryAfterHuman(Exception):
+    pass
+
+
+class _RestartAfterHuman(Exception):
+    pass

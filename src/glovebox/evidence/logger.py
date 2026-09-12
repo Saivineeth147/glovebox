@@ -59,16 +59,16 @@ class RunDir:
 class EvidenceLogger:
     """Append-only, redacted JSONL event sink plus optional console echo."""
 
-    def __init__(self, run_id: str, run_dir: RunDir, redactor: Redactor, echo: bool = False) -> None:
+    def __init__(
+        self, run_id: str, run_dir: RunDir, redactor: Redactor, echo: bool = False
+    ) -> None:
         self.run_id = run_id
         self.run_dir = run_dir
         self.redactor = redactor
         self.echo = echo
         self._count = 0
 
-    def emit(
-        self, kind: EventKind, message: str, step_id: str | None = None, **data: Any
-    ) -> Event:
+    def emit(self, kind: EventKind, message: str, step_id: str | None = None, **data: Any) -> Event:
         ev = Event(
             run_id=self.run_id,
             kind=kind,

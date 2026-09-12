@@ -33,7 +33,7 @@ class Catalog:
             raise FileNotFoundError(f"no capability at {p}")
         return Capability.model_validate_json(p.read_text(encoding="utf-8"))
 
-    def list(self) -> list[Capability]:
+    def all(self) -> list[Capability]:
         return [self.load(str(p)) for p in sorted(self.dir.glob("*.json"))]
 
     def approve(self, cap_id: str, reviewer: str, notes: str | None = None) -> Capability:
@@ -54,7 +54,7 @@ class Catalog:
 
     def tool_definitions(self, include_drafts: bool = False) -> list[dict[str, Any]]:
         out = []
-        for cap in self.list():
+        for cap in self.all():
             if cap.review.status != ReviewStatus.APPROVED and not include_drafts:
                 continue
             props: dict[str, Any] = {}
@@ -78,13 +78,22 @@ class Catalog:
                         f"Possible business outcomes: {json.dumps(outcomes) or 'none'}. "
                         f"Risk: {cap.max_risk}. Version {cap.version} ({cap.review.status})."
                     ),
-                    "input_schema": {"type": "object", "properties": props, "required": required,
-                                     "additionalProperties": False},
+                    "input_schema": {
+                        "type": "object",
+                        "properties": props,
+                        "required": required,
+                        "additionalProperties": False,
+                    },
                 }
             )
         return out
 
 
 def _json_type(t: ParamType) -> str:
-    return {ParamType.STRING: "string", ParamType.INTEGER: "integer", ParamType.NUMBER: "number",
-            ParamType.BOOLEAN: "boolean", ParamType.ENUM: "string"}[t]
+    return {
+        ParamType.STRING: "string",
+        ParamType.INTEGER: "integer",
+        ParamType.NUMBER: "number",
+        ParamType.BOOLEAN: "boolean",
+        ParamType.ENUM: "string",
+    }[t]

@@ -64,9 +64,7 @@ class Guardrails:
             raise PolicyViolation(d.reason)
 
     # ------------------------------------------------------------------ actions
-    def check_action(
-        self, action: ActionKind, risk: RiskClass, *, attended: bool
-    ) -> Decision:
+    def check_action(self, action: ActionKind, risk: RiskClass, *, attended: bool) -> Decision:
         if action not in self.policy.allowed_actions:
             return Decision(Verdict.BLOCK, f"action {action} is not permitted by policy")
         if risk == RiskClass.IRREVERSIBLE:
@@ -76,9 +74,7 @@ class Guardrails:
             if mode == "confirm":
                 if attended:
                     return Decision(Verdict.CONFIRM, "irreversible action needs human confirmation")
-                return Decision(
-                    Verdict.BLOCK, "irreversible action attempted in unattended mode"
-                )
+                return Decision(Verdict.BLOCK, "irreversible action attempted in unattended mode")
         if not attended and _rank(risk) > _rank(self.policy.max_risk_unattended):
             return Decision(
                 Verdict.BLOCK,

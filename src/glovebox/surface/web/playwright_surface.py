@@ -14,6 +14,7 @@ from pathlib import Path
 from typing import Any, Literal
 
 from playwright.sync_api import Browser, BrowserContext, Dialog, Frame, Page, sync_playwright
+from playwright.sync_api import Error as PlaywrightError
 
 from glovebox.evidence.logger import RunDir
 from glovebox.schema.capability import Condition, ConditionKind, Target
@@ -66,7 +67,7 @@ class PlaywrightSurface:
         try:
             if resp.request.resource_type == "document":
                 self._last_status = resp.status
-        except Exception:  # noqa: BLE001 — response objects can be torn down mid-navigation
+        except Exception:  # noqa: S110 — response objects can be torn down mid-navigation
             pass
 
     # ------------------------------------------------------------------ frames
@@ -74,6 +75,8 @@ class PlaywrightSurface:
         out: list[tuple[list[str], Frame]] = []
 
         def walk(fr: Frame, path: list[str]) -> None:
+            if fr.is_detached():
+                return
             out.append((path, fr))
             for child in fr.child_frames:
                 walk(child, [*path, child.name or f"#{len(path)}"])
@@ -98,7 +101,7 @@ class PlaywrightSurface:
             frames.append(path)
             try:
                 data = fr.evaluate(_WALKER)
-            except Exception as exc:  # noqa: BLE001 — a frame may be mid-navigation
+            except Exception as exc:
                 texts.append(f"[{'/'.join(path) or 'top'}] (unavailable: {type(exc).__name__})")
                 continue
             for raw in data["elements"]:
@@ -113,8 +116,8 @@ class PlaywrightSurface:
                         name_attr=raw["name_attr"],
                         tag=raw["tag"],
                         css=raw["css"],
-                        bbox=tuple(raw["bbox"]),  # type: ignore[arg-type]
-                        nbox=tuple(raw["nbox"]),  # type: ignore[arg-type]
+                        bbox=(raw["bbox"][0], raw["bbox"][1], raw["bbox"][2], raw["bbox"][3]),
+                        nbox=(raw["nbox"][0], raw["nbox"][1]),
                         interactive=bool(raw["interactive"]),
                         value=raw["value"],
                         href=raw["href"],
@@ -147,32 +150,46 @@ class PlaywrightSurface:
 
     # ------------------------------------------------------------------ act
     def _locator(self, el: Element) -> Any:
-        loc = self._frame(el.frame).locator(el.css)
-        if loc.count() != 1:
-            raise SurfaceError(f"element {el.ref} ({el.css}) no longer resolves uniquely")
-        return loc
+        for attempt in range(2):
+            loc = self._frame(el.frame).locator(el.css)
+            try:
+                n = loc.count()
+            except PlaywrightError as exc:
+                if "detached" in str(exc) and attempt == 0:
+                    time.sleep(0.2)  # the frame was replaced by a navigation; re-resolve once
+                    continue
+                raise
+            if n != 1:
+                raise SurfaceError(f"element {el.ref} ({el.css}) no longer resolves uniquely")
+            return loc
+        raise SurfaceError(f"frame {'/'.join(el.frame)} keeps detaching")
 
     def navigate(self, url: str) -> None:
-        self.page.goto(url, wait_until="load")
+        with _Wrap("navigate", url):
+            self.page.goto(url, wait_until="load")
 
     def click(self, element: Element) -> None:
-        self._locator(element).click(timeout=5000)
+        with _Wrap("click", element.ref):
+            self._locator(element).click(timeout=5000)
 
     def fill(self, element: Element, value: str) -> None:
-        self._locator(element).fill(value, timeout=5000)
+        with _Wrap("fill", element.ref):
+            self._locator(element).fill(value, timeout=5000)
 
     def select(self, element: Element, value: str) -> None:
-        loc = self._locator(element)
-        try:
-            loc.select_option(label=value, timeout=5000)
-        except Exception:  # noqa: BLE001 — fall back to matching by value
-            loc.select_option(value=value, timeout=5000)
+        with _Wrap("select", element.ref):
+            loc = self._locator(element)
+            try:
+                loc.select_option(label=value, timeout=5000)
+            except PlaywrightError:  # fall back to matching by value
+                loc.select_option(value=value, timeout=5000)
 
     def press(self, key: str, element: Element | None = None) -> None:
-        if element is not None:
-            self._locator(element).press(key, timeout=5000)
-        else:
-            self.page.keyboard.press(key)
+        with _Wrap("press", key):
+            if element is not None:
+                self._locator(element).press(key, timeout=5000)
+            else:
+                self.page.keyboard.press(key)
 
     def arm_dialog(self, response: Literal["accept", "dismiss"]) -> None:
         self._armed_dialog = response
@@ -183,8 +200,10 @@ class PlaywrightSurface:
                 self.page.wait_for_load_state(load_state, timeout=timeout_ms)  # type: ignore[arg-type]
                 for fr in self.page.frames:
                     fr.wait_for_load_state("load", timeout=timeout_ms)
-            except Exception as exc:  # noqa: BLE001
-                raise SurfaceError(f"page did not reach {load_state} within {timeout_ms}ms") from exc
+            except Exception as exc:
+                raise SurfaceError(
+                    f"page did not reach {load_state} within {timeout_ms}ms"
+                ) from exc
         if settle_ms:
             time.sleep(settle_ms / 1000)
 
@@ -234,15 +253,11 @@ class PlaywrightSurface:
                 return False, str(exc)
         text = obs.text
         if c.frame:
-            text = "\n".join(
-                e.text for e in obs.elements if e.frame == c.frame
-            ) + "\n" + text
+            text = "\n".join(e.text for e in obs.elements if e.frame == c.frame) + "\n" + text
         present = _text_match(c.value or "", text, c.regex)
         if k == ConditionKind.TEXT_VISIBLE:
             return present, ("found" if present else f"text {c.value!r} not visible")
-        if k == ConditionKind.TEXT_ABSENT:
-            return (not present), ("absent" if not present else f"text {c.value!r} is visible")
-        return False, f"unsupported condition {k}"
+        return (not present), ("absent" if not present else f"text {c.value!r} is visible")
 
     # ------------------------------------------------------------------ evidence
     def capture(self, label: str) -> dict[str, str]:
@@ -251,14 +266,14 @@ class PlaywrightSurface:
         try:
             self.page.screenshot(path=str(shot), full_page=True)
             out["screenshot"] = str(shot)
-        except Exception as exc:  # noqa: BLE001
+        except Exception as exc:
             out["screenshot_error"] = str(exc)
         for path, fr in self._frames():
             try:
                 snap = self.run_dir.snapshot_path(f"{label}-{'_'.join(path) or 'top'}")
                 snap.write_text(fr.content(), encoding="utf-8")
                 out[f"snapshot:{'/'.join(path) or 'top'}"] = str(snap)
-            except Exception:  # noqa: BLE001
+            except Exception:  # noqa: S112 — a frame can detach while we snapshot it
                 continue
         return out
 
@@ -276,6 +291,28 @@ class PlaywrightSurface:
             self._ctx.close()
             self._browser.close()
             self._pw.stop()
+
+
+class _Wrap:
+    """Translate Playwright errors into SurfaceError with a one-line, operator-readable reason."""
+
+    def __init__(self, op: str, what: str) -> None:
+        self.op, self.what = op, what
+
+    def __enter__(self) -> None:
+        pass
+
+    def __exit__(self, exc_type: Any, exc: Any, tb: Any) -> None:
+        if exc is None or isinstance(exc, SurfaceError):
+            return
+        if isinstance(exc, PlaywrightError):
+            first = str(exc).strip().splitlines()[0] if str(exc).strip() else type(exc).__name__
+            reason = first
+            if "intercepts pointer events" in str(exc):
+                reason = "another element covers the target (modal/interstitial?)"
+            elif "Timeout" in type(exc).__name__ or "Timeout" in first:
+                reason = f"timed out: {first[:120]}"
+            raise SurfaceError(f"{self.op} {self.what} failed: {reason}") from exc
 
 
 def _text_match(pattern: str, haystack: str, regex: bool) -> bool:

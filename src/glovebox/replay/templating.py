@@ -7,7 +7,7 @@ from typing import Any
 
 from glovebox.schema.capability import Capability, ParamType
 
-_TEMPLATE = re.compile(r"\{\{\s*params\.([a-z][a-z0-9_]*)\s*\}\}")
+_TEMPLATE = re.compile(r"\{\{\s*(params|app)\.([a-z][a-z0-9_]*)\s*\}\}")
 
 
 class InputError(ValueError):
@@ -47,12 +47,15 @@ def validate_inputs(cap: Capability, raw: dict[str, Any]) -> dict[str, Any]:
     return out
 
 
-def render_template(value: str, params: dict[str, Any]) -> str:
+def render_template(value: str, params: dict[str, Any], app: dict[str, Any] | None = None) -> str:
+    """Substitute `{{ params.x }}` from the caller's inputs and `{{ app.x }}` from the AppRef."""
+
     def sub(m: re.Match[str]) -> str:
-        name = m.group(1)
-        if name not in params:
-            raise InputError(f"template references missing parameter {name!r}")
-        return str(params[name])
+        scope, name = m.group(1), m.group(2)
+        source = params if scope == "params" else (app or {})
+        if name not in source:
+            raise InputError(f"template references missing {scope}.{name}")
+        return str(source[name])
 
     return _TEMPLATE.sub(sub, value)
 

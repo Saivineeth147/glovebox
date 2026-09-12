@@ -34,9 +34,19 @@ class RunContext:
     control: ControlSession
 
 
-def _context(prefix: str, runs_dir: str | Path, policy: Policy, bridge: OperatorBridge | None, *,
-             headless: bool, echo: bool, handoff_timeout_s: float, capability_id: str | None = None,
-             goal: str | None = None, trace: bool = True) -> RunContext:
+def _context(
+    prefix: str,
+    runs_dir: str | Path,
+    policy: Policy,
+    bridge: OperatorBridge | None,
+    *,
+    headless: bool,
+    echo: bool,
+    handoff_timeout_s: float,
+    capability_id: str | None = None,
+    goal: str | None = None,
+    trace: bool = True,
+) -> RunContext:
     run_id = new_run_id(prefix)
     run_dir = RunDir.create(runs_dir, run_id)
     redactor = Redactor(policy.redact_patterns)
@@ -44,8 +54,15 @@ def _context(prefix: str, runs_dir: str | Path, policy: Policy, bridge: Operator
         redactor.register_secret(os.environ.get(env), env.lower())
     logger = EvidenceLogger(run_id, run_dir, redactor, echo=echo)
     surface = PlaywrightSurface(run_dir, headless=headless, trace=trace)
-    control = ControlSession(run_id, surface, logger, bridge, handoff_timeout_s=handoff_timeout_s,
-                             capability_id=capability_id, goal=goal)
+    control = ControlSession(
+        run_id,
+        surface,
+        logger,
+        bridge,
+        handoff_timeout_s=handoff_timeout_s,
+        capability_id=capability_id,
+        goal=goal,
+    )
     return RunContext(run_id, run_dir, logger, Guardrails(policy), surface, control)
 
 
@@ -65,13 +82,30 @@ def run_replay(
     trace: bool = True,
     on_context: Callable[[RunContext], None] | None = None,
 ) -> ReplayResult:
-    ctx = _context("replay", runs_dir, policy, bridge, headless=headless, echo=echo,
-                   handoff_timeout_s=handoff_timeout_s, capability_id=capability.id, trace=trace)
+    ctx = _context(
+        "replay",
+        runs_dir,
+        policy,
+        bridge,
+        headless=headless,
+        echo=echo,
+        handoff_timeout_s=handoff_timeout_s,
+        capability_id=capability.id,
+        trace=trace,
+    )
     if on_context:
         on_context(ctx)
     try:
-        engine = ReplayEngine(capability, params, ctx.surface, ctx.guardrails, ctx.logger, ctx.control,
-                              ReplayOptions(attended=attended, allow_draft=allow_draft), tenant=tenant)
+        engine = ReplayEngine(
+            capability,
+            params,
+            ctx.surface,
+            ctx.guardrails,
+            ctx.logger,
+            ctx.control,
+            ReplayOptions(attended=attended, allow_draft=allow_draft),
+            tenant=tenant,
+        )
         return engine.run()
     finally:
         ctx.surface.close()
@@ -97,16 +131,37 @@ def run_discovery(
     screenshots: bool = True,
     trace: bool = True,
 ) -> DiscoveryResult:
-    ctx = _context("discovery", runs_dir, policy, bridge, headless=headless, echo=echo,
-                   handoff_timeout_s=handoff_timeout_s, capability_id=capability_id, goal=goal, trace=trace)
+    ctx = _context(
+        "discovery",
+        runs_dir,
+        policy,
+        bridge,
+        headless=headless,
+        echo=echo,
+        handoff_timeout_s=handoff_timeout_s,
+        capability_id=capability_id,
+        goal=goal,
+        trace=trace,
+    )
     agent_holder: dict[str, DiscoveryAgent] = {}
     llm = llm_factory(lambda: agent_holder["agent"].last_obs if "agent" in agent_holder else None)
     try:
         agent = DiscoveryAgent(
-            goal=goal, entry_url=entry_url, params=params, param_specs=param_specs, llm=llm,
-            surface=ctx.surface, guardrails=ctx.guardrails, logger=ctx.logger, control=ctx.control,
-            capability_id=capability_id, app_id=app_id, tenant=tenant,
-            max_steps=max_steps or policy.max_steps, timeout_s=policy.run_timeout_s, screenshots=screenshots,
+            goal=goal,
+            entry_url=entry_url,
+            params=params,
+            param_specs=param_specs,
+            llm=llm,
+            surface=ctx.surface,
+            guardrails=ctx.guardrails,
+            logger=ctx.logger,
+            control=ctx.control,
+            capability_id=capability_id,
+            app_id=app_id,
+            tenant=tenant,
+            max_steps=max_steps or policy.max_steps,
+            timeout_s=policy.run_timeout_s,
+            screenshots=screenshots,
         )
         agent_holder["agent"] = agent
         return agent.run()
