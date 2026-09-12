@@ -214,6 +214,8 @@ How to work
   resolve with one obvious retry, call `escalate`. Do not guess in a bank system.
 - Before `finish`, `declare_outcome` for non-success results this flow can show (e.g. "no record
   found", "access denied") based on what the UI reveals, and `extract` every output the goal asks for.
+- Conditions must hold for any input: never use a balance, identifier, name or date you saw
+  in this run as `success_text` or `detect_text`. Use headings, labels and column names.
 - Stay within the allowed origin; policy will reject anything else.
 
 Be terse in your text; put reasoning into the `why` fields."""

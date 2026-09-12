@@ -79,6 +79,7 @@ class DiscoveryAgent:
             params=param_specs,
             model_name=llm.name,
             run_id=logger.run_id,
+            param_values=params,
         )
         self.messages: list[dict[str, Any]] = []
         self.last_obs: Observation | None = None
@@ -336,10 +337,13 @@ class DiscoveryAgent:
         target = self.surface.describe_target(el)
         self.recorder.extract(target, output, description, type, regex)
         value = el.text if el.value is None else (el.value or el.text)
+        self.recorder.note_observed_value(str(value) if value is not None else None)
         self.log.emit(EventKind.ACTION, f"extract {output} from {target.description}", value=value)
         return f"{output} = {value!r} (from {target.description})"
 
     def _t_declare_outcome(self, code: str, description: str, detect_text: str) -> str:
+        if reason := self.recorder.overfit_reason(detect_text):
+            raise ValueError(f"detect_text rejected: {reason}")
         self.recorder.declare_outcome(code, description, detect_text)
         return f"outcome {code} recorded"
 
@@ -362,6 +366,8 @@ class DiscoveryAgent:
         from glovebox.schema.capability import Condition, ConditionKind
 
         for t in success_text:
+            if reason := self.recorder.overfit_reason(t):
+                raise ValueError(f"success_text rejected: {reason}")
             ok, observed = self.surface.check(
                 Condition(kind=ConditionKind.TEXT_VISIBLE, value=t, timeout_ms=3000)
             )

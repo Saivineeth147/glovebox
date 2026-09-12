@@ -2,6 +2,9 @@
 
 from __future__ import annotations
 
+import pytest
+
+from glovebox.agent.loop import DiscoveryAgent
 from glovebox.agent.overfit import overfit_reason
 from glovebox.agent.recorder import Recorder
 from glovebox.schema.capability import Parameter, ParamType
@@ -56,3 +59,12 @@ def test_should_reject_a_condition_built_from_a_value_read_off_the_screen() -> N
 def test_should_accept_a_static_label_when_values_are_known() -> None:
     rec = _recorder(param_values={"member_id": "100234"})
     assert rec.overfit_reason("Share Accounts") is None
+
+
+def test_should_refuse_to_declare_an_outcome_built_from_run_data() -> None:
+    """The model gets a tool error and can retry, rather than the run dying at build time."""
+    agent = object.__new__(DiscoveryAgent)
+    agent.recorder = _recorder(param_values={"member_id": "100234"})
+    with pytest.raises(ValueError, match="100234"):
+        DiscoveryAgent._t_declare_outcome(agent, "MEMBER_FOUND", "found", "Member No. 100234")
+    assert agent.recorder.outcomes == []
