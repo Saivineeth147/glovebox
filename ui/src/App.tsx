@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import { Activity, BookOpen, Compass, LayoutDashboard, ShieldCheck, Sparkles } from "lucide-react";
+import { Activity, BookOpen, Compass, LayoutDashboard, ShieldCheck } from "lucide-react";
 import Overview from "./pages/Overview";
 import Runs from "./pages/Runs";
 import RunDetail from "./pages/RunDetail";
@@ -31,54 +31,104 @@ const NAV = [
   { path: "/policy", label: "Policy", icon: ShieldCheck },
 ];
 
+const OVERVIEW_POLL_MS = 5000;
+
+/** One reading in the containment band: a lamp, a word, and the value it is reporting. */
+function Reading({ tone, label, value }: { tone: string; label: string; value: string }) {
+  return (
+    <span className="flex items-center gap-1.5 whitespace-nowrap">
+      <span className={`lamp ${tone}`} />
+      <span className="text-ink-400">{label}</span>
+      <span className="text-ink-200 font-mono tnum">{value}</span>
+    </span>
+  );
+}
+
 export default function App() {
   const route = useRoute();
   const [ov, setOv] = useState<any>(null);
+
   useEffect(() => {
     const load = () => api.overview().then(setOv).catch(() => setOv({ target: { up: false } }));
     load();
-    const t = setInterval(load, 5000);
-    return () => clearInterval(t);
+    const timer = setInterval(load, OVERVIEW_POLL_MS);
+    return () => clearInterval(timer);
   }, []);
 
   let page: React.ReactElement;
-  const m = (re: RegExp) => route.match(re);
-  if (m(/^\/runs\/([^/]+)$/)) page = <RunDetail runId={m(/^\/runs\/([^/]+)$/)![1]} />;
+  const match = (re: RegExp) => route.match(re);
+  if (match(/^\/runs\/([^/]+)$/)) page = <RunDetail runId={match(/^\/runs\/([^/]+)$/)![1]} />;
   else if (route === "/runs") page = <Runs />;
-  else if (m(/^\/capabilities\/([^/]+)$/)) page = <CapabilityDetail id={m(/^\/capabilities\/([^/]+)$/)![1]} />;
+  else if (match(/^\/capabilities\/([^/]+)$/))
+    page = <CapabilityDetail id={match(/^\/capabilities\/([^/]+)$/)![1]} />;
   else if (route === "/capabilities") page = <Capabilities />;
   else if (route === "/discover") page = <Discover />;
   else if (route === "/policy") page = <Policy />;
   else page = <Overview />;
 
-  const active = (p: string) => (p === "/" ? route === "/" : route.startsWith(p));
+  const isActive = (path: string) => (path === "/" ? route === "/" : route.startsWith(path));
+  const interventions = ov?.open_interventions ?? 0;
+
   return (
-    <div className="h-full flex">
-      <aside className="w-[232px] shrink-0 border-r border-ink-800 bg-ink-900/60 flex flex-col">
-        <div className="px-4 py-4 flex items-center gap-2.5 border-b border-ink-800">
-          <div className="w-7 h-7 rounded-lg bg-accent grid place-items-center"><Sparkles className="w-4 h-4 text-white" /></div>
-          <div>
-            <div className="text-[14px] font-semibold leading-tight">Glovebox</div>
-            <div className="text-[11px] text-ink-400 leading-tight">Studio</div>
-          </div>
+    <div className="h-full flex flex-col">
+      {/* Containment band: what is true of the whole enclosure, always visible. */}
+      <header className="h-band shrink-0 flex items-center gap-4 px-3 border-b border-ink-700 bg-ink-900">
+        <a href="#/" className="flex items-baseline gap-2 shrink-0">
+          <span className="text-[13px] font-semibold tracking-[0.14em] text-ink-100">GLOVEBOX</span>
+          <span className="hint hidden sm:inline">Studio</span>
+        </a>
+        <div className="flex-1" />
+        <div className="flex items-center gap-4 text-[12px] overflow-x-auto">
+          <Reading
+            tone={interventions > 0 ? "text-attention-300 live" : "text-emerald-400"}
+            label="control"
+            value={interventions > 0 ? `human · ${interventions} waiting` : "automation"}
+          />
+          <Reading
+            tone={ov?.target?.up ? "text-emerald-400" : "text-rose-400"}
+            label="target"
+            value={ov?.target?.up ? "reachable" : "offline"}
+          />
+          <Reading
+            tone={ov?.has_api_key ? "text-emerald-400" : "text-ink-500"}
+            label="model"
+            value={ov?.has_api_key ? ov.model : "offline mode"}
+          />
+          <Reading tone="text-ink-500" label="policy" value={ov?.policy ?? "—"} />
         </div>
-        <nav className="p-2 flex-1">
+      </header>
+
+      <div className="flex-1 min-h-0 flex">
+        <nav
+          aria-label="Sections"
+          className="w-rail shrink-0 border-r border-ink-700 bg-ink-900 flex flex-col items-center py-2 gap-1"
+        >
           {NAV.map(({ path, label, icon: Icon }) => (
-            <a key={path} href={`#${path}`} className={`flex items-center gap-2.5 px-3 py-2 rounded-lg text-[13px] font-medium transition-colors ${active(path) ? "bg-ink-800 text-ink-100" : "text-ink-300 hover:bg-ink-850 hover:text-ink-100"}`}>
-              <Icon className="w-4 h-4" /> {label}
-              {path === "/runs" && ov?.open_interventions > 0 && <span className="ml-auto chip bg-violet-500/20 text-violet-300 border border-violet-500/30">{ov.open_interventions}</span>}
+            <a
+              key={path}
+              href={`#${path}`}
+              title={label}
+              aria-current={isActive(path) ? "page" : undefined}
+              className={`relative w-10 h-10 grid place-items-center rounded-panel transition-colors
+                focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-attention/60 ${
+                  isActive(path)
+                    ? "bg-ink-700 text-ink-100"
+                    : "text-ink-400 hover:bg-ink-800 hover:text-ink-200"
+                }`}
+            >
+              <Icon className="w-[18px] h-[18px]" />
+              <span className="sr-only">{label}</span>
+              {path === "/runs" && interventions > 0 && (
+                <span className="absolute top-1.5 right-1.5 w-1.5 h-1.5 rounded-full bg-attention live" />
+              )}
             </a>
           ))}
         </nav>
-        <div className="p-3 border-t border-ink-800 text-[11px] text-ink-400 space-y-1.5">
-          <div className="flex items-center gap-2"><span className={`w-1.5 h-1.5 rounded-full ${ov?.target?.up ? "bg-emerald-400" : "bg-rose-400"}`} /> Target {ov?.target?.up ? "reachable" : "offline"}</div>
-          <div className="flex items-center gap-2"><span className={`w-1.5 h-1.5 rounded-full ${ov?.has_api_key ? "bg-emerald-400" : "bg-amber-400"}`} /> {ov?.has_api_key ? `${ov.provider}: ${ov.model}` : "No model key — offline mode"}</div>
-          <div className="flex items-center gap-2"><span className="w-1.5 h-1.5 rounded-full bg-ink-500" /> Policy: {ov?.policy ?? "—"}</div>
-        </div>
-      </aside>
-      <main className="flex-1 min-w-0 overflow-auto">
-        <div className="max-w-[1400px] mx-auto px-7 py-6 fade-in" key={route}>{page}</div>
-      </main>
+
+        <main className="flex-1 min-w-0 overflow-auto">
+          <div className="max-w-[1440px] mx-auto px-6 py-5">{page}</div>
+        </main>
+      </div>
     </div>
   );
 }

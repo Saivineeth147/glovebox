@@ -2,7 +2,7 @@ import { useEffect, useRef, useState } from "react";
 import { Hand, RefreshCw } from "lucide-react";
 import { api, fmtTime } from "../api";
 import { Chip } from "./ui";
-import BrowserFrame from "./BrowserFrame";
+import SessionWindow from "./SessionWindow";
 
 /** Human takeover of the live session for one job. A client of the OperatorBridge — nothing here touches the browser. */
 export default function Operator({ jobId, onResolved }: { jobId: string; onResolved?: () => void }) {
@@ -66,7 +66,7 @@ export default function Operator({ jobId, onResolved }: { jobId: string; onResol
       <div className="grid lg:grid-cols-[1fr_320px]">
         <div className="p-4 border-r border-ink-800">
           <div className="label mb-2">Live session · {st?.elements?.length ?? 0} interactive elements · click a highlighted control to select it</div>
-          <BrowserFrame src={shotUrl} url={st?.url} live={human} aspect={`${vw}/${vh}`} empty="Waiting for the session's first capture…"
+          <SessionWindow src={shotUrl} url={st?.url} live={human} aspect={`${vw}/${vh}`} empty="Waiting for the session's first capture…"
             overlay={st?.elements?.map((e: any) => {
               const [x, y, w, h] = e.box; if (w <= 0 || h <= 0) return null;
               return <div key={e.ref} title={`${e.ref} ${e.role} ${e.name || ""}`} onClick={() => setSel(e.ref)}

@@ -3,7 +3,7 @@ import { Bot, MousePointerClick, Eye, ShieldCheck, ListChecks, LifeBuoy, AlertTr
 import { api, fmtTime, duration } from "../api";
 import { Chip, Panel, KV, Code, Spinner, PageHeader } from "../components/ui";
 import Operator from "../components/Operator";
-import BrowserFrame from "../components/BrowserFrame";
+import SessionWindow from "../components/SessionWindow";
 
 const ICON: Record<string, any> = {
   "agent.decision": Bot, "agent.usage": Coins, "surface.observation": Eye, "surface.action": MousePointerClick, "policy.decision": ShieldCheck,
@@ -18,6 +18,8 @@ const TONE: Record<string, string> = {
 };
 
 function shotName(p?: string | null) { return p ? p.split("/").pop() : undefined; }
+
+const sentence = (v: string) => v.charAt(0).toUpperCase() + v.slice(1);
 
 export default function RunDetail({ runId }: { runId: string }) {
   const [run, setRun] = useState<any>(null);
@@ -75,7 +77,7 @@ export default function RunDetail({ runId }: { runId: string }) {
       {intervention && job && <div className="mb-4"><Operator jobId={job.id} /></div>}
 
       <div className="grid lg:grid-cols-[minmax(0,1fr)_460px] gap-4">
-        <Panel title={<span>Timeline · {visible.length} events{decisions ? ` · ${decisions} model decisions` : ""}</span>} action={<button className="text-[12px] text-ink-400 hover:text-ink-200" onClick={() => setShowAll(!showAll)}>{showAll ? "hide noise" : "show all"}</button>} padded={false}>
+        <Panel title={<span>Timeline <span className="text-ink-400 font-normal tnum">{visible.length} events{decisions ? `, ${decisions} model decisions` : ""}</span></span>} action={<button className="text-[12px] text-ink-400 hover:text-ink-200" onClick={() => setShowAll(!showAll)}>{showAll ? "hide noise" : "show all"}</button>} padded={false}>
           <div ref={listRef} className="max-h-[calc(100vh-220px)] overflow-auto">
             {visible.map((e, k) => {
               const Icon = ICON[e.kind] ?? Flag;
@@ -89,7 +91,7 @@ export default function RunDetail({ runId }: { runId: string }) {
                   <Icon className={`w-4 h-4 shrink-0 mt-0.5 ${fail ? "text-rose-300" : tone}`} />
                   <div className="min-w-0 flex-1">
                     <div className="flex items-center gap-2 flex-wrap">
-                      <span className={`text-[11px] font-semibold uppercase tracking-wider ${fail ? "text-rose-300" : tone}`}>{e.kind.split(".").slice(-1)[0].replace(/_/g, " ")}</span>
+                      <span className={`text-[12px] font-semibold ${fail ? "text-rose-300" : tone}`}>{sentence(e.kind.split(".").slice(-1)[0].replace(/_/g, " "))}</span>
                       {e.step_id && <span className="font-mono text-[11px] text-ink-400">{e.step_id}</span>}
                       {e.data?.strategy && <span className="chip bg-ink-800 text-ink-300 border border-ink-700 !normal-case">{e.data.strategy}#{e.data.index}</span>}
                       {e.data?.risk && <Chip value={e.data.risk} />}
@@ -112,10 +114,27 @@ export default function RunDetail({ runId }: { runId: string }) {
         <div className="space-y-4">
           <div>
             <div className="flex items-center justify-between mb-2">
-              <div className="label">Screen{shot ? ` · ${shots.indexOf(shot) + 1} of ${shots.length}` : ""}</div>
-              {shots.length > 1 && <div className="flex gap-1"><button className="btn !py-0.5 !px-2" onClick={() => { setFollow(false); setShot(shots[Math.max(0, shots.indexOf(shot!) - 1)]); }}>‹</button><button className="btn !py-0.5 !px-2" onClick={() => { setFollow(false); setShot(shots[Math.min(shots.length - 1, shots.indexOf(shot!) + 1)]); }}>›</button></div>}
+              <div className="label">Screen{shot ? <span className="tnum text-ink-400"> {shots.indexOf(shot) + 1} of {shots.length}</span> : null}</div>
+              {shots.length > 1 && !follow && <button className="btn !py-0.5 !px-2 text-[12px]" onClick={() => setFollow(true)}>Follow live</button>}
             </div>
-            <BrowserFrame src={shot ? `/api/runs/${runId}/files/screenshots/${shot}` : null} url={shotEvent?.data?.url ?? lastUrl} title={shotEvent?.data?.title ?? (run.kind === "discovery" ? "discovery" : "replay")} live={live} caption={shot} empty={live ? "Waiting for the first capture…" : "No screenshot in this run"} />
+            <SessionWindow src={shot ? `/api/runs/${runId}/files/screenshots/${shot}` : null} url={shotEvent?.data?.url ?? lastUrl} title={shotEvent?.data?.title ?? (run.kind === "discovery" ? "discovery" : "replay")} live={live} caption={shot} empty={live ? "Waiting for the first capture…" : "No screenshot in this run"}
+              strip={shots.length > 1 ? (
+                <div className="flex gap-1 overflow-x-auto pb-0.5">
+                  {shots.map((s2: string) => (
+                    <button
+                      key={s2}
+                      type="button"
+                      title={s2}
+                      onClick={() => { setFollow(false); setShot(s2); }}
+                      className={`h-10 w-16 shrink-0 rounded-sm overflow-hidden border transition-colors ${
+                        s2 === shot ? "border-attention" : "border-ink-700 hover:border-ink-500"
+                      }`}
+                    >
+                      <img src={`/api/runs/${runId}/files/screenshots/${s2}`} alt="" className="w-full h-full object-cover object-top" />
+                    </button>
+                  ))}
+                </div>
+              ) : null} />
           </div>
 
           {result && (
@@ -123,16 +142,16 @@ export default function RunDetail({ runId }: { runId: string }) {
               <div className="flex items-center gap-2 mb-3"><Chip value={result.status} />{result.outcome_code && <span className="font-mono text-[12px] text-sky-300">{result.outcome_code}</span>}</div>
               {result.outputs && Object.keys(result.outputs).length > 0 && <div className="mb-3"><div className="label mb-1">Outputs</div><Code>{JSON.stringify(result.outputs, null, 2)}</Code></div>}
               {result.outcome_description && <p className="text-[13px] text-ink-300 mb-2">{result.outcome_description}</p>}
-              {result.failure && <div className="mb-2"><div className="label mb-1 text-rose-300">Failure · {result.failure.failure_class}</div><KV rows={[["step", <span className="font-mono">{result.failure.step_id ?? "—"}</span>], ["message", result.failure.message], ["expected", result.failure.expected ?? "—"], ["observed", <span className="line-clamp-3">{result.failure.observed ?? "—"}</span>]]} /></div>}
+              {result.failure && <div className="mb-2"><div className="label mb-1 text-rose-300">Failure: {result.failure.failure_class}</div><KV rows={[["step", <span className="font-mono">{result.failure.step_id ?? "—"}</span>], ["message", result.failure.message], ["expected", result.failure.expected ?? "—"], ["observed", <span className="line-clamp-3">{result.failure.observed ?? "—"}</span>]]} /></div>}
               {result.handoff && <div className="mb-2"><div className="label mb-1 text-violet-300">Handoff</div><KV rows={[["resolution", result.handoff.resolution], ["operator", result.handoff.operator ?? "—"], ["human actions", String(result.handoff.human_actions)], ["reason", result.handoff.reason]]} /></div>}
               {result.summary && <p className="text-[13px] text-ink-300">{result.summary}</p>}
               {result.capability_id && <a className="btn mt-2" href={`#/capabilities/${result.capability_id}`}>Open recorded capability →</a>}
-              {result.steps && <div className="mt-3 text-[12px] text-ink-400">{result.steps.length} steps · {duration(result.started_at, result.finished_at)}</div>}
+              {result.steps && <div className="mt-3 text-[12px] text-ink-400 tnum">{result.steps.length} steps in {duration(result.started_at, result.finished_at)}</div>}
             </Panel>
           )}
 
           <Panel title="Run">
-            <KV rows={[["kind", <Chip value={run.kind} />], ["started", fmtTime(run.started_at)], ["duration", duration(run.started_at, run.finished_at) || "live"], ["events", String(run.events)], ...(usage.in ? [["tokens", `${usage.in.toLocaleString()} in · ${usage.out.toLocaleString()} out · ${usage.cached.toLocaleString()} cached`] as [string, any]] : []), ["evidence", <span className="font-mono text-[12px]">runs/{runId}/</span>]]} />
+            <KV rows={[["kind", <Chip value={run.kind} />], ["started", fmtTime(run.started_at)], ["duration", duration(run.started_at, run.finished_at) || "live"], ["events", String(run.events)], ...(usage.in ? [["tokens", <span className="tnum">{usage.in.toLocaleString()} in, {usage.out.toLocaleString()} out, {usage.cached.toLocaleString()} cached</span>] as [string, any]] : []), ["evidence", <span className="font-mono text-[12px]">runs/{runId}/</span>]]} />
             <div className="flex flex-wrap gap-1.5 mt-3">
               <a className="btn !py-1 !px-2 text-[12px]" href={`/api/runs/${runId}/files/events.jsonl`} target="_blank">events.jsonl</a>
               {run.files?.transcript && <a className="btn !py-1 !px-2 text-[12px]" href={`/api/runs/${runId}/files/transcript.json`} target="_blank">transcript.json</a>}
