@@ -1,5 +1,5 @@
 {
-  "run_id": "replay-20260912T062308-481413",
+  "run_id": "replay-20260912T063209-b8a9e0",
   "capability_id": "member_savings_balance",
   "capability_version": "1.0.0",
   "tenant": "alpha",
@@ -14,13 +14,13 @@
     "expected": null,
     "observed": null,
     "evidence": {
-      "screenshot": "/home/user/glovebox/runs/replay-20260912T062308-481413/screenshots/0001-failure-run.png",
-      "snapshot:top": "/home/user/glovebox/runs/replay-20260912T062308-481413/snapshots/0002-failure-run-top.html"
+      "screenshot": "/home/user/glovebox/runs/replay-20260912T063209-b8a9e0/screenshots/0001-failure-run.png",
+      "snapshot:top": "/home/user/glovebox/runs/replay-20260912T063209-b8a9e0/snapshots/0002-failure-run-top.html"
     }
   },
   "handoff": null,
   "steps": [],
-  "started_at": "2026-09-12T06:23:08.509087Z",
-  "finished_at": "2026-09-12T06:23:08.570412Z",
-  "evidence_dir": "/home/user/glovebox/runs/replay-20260912T062308-481413"
+  "started_at": "2026-09-12T06:32:09.530705Z",
+  "finished_at": "2026-09-12T06:32:09.582847Z",
+  "evidence_dir": "/home/user/glovebox/runs/replay-20260912T063209-b8a9e0"
 }

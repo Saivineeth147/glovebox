@@ -172,7 +172,15 @@ class ReplayEngine:
             )
             self._classify_after(step, rec)
             if self.opt.screenshot_each_step:
-                self.surface.observe(screenshot=True, label=f"after-{step.id}")
+                obs = self.surface.observe(screenshot=True, label=f"after-{step.id}")
+                self.log.emit(
+                    EventKind.EVIDENCE,
+                    f"screen after {step.id}",
+                    step_id=step.id,
+                    screenshot=str(obs.screenshot) if obs.screenshot else None,
+                    url=obs.url,
+                    title=obs.title,
+                )
         except _Recover as r:
             rec.status = "recovered"
             rec.recoveries.append(r.recovery.name)

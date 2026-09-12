@@ -3,6 +3,7 @@ import { Bot, MousePointerClick, Eye, ShieldCheck, ListChecks, LifeBuoy, AlertTr
 import { api, fmtTime, duration } from "../api";
 import { Chip, Panel, KV, Code, Spinner, PageHeader } from "../components/ui";
 import Operator from "../components/Operator";
+import BrowserFrame from "../components/BrowserFrame";
 
 const ICON: Record<string, any> = {
   "agent.decision": Bot, "agent.usage": Coins, "surface.observation": Eye, "surface.action": MousePointerClick, "policy.decision": ShieldCheck,
@@ -52,6 +53,8 @@ export default function RunDetail({ runId }: { runId: string }) {
   }, [run?.job_id]);
 
   const shots = useMemo(() => events.map((e) => shotName(e.data?.screenshot)).filter(Boolean) as string[], [events]);
+  const shotEvent = useMemo(() => events.find((e) => shotName(e.data?.screenshot) === shot), [events, shot]);
+  const lastUrl = useMemo(() => { const m = [...events].reverse().find((e) => /url=(\S+)/.test(e.message)); return m ? m.message.match(/url=(\S+)/)![1] : null; }, [events]);
   useEffect(() => { if (follow && shots.length) setShot(shots[shots.length - 1]); }, [shots, follow]);
   useEffect(() => { if (follow && listRef.current) listRef.current.scrollTop = listRef.current.scrollHeight; }, [events, follow]);
 
@@ -59,7 +62,7 @@ export default function RunDetail({ runId }: { runId: string }) {
   const result = run.result ?? job?.result;
   const usage = events.filter((e) => e.kind === "agent.usage").reduce((a, e) => ({ in: a.in + (e.data?.usage?.input_tokens ?? 0), out: a.out + (e.data?.usage?.output_tokens ?? 0), cached: a.cached + (e.data?.usage?.cache_read_input_tokens ?? 0) }), { in: 0, out: 0, cached: 0 });
   const decisions = events.filter((e) => e.kind === "agent.decision").length;
-  const visible = showAll ? events : events.filter((e) => !["agent.usage", "evidence.captured"].includes(e.kind) && !(e.kind === "replay.condition" && !e.step_id && e.message.startsWith("ok")));
+  const visible = showAll ? events : events.filter((e) => e.kind !== "agent.usage" && !(e.kind === "evidence.captured" && !e.data?.screenshot) && !(e.kind === "replay.condition" && !e.step_id && e.message.startsWith("ok")));
   const intervention = job?.intervention;
 
   return (
@@ -107,12 +110,13 @@ export default function RunDetail({ runId }: { runId: string }) {
         </Panel>
 
         <div className="space-y-4">
-          <Panel title={<span>Screen{shot ? ` · ${shots.indexOf(shot) + 1}/${shots.length}` : ""}</span>} action={shots.length > 1 && <div className="flex gap-1"><button className="btn !py-0.5 !px-2" onClick={() => { setFollow(false); setShot(shots[Math.max(0, shots.indexOf(shot!) - 1)]); }}>‹</button><button className="btn !py-0.5 !px-2" onClick={() => { setFollow(false); setShot(shots[Math.min(shots.length - 1, shots.indexOf(shot!) + 1)]); }}>›</button></div>} padded={false}>
-            <div className="bg-black aspect-[11/8] grid place-items-center">
-              {shot ? <img src={`/api/runs/${runId}/files/screenshots/${shot}`} className="w-full h-full object-contain" alt="screenshot" /> : <span className="text-[12px] text-ink-500">No screenshot yet</span>}
+          <div>
+            <div className="flex items-center justify-between mb-2">
+              <div className="label">Screen{shot ? ` · ${shots.indexOf(shot) + 1} of ${shots.length}` : ""}</div>
+              {shots.length > 1 && <div className="flex gap-1"><button className="btn !py-0.5 !px-2" onClick={() => { setFollow(false); setShot(shots[Math.max(0, shots.indexOf(shot!) - 1)]); }}>‹</button><button className="btn !py-0.5 !px-2" onClick={() => { setFollow(false); setShot(shots[Math.min(shots.length - 1, shots.indexOf(shot!) + 1)]); }}>›</button></div>}
             </div>
-            {shot && <div className="px-3 py-1.5 font-mono text-[11px] text-ink-500 truncate">{shot}</div>}
-          </Panel>
+            <BrowserFrame src={shot ? `/api/runs/${runId}/files/screenshots/${shot}` : null} url={shotEvent?.data?.url ?? lastUrl} title={shotEvent?.data?.title ?? (run.kind === "discovery" ? "discovery" : "replay")} live={live} caption={shot} empty={live ? "Waiting for the first capture…" : "No screenshot in this run"} />
+          </div>
 
           {result && (
             <Panel title="Result">

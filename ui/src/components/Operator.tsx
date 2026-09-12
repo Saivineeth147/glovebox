@@ -2,6 +2,7 @@ import { useEffect, useRef, useState } from "react";
 import { Hand, RefreshCw } from "lucide-react";
 import { api, fmtTime } from "../api";
 import { Chip } from "./ui";
+import BrowserFrame from "./BrowserFrame";
 
 /** Human takeover of the live session for one job. A client of the OperatorBridge — nothing here touches the browser. */
 export default function Operator({ jobId, onResolved }: { jobId: string; onResolved?: () => void }) {
@@ -64,19 +65,14 @@ export default function Operator({ jobId, onResolved }: { jobId: string; onResol
       )}
       <div className="grid lg:grid-cols-[1fr_320px]">
         <div className="p-4 border-r border-ink-800">
-          <div className="flex items-center justify-between mb-2">
-            <div className="label">Live session · {st?.elements?.length ?? 0} interactive elements</div>
-            <div className="font-mono text-[11px] text-ink-400 truncate max-w-[60%]">{st?.url}</div>
-          </div>
-          <div className="relative rounded-lg overflow-hidden border border-ink-700 bg-black" style={{ aspectRatio: `${vw}/${vh}` }}>
-            {shotUrl ? <img src={shotUrl} className="w-full h-full object-contain" alt="live session" /> : <div className="absolute inset-0 grid place-items-center text-ink-500 text-[12px]">No screenshot yet</div>}
-            {st?.elements?.map((e: any) => {
+          <div className="label mb-2">Live session · {st?.elements?.length ?? 0} interactive elements · click a highlighted control to select it</div>
+          <BrowserFrame src={shotUrl} url={st?.url} live={human} aspect={`${vw}/${vh}`} empty="Waiting for the session's first capture…"
+            overlay={st?.elements?.map((e: any) => {
               const [x, y, w, h] = e.box; if (w <= 0 || h <= 0) return null;
               return <div key={e.ref} title={`${e.ref} ${e.role} ${e.name || ""}`} onClick={() => setSel(e.ref)}
                 className={`absolute rounded-[3px] cursor-pointer transition-colors border ${sel === e.ref ? "border-violet-400 bg-violet-400/30 ring-2 ring-violet-400/40" : "border-accent/70 bg-accent/10 hover:bg-accent/30"}`}
                 style={{ left: `${(100 * x) / vw}%`, top: `${(100 * y) / vh}%`, width: `${(100 * w) / vw}%`, height: `${(100 * h) / vh}%` }} />;
-            })}
-          </div>
+            })} />
           <div className="mt-3 max-h-44 overflow-auto rounded-lg border border-ink-800 divide-y divide-ink-800">
             {(st?.elements ?? []).map((e: any) => (
               <div key={e.ref} onClick={() => setSel(e.ref)} className={`flex items-center gap-3 px-3 py-1.5 text-[12px] cursor-pointer ${sel === e.ref ? "bg-violet-500/15" : "hover:bg-ink-850"}`}>

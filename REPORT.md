@@ -273,6 +273,14 @@ Cut deliberately, in order of what I would build next:
 6. **Sensitive-field screenshot suppression** and evidence retention policy.
 7. **Discovery quality loop:** run discovery twice and diff the artifacts; prefer steps with
    more independent strategies; auto-suggest `assert_text` checkpoints where the model forgot.
+8. **Operator authentication and audit identity.** Studio binds to localhost and trusts the
+   browser; the `operator` name on every human action is self-declared. Production needs SSO
+   and per-tenant authorisation on the takeover endpoints.
+9. **Typed frontend.** The API is Pydantic-typed; the React client consumes JSON loosely.
+   Generate TypeScript types from `docs/capability.schema.json` and the result contract.
+
+The reviewer-facing decision log, including the questions I expect to be asked and the
+honest answers, is in [docs/hard-questions.md](./docs/hard-questions.md).
 
 Not cut, but thin on purpose: the operator UI (mechanism is real, pixels are minimal), and
 the target app (hostile enough to matter, not a full core banking system).

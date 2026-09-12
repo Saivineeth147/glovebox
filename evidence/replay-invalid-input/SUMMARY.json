@@ -10,8 +10,8 @@
     "expected": null,
     "observed": null,
     "evidence": {
-      "screenshot": "/home/user/glovebox/runs/replay-20260912T062308-481413/screenshots/0001-failure-run.png",
-      "snapshot:top": "/home/user/glovebox/runs/replay-20260912T062308-481413/snapshots/0002-failure-run-top.html"
+      "screenshot": "/home/user/glovebox/runs/replay-20260912T063209-b8a9e0/screenshots/0001-failure-run.png",
+      "snapshot:top": "/home/user/glovebox/runs/replay-20260912T063209-b8a9e0/snapshots/0002-failure-run-top.html"
     }
   },
   "handoff": null

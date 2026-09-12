@@ -190,6 +190,8 @@ class DiscoveryAgent:
             EventKind.OBSERVATION,
             f"seq={obs.seq} url={obs.url} elements={len(obs.elements)}",
             screenshot=str(obs.screenshot) if obs.screenshot else None,
+            url=obs.url,
+            title=obs.title,
         )
         return obs
 
