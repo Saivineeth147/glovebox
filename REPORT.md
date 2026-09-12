@@ -144,6 +144,29 @@ evidence bundle.
 element and *records* that it did (`replay.target.resolved … via name_attr#2`), which is the
 drift signal a maintainer needs. Unresolvable targets fail loudly with expected/observed.
 
+### What determinism buys
+
+Measured across the discovery and replay runs in this repository's `runs/` directory, on
+`openrouter:anthropic/claude-sonnet-5` at $2/$10 per million tokens:
+
+| | discovery | replay |
+|---|---|---|
+| model in the loop | yes | **no** |
+| median wall clock | 86.4 s | **2.8 s** |
+| median input tokens | 83,195 | **0** |
+| median output tokens | 3,390 | **0** |
+| cost per run | ~$0.20 | **$0.00** |
+| how often it runs | once per capability, plus a re-record on drift | every transaction |
+
+The ratio is the argument for the whole design. A capability recorded once for twenty cents
+runs for nothing thereafter, at thirty times the speed, with the same answer every time — and
+the thing an auditor reads is a reviewed JSON contract rather than a model transcript. Putting
+the model in the production path would invert all four rows and none of the guarantees.
+
+The figures are medians over 6 successful discovery runs and 26 successful replays; discovery
+cost varies with how much the model explores, which §7's discovery quality loop is partly
+about controlling.
+
 ## 4. Heterogeneity & multi-tenant
 
 **Surface abstraction.** `surface/base.py` defines `Surface` with nine verbs (`observe`,
