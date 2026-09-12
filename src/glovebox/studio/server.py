@@ -12,11 +12,11 @@ from __future__ import annotations
 
 import os
 from pathlib import Path
-from typing import Any
+from typing import Annotated, Any
 
 import httpx
-from fastapi import FastAPI, HTTPException
-from fastapi.responses import FileResponse, HTMLResponse, StreamingResponse
+from fastapi import APIRouter, Depends, FastAPI, HTTPException
+from fastapi.responses import FileResponse, HTMLResponse, JSONResponse, StreamingResponse
 from fastapi.staticfiles import StaticFiles
 from pydantic import BaseModel
 
@@ -25,9 +25,24 @@ from glovebox.catalog import Catalog
 from glovebox.schema.capability import Capability
 from glovebox.schema.policy import Policy
 
+from .accounts import Account, AccountStore
+from .guards import require_role, require_user
 from .jobs import JobManager
+from .routes_auth import router as auth_router
+from .sessions import SessionStore
 
 STATIC = Path(__file__).parent / "static"
+STUDIO_DB_ENV_VAR = "GLOVEBOX_STUDIO_DB"
+DEFAULT_DB_FILENAME = "studio.db"
+API_PATH_PREFIX = "api/"
+UNKNOWN_API_ROUTE_MESSAGE = "not found"
+
+
+def _resolve_db_path(runs_dir: Path) -> Path:
+    override = os.environ.get(STUDIO_DB_ENV_VAR)
+    db_path = Path(override) if override else runs_dir / DEFAULT_DB_FILENAME
+    db_path.parent.mkdir(parents=True, exist_ok=True)
+    return db_path
 
 
 class DiscoverBody(BaseModel):
@@ -56,7 +71,6 @@ class ApproveBody(BaseModel):
 
 class CommandBody(BaseModel):
     op: str
-    operator: str = "studio-user"
     ref: str | None = None
     text: str | None = None
     option: str | None = None
@@ -70,6 +84,16 @@ def create_studio(runs_dir: Path, catalog_dir: Path, policy_path: Path) -> FastA
     jobs = JobManager(runs_dir, catalog_dir, policy_path)
     catalog = Catalog(catalog_dir)
 
+    db_path = _resolve_db_path(runs_dir)
+    app.state.account_store = AccountStore(db_path)
+    app.state.session_store = SessionStore(db_path)
+    app.state.jobs = jobs
+    app.include_router(auth_router)
+
+    # Every route below requires a signed-in session; mutating and admin-only routes
+    # layer `require_role` on top (see the per-route `dependencies=` below).
+    api = APIRouter(dependencies=[Depends(require_user)])
+
     def policy() -> Policy:
         return Policy.load(policy_path)
 
@@ -77,7 +101,7 @@ def create_studio(runs_dir: Path, catalog_dir: Path, policy_path: Path) -> FastA
         return policy().allowed_origins[0]
 
     # ------------------------------------------------------------------ overview
-    @app.get("/api/overview")
+    @api.get("/api/overview")
     def overview() -> dict[str, Any]:
         runs = jobs.runs()
         caps = catalog.all()
@@ -110,11 +134,11 @@ def create_studio(runs_dir: Path, catalog_dir: Path, policy_path: Path) -> FastA
         }
 
     # ------------------------------------------------------------------ runs
-    @app.get("/api/runs")
+    @api.get("/api/runs")
     def list_runs() -> list[dict[str, Any]]:
         return jobs.runs()
 
-    @app.get("/api/runs/{run_id}")
+    @api.get("/api/runs/{run_id}")
     def get_run(run_id: str) -> dict[str, Any]:
         if not (runs_dir / run_id).exists():
             raise HTTPException(404, "no such run")
@@ -133,7 +157,7 @@ def create_studio(runs_dir: Path, catalog_dir: Path, policy_path: Path) -> FastA
         }
         return s
 
-    @app.get("/api/runs/{run_id}/stream")
+    @api.get("/api/runs/{run_id}/stream")
     def stream_run(run_id: str) -> StreamingResponse:
         return StreamingResponse(
             jobs.stream(run_id),
@@ -141,7 +165,7 @@ def create_studio(runs_dir: Path, catalog_dir: Path, policy_path: Path) -> FastA
             headers={"Cache-Control": "no-cache", "X-Accel-Buffering": "no"},
         )
 
-    @app.get("/api/runs/{run_id}/files/{path:path}")
+    @api.get("/api/runs/{run_id}/files/{path:path}")
     def run_file(run_id: str, path: str) -> Any:
         p = jobs.artifact(run_id, path)
         if p is None:
@@ -154,27 +178,27 @@ def create_studio(runs_dir: Path, catalog_dir: Path, policy_path: Path) -> FastA
         d["confidence"] = c.review.confidence
         return d
 
-    @app.get("/api/capabilities")
+    @api.get("/api/capabilities")
     def list_caps() -> list[dict[str, Any]]:
         return [cap_public(c) for c in catalog.all()]
 
-    @app.get("/api/capabilities/tools")
+    @api.get("/api/capabilities/tools")
     def cap_tools(include_drafts: bool = True) -> list[dict[str, Any]]:
         return catalog.tool_definitions(include_drafts)
 
-    @app.get("/api/capabilities/{cap_id}")
+    @api.get("/api/capabilities/{cap_id}")
     def get_cap(cap_id: str) -> dict[str, Any]:
         try:
             return cap_public(catalog.load(cap_id))
         except FileNotFoundError as exc:
             raise HTTPException(404, str(exc)) from exc
 
-    @app.post("/api/capabilities/{cap_id}/approve")
+    @api.post("/api/capabilities/{cap_id}/approve", dependencies=[Depends(require_role("admin"))])
     def approve(cap_id: str, body: ApproveBody) -> dict[str, Any]:
         return cap_public(catalog.approve(cap_id, body.reviewer, body.notes))
 
     # ------------------------------------------------------------------ jobs
-    @app.post("/api/discover")
+    @api.post("/api/discover", dependencies=[Depends(require_role("operator"))])
     def discover(body: DiscoverBody) -> dict[str, Any]:
         job = jobs.start_discovery(
             body.goal,
@@ -187,7 +211,7 @@ def create_studio(runs_dir: Path, catalog_dir: Path, policy_path: Path) -> FastA
         )
         return job.public()
 
-    @app.post("/api/replay")
+    @api.post("/api/replay", dependencies=[Depends(require_role("operator"))])
     def replay(body: ReplayBody) -> dict[str, Any]:
         try:
             job = jobs.start_replay(
@@ -202,11 +226,11 @@ def create_studio(runs_dir: Path, catalog_dir: Path, policy_path: Path) -> FastA
             raise HTTPException(404, str(exc)) from exc
         return job.public()
 
-    @app.get("/api/jobs")
+    @api.get("/api/jobs")
     def list_jobs() -> list[dict[str, Any]]:
         return [j.public() for j in jobs.all()]
 
-    @app.get("/api/jobs/{job_id}")
+    @api.get("/api/jobs/{job_id}")
     def get_job(job_id: str) -> dict[str, Any]:
         try:
             return jobs.get(job_id).public()
@@ -214,7 +238,7 @@ def create_studio(runs_dir: Path, catalog_dir: Path, policy_path: Path) -> FastA
             raise HTTPException(404, "no such job") from exc
 
     # ------------------------------------------------------------------ operator (takeover)
-    @app.get("/api/jobs/{job_id}/operator")
+    @api.get("/api/jobs/{job_id}/operator")
     def operator_state(job_id: str) -> dict[str, Any]:
         job = jobs.get(job_id)
         obs = job.bridge.last_observation
@@ -253,25 +277,28 @@ def create_studio(runs_dir: Path, catalog_dir: Path, policy_path: Path) -> FastA
             ],
         }
 
-    @app.get("/api/jobs/{job_id}/operator/screenshot")
+    @api.get("/api/jobs/{job_id}/operator/screenshot")
     def operator_shot(job_id: str) -> Any:
         obs = jobs.get(job_id).bridge.last_observation
         if obs and obs.screenshot and obs.screenshot.exists():
             return FileResponse(str(obs.screenshot), media_type="image/png")
         raise HTTPException(404, "no screenshot")
 
-    @app.post("/api/jobs/{job_id}/operator/command")
-    def operator_cmd(job_id: str, body: CommandBody) -> dict[str, Any]:
+    @api.post(
+        "/api/jobs/{job_id}/operator/command", dependencies=[Depends(require_role("operator"))]
+    )
+    def operator_cmd(
+        job_id: str, body: CommandBody, user: Annotated[Account, Depends(require_user)]
+    ) -> dict[str, Any]:
+        # The operator identity for the audit trail comes from the authenticated
+        # session, never from the request body -- a client cannot self-declare who
+        # performed a takeover action.
         job = jobs.get(job_id)
-        args = {
-            k: v
-            for k, v in body.model_dump().items()
-            if k not in {"op", "operator"} and v not in (None, "")
-        }
-        return job.bridge.submit(body.op, operator=body.operator, **args)
+        args = {k: v for k, v in body.model_dump().items() if k != "op" and v not in (None, "")}
+        return job.bridge.submit(body.op, operator=user.email, **args)
 
     # ------------------------------------------------------------------ policy + target
-    @app.get("/api/policy")
+    @api.get("/api/policy")
     def get_policy() -> dict[str, Any]:
         return {
             "policy": policy().model_dump(mode="json"),
@@ -279,14 +306,16 @@ def create_studio(runs_dir: Path, catalog_dir: Path, policy_path: Path) -> FastA
             "path": str(policy_path),
         }
 
-    @app.post("/api/target/faults/{name}")
+    @api.post("/api/target/faults/{name}", dependencies=[Depends(require_role("operator"))])
     def arm_fault(name: str) -> dict[str, Any]:
         r = httpx.post(f"{target_base()}/__sim/faults/{name}", timeout=3)
         return dict(r.json())
 
-    @app.delete("/api/target/faults")
+    @api.delete("/api/target/faults", dependencies=[Depends(require_role("operator"))])
     def clear_faults() -> dict[str, Any]:
         return dict(httpx.delete(f"{target_base()}/__sim/faults", timeout=3).json())
+
+    app.include_router(api)
 
     # ------------------------------------------------------------------ static SPA
     if (STATIC / "assets").exists():
@@ -294,6 +323,8 @@ def create_studio(runs_dir: Path, catalog_dir: Path, policy_path: Path) -> FastA
 
     @app.get("/{path:path}", response_class=HTMLResponse, include_in_schema=False)
     def spa(path: str) -> Any:
+        if path.startswith(API_PATH_PREFIX):
+            return JSONResponse({"detail": UNKNOWN_API_ROUTE_MESSAGE}, status_code=404)
         f = STATIC / path
         if path and f.is_file():
             return FileResponse(str(f))
