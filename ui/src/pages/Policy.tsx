@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { api } from "../api";
 import { Panel, KV, Code, Spinner, PageHeader, Chip } from "../components/ui";
+import Operators from "../components/Operators";
 
 export default function Policy() {
   const [p, setP] = useState<any>(null);
@@ -25,7 +26,10 @@ export default function Policy() {
             <p className="text-[13px] text-ink-300">Registered secrets (credentials, sensitive inputs and outputs) are replaced with labelled fingerprints before anything is written. Built-in patterns: API keys, bearer tokens, card numbers, US SSNs, <span className="font-mono">password=</span>, session cookies.{pol.redact_patterns.length ? ` Extra: ${pol.redact_patterns.join(", ")}` : ""}</p>
           </Panel>
         </div>
-        <Panel title="policies/default.yaml"><Code className="max-h-[70vh]">{p.raw}</Code></Panel>
+        <div className="space-y-4">
+          <Operators />
+          <Panel title="policies/default.yaml"><Code className="max-h-[60vh]">{p.raw}</Code></Panel>
+        </div>
       </div>
     </>
   );

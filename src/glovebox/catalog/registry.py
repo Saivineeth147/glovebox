@@ -58,7 +58,28 @@ class Catalog:
         return Capability.model_validate_json(p.read_text(encoding="utf-8"))
 
     def all(self) -> list[Capability]:
-        return [self.load(str(p)) for p in sorted(self.dir.glob("*.json"))]
+        """Every artifact that loads.
+
+        One unreadable file must not take the catalog down with it: this backs both the Studio
+        listing and `glovebox catalog list`, and a single artifact that fails validation — after
+        a schema rule tightens, say — would otherwise blank the entire page. What failed is
+        available from `problems()` so it is reported rather than hidden.
+        """
+        return [cap for cap, _ in self._loaded() if cap is not None]
+
+    def problems(self) -> list[tuple[str, str]]:
+        """Artifacts that did not load, as (name, reason)."""
+        return [(name, reason) for cap, (name, reason) in self._loaded() if cap is None]
+
+    def _loaded(self) -> list[tuple[Capability | None, tuple[str, str]]]:
+        out: list[tuple[Capability | None, tuple[str, str]]] = []
+        for path in sorted(self.dir.glob("*.json")):
+            try:
+                out.append((self.load(str(path)), (path.stem, "")))
+            # Any malformed artifact: reported through problems(), never raised from here.
+            except Exception as exc:
+                out.append((None, (path.stem, str(exc).split("\n")[0])))
+        return out
 
     def approve(
         self,

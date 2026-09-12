@@ -10,7 +10,6 @@ export default function Operator({ jobId, onResolved }: { jobId: string; onResol
   const [sel, setSel] = useState<string | null>(null);
   const [text, setText] = useState("");
   const [nav, setNav] = useState("");
-  const [who, setWho] = useState(localStorage.getItem("gb-operator") || "");
   const [busy, setBusy] = useState(false);
   const [toast, setToast] = useState<string | null>(null);
   const shotRef = useRef<string | null>(null);
@@ -18,11 +17,10 @@ export default function Operator({ jobId, onResolved }: { jobId: string; onResol
 
   const refresh = () => api.operator(jobId).then((s) => { setSt(s); if (s.screenshot && s.screenshot !== shotRef.current) { shotRef.current = s.screenshot; setShotUrl(s.screenshot); } }).catch(() => {});
   useEffect(() => { refresh(); const t = setInterval(refresh, 1500); return () => clearInterval(t); }, [jobId]);
-  useEffect(() => { localStorage.setItem("gb-operator", who); }, [who]);
 
   const say = (m: string) => { setToast(m); setTimeout(() => setToast(null), 2200); };
   const act = async (op: string) => {
-    const body: any = { op, operator: who || "studio-user" };
+    const body: any = { op };
     if (["click", "fill", "select", "press"].includes(op)) {
       if (!sel && op !== "press") return say("Pick an element first");
       if (sel) body.ref = sel;
@@ -52,7 +50,6 @@ export default function Operator({ jobId, onResolved }: { jobId: string; onResol
           <div className="text-[13px] font-semibold text-violet-100 flex items-center gap-2">Human handoff {i && <Chip value={i.kind} />} <Chip value={st?.owner} /></div>
           <div className="text-[12px] text-ink-300 truncate">{i ? i.reason : "Waiting for an intervention…"}</div>
         </div>
-        <label className="text-[11px] text-ink-400 flex items-center gap-2">You are <input className="input !w-36 !py-1" value={who} onChange={(e) => setWho(e.target.value)} placeholder="operator" /></label>
       </header>
       {i && (
         <div className="px-4 py-2.5 border-b border-ink-800 grid grid-cols-2 md:grid-cols-4 gap-x-4 gap-y-1 text-[12px]">

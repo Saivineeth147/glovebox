@@ -66,3 +66,14 @@ def test_should_refuse_through_the_studio_endpoint_too(tmp_path: Path) -> None:
         "/api/capabilities/member_savings_balance/approve", json={"accept_unverified": True}
     )
     assert accepted.status_code == 200
+
+
+def test_one_unloadable_artifact_should_not_take_down_the_whole_catalog(tmp_path: Path) -> None:
+    """Catalog.all backs the listing page and the CLI; one bad file must not 500 both."""
+    catalog = _catalog_with_unverified(tmp_path)
+    (tmp_path / "broken.json").write_text('{"id": "broken", "not": "a capability"}')
+
+    listed = catalog.all()
+
+    assert [c.id for c in listed] == ["member_savings_balance"]
+    assert [name for name, _ in catalog.problems()] == ["broken"]

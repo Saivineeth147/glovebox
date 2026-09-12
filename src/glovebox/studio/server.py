@@ -26,7 +26,7 @@ from glovebox.catalog.registry import UnverifiedOutcomeError
 from glovebox.schema.capability import Capability
 from glovebox.schema.policy import Policy
 
-from .accounts import Account, AccountStore
+from .accounts import Account, AccountStore, Role
 from .guards import require_role, require_user
 from .jobs import JobManager
 from .routes_auth import router as auth_router
@@ -63,6 +63,10 @@ class ReplayBody(BaseModel):
     attended: bool = True
     allow_draft: bool = False
     faults: list[str] = []
+
+
+class RoleBody(BaseModel):
+    role: Role
 
 
 class ApproveBody(BaseModel):
@@ -312,6 +316,19 @@ def create_studio(runs_dir: Path, catalog_dir: Path, policy_path: Path) -> FastA
         return job.bridge.submit(body.op, operator=user.email, **args)
 
     # ------------------------------------------------------------------ policy + target
+    # ------------------------------------------------------------------ operators
+    @api.get("/api/users", dependencies=[Depends(require_role("admin"))])
+    def list_users() -> list[dict[str, Any]]:
+        accounts = app.state.account_store.list_accounts()
+        return [{"email": a.email, "role": a.role.value} for a in accounts]
+
+    @api.post("/api/users/{email}/role", dependencies=[Depends(require_role("admin"))])
+    def set_user_role(email: str, body: RoleBody) -> dict[str, Any]:
+        account = app.state.account_store.set_role(email, body.role)
+        if account is None:
+            raise HTTPException(status_code=404, detail=f"no account for {email}")
+        return {"email": account.email, "role": account.role.value}
+
     @api.get("/api/policy")
     def get_policy() -> dict[str, Any]:
         return {

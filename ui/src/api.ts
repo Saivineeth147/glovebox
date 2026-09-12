@@ -40,6 +40,12 @@ export const api = {
   operator: (jobId: string) => req(`/api/jobs/${jobId}/operator`),
   command: (jobId: string, body: Json) => req(`/api/jobs/${jobId}/operator/command`, { method: "POST", body: JSON.stringify(body) }),
   policy: () => req("/api/policy"),
+  users: () => req<Json[]>("/api/users"),
+  setRole: (email: string, role: string) =>
+    req(`/api/users/${encodeURIComponent(email)}/role`, {
+      method: "POST",
+      body: JSON.stringify({ role }),
+    }),
   armFault: (name: string) => req(`/api/target/faults/${name}`, { method: "POST" }),
   clearFaults: () => req(`/api/target/faults`, { method: "DELETE" }),
 };

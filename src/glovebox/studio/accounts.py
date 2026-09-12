@@ -203,6 +203,40 @@ class AccountStore:
             return None
         return Account(id=user_id, email=email, role=Role(role), is_disabled=False)
 
+    def list_accounts(self) -> list[Account]:
+        """Every account, for an admin to see who can do what. No password material."""
+        connection = self._connect()
+        try:
+            rows = connection.execute(
+                "SELECT id, email, role, is_disabled FROM users ORDER BY id"
+            ).fetchall()
+        finally:
+            connection.close()
+        return [_row_to_account(row) for row in rows]
+
+    def set_role(self, email: str, role: Role) -> Account | None:
+        """Move an account along the ladder. Returns None when no such account exists.
+
+        Without this the ladder has three rungs and one reachable step: every account after
+        the first is a viewer for ever, and nothing but raw SQL can change that.
+        """
+        normalized_email = _normalize_email(email)
+        connection = self._connect()
+        try:
+            cursor = connection.execute(
+                "UPDATE users SET role = ? WHERE email = ?", (role.value, normalized_email)
+            )
+            connection.commit()
+            if cursor.rowcount == 0:
+                return None
+            row = connection.execute(
+                "SELECT id, email, role, is_disabled FROM users WHERE email = ?",
+                (normalized_email,),
+            ).fetchone()
+        finally:
+            connection.close()
+        return _row_to_account(row)
+
     def get_by_id(self, user_id: int) -> Account | None:
         connection = self._connect()
         try:
