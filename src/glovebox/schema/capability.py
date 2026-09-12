@@ -258,6 +258,22 @@ class TenantOverride(_Strict):
     notes: str | None = None
 
 
+def _shadowing_outcome(success: list[Condition], outcomes: list[Outcome]) -> str | None:
+    """The code of a terminal outcome that would fire on the success screen, if any.
+
+    Such an outcome ends the run before the extract steps execute, so the capability
+    reports a business outcome and returns no outputs at all.
+    """
+    success_values = [c.value.lower() for c in success if c.value]
+    for outcome in outcomes:
+        detected = (outcome.detect.value or "").lower()
+        if not (detected and outcome.terminal):
+            continue
+        if any(detected in value or value in detected for value in success_values):
+            return outcome.code
+    return None
+
+
 class Capability(_Strict):
     schema_version: Literal["1.0"] = SCHEMA_VERSION
     id: str = Field(pattern=r"^[a-z][a-z0-9_]*$", description="Stable capability name.")
@@ -312,6 +328,12 @@ class Capability(_Strict):
             for sid in list(o.step_targets) + list(o.step_values):
                 if sid not in ids:
                     raise ValueError(f"override for {o.tenant!r} names unknown step {sid!r}")
+        if code := _shadowing_outcome(self.success, self.outcomes):
+            raise ValueError(
+                f"terminal outcome {code!r} is detected by text that also appears in the "
+                "success conditions; it would end the run on the success screen before "
+                "outputs are extracted"
+            )
         return self
 
     def for_tenant(self, tenant: str | None) -> Capability:

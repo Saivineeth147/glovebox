@@ -227,15 +227,15 @@ git commit -m "Recorder: remember the values this run used and saw"
 ```python
 import pytest
 
-from glovebox.agent.loop import DiscoveryLoop
+from glovebox.agent.loop import DiscoveryAgent
 
 
 def test_should_refuse_to_declare_an_outcome_built_from_run_data() -> None:
     """The model gets a tool error and can retry, rather than the run dying at build time."""
-    loop = object.__new__(DiscoveryLoop)
+    loop = object.__new__(DiscoveryAgent)
     loop.recorder = _recorder(param_values={"member_id": "100234"})
     with pytest.raises(ValueError, match="100234"):
-        DiscoveryLoop._t_declare_outcome(loop, "MEMBER_FOUND", "found", "Member No. 100234")
+        DiscoveryAgent._t_declare_outcome(loop, "MEMBER_FOUND", "found", "Member No. 100234")
     assert loop.recorder.outcomes == []
 ```
 

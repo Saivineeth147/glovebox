@@ -2,12 +2,21 @@
 
 from __future__ import annotations
 
+import json
+from pathlib import Path
+
 import pytest
 
 from glovebox.agent.loop import DiscoveryAgent
 from glovebox.agent.overfit import overfit_reason
 from glovebox.agent.recorder import Recorder
-from glovebox.schema.capability import Parameter, ParamType
+from glovebox.schema.capability import Capability, Parameter, ParamType
+
+ROOT = Path(__file__).resolve().parents[2]
+
+
+def _committed_artifact() -> dict:
+    return json.loads((ROOT / "capabilities" / "member_savings_balance.json").read_text())
 
 
 def _recorder(**kw) -> Recorder:
@@ -68,3 +77,23 @@ def test_should_refuse_to_declare_an_outcome_built_from_run_data() -> None:
     with pytest.raises(ValueError, match="100234"):
         DiscoveryAgent._t_declare_outcome(agent, "MEMBER_FOUND", "found", "Member No. 100234")
     assert agent.recorder.outcomes == []
+
+
+def test_should_reject_a_terminal_outcome_that_matches_the_success_screen() -> None:
+    """MEMBER_FOUND ended the run before extraction and returned no outputs."""
+    doc = _committed_artifact()
+    shadowing = f"{doc['success'][0]['value']} detail"
+    doc["outcomes"] = [
+        {
+            "code": "MEMBER_FOUND",
+            "description": "found",
+            "detect": {"kind": "text_visible", "value": shadowing, "timeout_ms": 0},
+            "terminal": True,
+        }
+    ]
+    with pytest.raises(ValueError, match="MEMBER_FOUND"):
+        Capability.model_validate(doc)
+
+
+def test_should_keep_accepting_the_committed_artifact() -> None:
+    assert Capability.model_validate(_committed_artifact()).id == "member_savings_balance"
