@@ -20,6 +20,7 @@ from fastapi.responses import FileResponse, HTMLResponse, StreamingResponse
 from fastapi.staticfiles import StaticFiles
 from pydantic import BaseModel
 
+from glovebox.agent.llm import available_provider
 from glovebox.catalog import Catalog
 from glovebox.schema.capability import Capability
 from glovebox.schema.policy import Policy
@@ -96,8 +97,14 @@ def create_studio(runs_dir: Path, catalog_dir: Path, policy_path: Path) -> FastA
             "open_interventions": sum(1 for j in jobs.all() if j.bridge.current),
             "target": {**target, "url": target_base()},
             "policy": policy().name,
-            "model": os.environ.get("GLOVEBOX_MODEL", "claude-opus-5"),
-            "has_api_key": bool(os.environ.get("ANTHROPIC_API_KEY")),
+            "model": os.environ.get("GLOVEBOX_MODEL")
+            or (
+                "claude-opus-5"
+                if available_provider() == "anthropic"
+                else "anthropic/claude-sonnet-4.5"
+            ),
+            "provider": available_provider(),
+            "has_api_key": available_provider() is not None,
             "recent": runs[:6],
         }
 

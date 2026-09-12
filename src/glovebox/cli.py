@@ -132,6 +132,9 @@ def discover(
     tenant: str | None = "alpha",
     policy: Path | None = None,
     model: str | None = None,
+    provider: Annotated[
+        str | None, typer.Option(help="anthropic | openrouter | openai (default: from env keys)")
+    ] = None,
     offline_script: Annotated[
         str | None, typer.Option(help="Use a scripted policy instead of the model (name or path).")
     ] = None,
@@ -170,10 +173,13 @@ def discover(
         def llm_factory(obs: Any) -> Any:
             return ScriptedLLM(script, obs)
     else:
-        from glovebox.agent.llm import AnthropicLLM
+        from glovebox.agent.llm import make_llm
+
+        llm = make_llm(model, provider)
+        rprint(f"model: [bold]{llm.name}[/bold]")
 
         def llm_factory(obs: Any) -> Any:
-            return AnthropicLLM(model)
+            return llm
 
     res = run_discovery(
         goal=goal,

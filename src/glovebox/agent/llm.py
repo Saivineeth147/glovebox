@@ -8,6 +8,7 @@ the model's only job is to decide, and the artifact never depends on the model.
 
 from __future__ import annotations
 
+import json
 import os
 import uuid
 from collections.abc import Callable
@@ -17,6 +18,8 @@ from typing import Any, Protocol, cast
 from glovebox.surface.base import Observation
 
 DEFAULT_MODEL = "claude-opus-5"
+OPENROUTER_BASE_URL = "https://openrouter.ai/api/v1"
+DEFAULT_OPENROUTER_MODEL = "anthropic/claude-sonnet-4.5"
 
 
 @dataclass
@@ -80,6 +83,204 @@ class AnthropicLLM:
         return Turn(
             content=content, stop_reason=msg.stop_reason or "end_turn", usage=usage, model=msg.model
         )
+
+
+# ----------------------------------------------------------------------------- openai-compatible
+class OpenAICompatibleLLM:
+    """Any OpenAI-compatible chat endpoint with tool calling — OpenRouter by default.
+
+    The loop speaks Anthropic-shaped content blocks (`tool_use` / `tool_result`); this client
+    translates both directions so the agent, recorder and evidence are provider-independent.
+    """
+
+    def __init__(
+        self,
+        model: str | None = None,
+        *,
+        api_key: str | None = None,
+        base_url: str | None = None,
+        provider: str = "openrouter",
+    ) -> None:
+        import httpx
+
+        self.provider = provider
+        self.base_url = (
+            base_url or os.environ.get("OPENAI_BASE_URL") or OPENROUTER_BASE_URL
+        ).rstrip("/")
+        key = api_key or os.environ.get("OPENROUTER_API_KEY") or os.environ.get("OPENAI_API_KEY")
+        if not key:
+            raise RuntimeError("OPENROUTER_API_KEY (or OPENAI_API_KEY) is not set")
+        self.model = model or os.environ.get("GLOVEBOX_MODEL") or DEFAULT_OPENROUTER_MODEL
+        self.name = f"{provider}:{self.model}"
+        headers = {"Authorization": f"Bearer {key}"}
+        if "openrouter" in self.base_url:
+            headers["HTTP-Referer"] = "https://github.com/Saivineeth147/glovebox"
+            headers["X-Title"] = "Glovebox"
+        self._client = httpx.Client(base_url=self.base_url, headers=headers, timeout=180.0)
+
+    # ---- request translation
+    @staticmethod
+    def _tools(tools: list[dict[str, Any]]) -> list[dict[str, Any]]:
+        return [
+            {
+                "type": "function",
+                "function": {
+                    "name": t["name"],
+                    "description": t.get("description", ""),
+                    "parameters": t["input_schema"],
+                },
+            }
+            for t in tools
+        ]
+
+    @staticmethod
+    def _messages(system: str, messages: list[dict[str, Any]]) -> list[dict[str, Any]]:
+        out: list[dict[str, Any]] = [{"role": "system", "content": system}]
+        for m in messages:
+            content = m["content"]
+            if m["role"] == "assistant":
+                text = (
+                    "".join(b.get("text", "") for b in content if b.get("type") == "text")
+                    if isinstance(content, list)
+                    else str(content)
+                )
+                calls = [
+                    {
+                        "id": b["id"],
+                        "type": "function",
+                        "function": {
+                            "name": b["name"],
+                            "arguments": json.dumps(b.get("input", {})),
+                        },
+                    }
+                    for b in (content if isinstance(content, list) else [])
+                    if b.get("type") == "tool_use"
+                ]
+                msg: dict[str, Any] = {"role": "assistant", "content": text or None}
+                if calls:
+                    msg["tool_calls"] = calls
+                out.append(msg)
+                continue
+            if isinstance(content, str):
+                out.append({"role": "user", "content": content})
+                continue
+            images: list[dict[str, Any]] = []
+            parts: list[dict[str, Any]] = []
+            for b in content:
+                if b.get("type") == "tool_result":
+                    body = b.get("content", "")
+                    if isinstance(body, list):
+                        texts = [x["text"] for x in body if x.get("type") == "text"]
+                        images += [x for x in body if x.get("type") == "image"]
+                        body = "\n".join(texts)
+                    out.append(
+                        {"role": "tool", "tool_call_id": b["tool_use_id"], "content": str(body)}
+                    )
+                elif b.get("type") == "text":
+                    parts.append({"type": "text", "text": b["text"]})
+                elif b.get("type") == "image":
+                    images.append(b)
+            for img in (
+                images
+            ):  # OpenAI-style tool messages cannot carry images; attach them as a user turn
+                src = img["source"]
+                parts.append(
+                    {
+                        "type": "image_url",
+                        "image_url": {"url": f"data:{src['media_type']};base64,{src['data']}"},
+                    }
+                )
+            if parts:
+                out.append({"role": "user", "content": parts})
+        return out
+
+    def turn(
+        self, system: str, messages: list[dict[str, Any]], tools: list[dict[str, Any]]
+    ) -> Turn:
+        payload = {
+            "model": self.model,
+            "messages": self._messages(system, messages),
+            "tools": self._tools(tools),
+            "tool_choice": "auto",
+            "max_tokens": 4096,
+            "temperature": 0,
+        }
+        r = self._client.post("/chat/completions", json=payload)
+        if r.status_code >= 400:
+            raise RuntimeError(f"{self.provider} error {r.status_code}: {r.text[:300]}")
+        data = r.json()
+        choice = data["choices"][0]
+        msg = choice["message"]
+        content: list[dict[str, Any]] = []
+        if msg.get("content"):
+            content.append({"type": "text", "text": str(msg["content"])})
+        for call in msg.get("tool_calls") or []:
+            try:
+                args = json.loads(call["function"].get("arguments") or "{}")
+            except json.JSONDecodeError:
+                args = {}
+            content.append(
+                {
+                    "type": "tool_use",
+                    "id": call["id"],
+                    "name": call["function"]["name"],
+                    "input": args,
+                }
+            )
+        usage = data.get("usage") or {}
+        return Turn(
+            content=content,
+            stop_reason="tool_use" if any(b["type"] == "tool_use" for b in content) else "end_turn",
+            usage={
+                "input_tokens": usage.get("prompt_tokens", 0),
+                "output_tokens": usage.get("completion_tokens", 0),
+                "cache_read_input_tokens": 0,
+            },
+            model=data.get("model", self.model),
+        )
+
+
+def make_llm(model: str | None = None, provider: str | None = None) -> LLM:
+    """Pick a model client from the environment.
+
+    GLOVEBOX_LLM_PROVIDER=anthropic|openrouter|openai (default: whichever key is present,
+    Anthropic first). Model id via --model or GLOVEBOX_MODEL.
+    """
+    provider = (provider or os.environ.get("GLOVEBOX_LLM_PROVIDER") or "").lower()
+    if not provider:
+        if os.environ.get("ANTHROPIC_API_KEY"):
+            provider = "anthropic"
+        elif os.environ.get("OPENROUTER_API_KEY"):
+            provider = "openrouter"
+        elif os.environ.get("OPENAI_API_KEY"):
+            provider = "openai"
+        else:
+            raise RuntimeError(
+                "no model credentials: set ANTHROPIC_API_KEY, OPENROUTER_API_KEY or OPENAI_API_KEY "
+                "(or use --offline-script)"
+            )
+    if provider == "anthropic":
+        return AnthropicLLM(model)
+    if provider == "openrouter":
+        return OpenAICompatibleLLM(model, provider="openrouter", base_url=OPENROUTER_BASE_URL)
+    if provider == "openai":
+        return OpenAICompatibleLLM(
+            model or "gpt-4.1",
+            provider="openai",
+            base_url=os.environ.get("OPENAI_BASE_URL", "https://api.openai.com/v1"),
+        )
+    raise RuntimeError(f"unknown provider {provider!r}")
+
+
+def available_provider() -> str | None:
+    for env, name in (
+        ("ANTHROPIC_API_KEY", "anthropic"),
+        ("OPENROUTER_API_KEY", "openrouter"),
+        ("OPENAI_API_KEY", "openai"),
+    ):
+        if os.environ.get(env):
+            return os.environ.get("GLOVEBOX_LLM_PROVIDER") or name
+    return None
 
 
 # ----------------------------------------------------------------------------- scripted

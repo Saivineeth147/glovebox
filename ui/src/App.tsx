@@ -72,7 +72,7 @@ export default function App() {
         </nav>
         <div className="p-3 border-t border-ink-800 text-[11px] text-ink-400 space-y-1.5">
           <div className="flex items-center gap-2"><span className={`w-1.5 h-1.5 rounded-full ${ov?.target?.up ? "bg-emerald-400" : "bg-rose-400"}`} /> Target {ov?.target?.up ? "reachable" : "offline"}</div>
-          <div className="flex items-center gap-2"><span className={`w-1.5 h-1.5 rounded-full ${ov?.has_api_key ? "bg-emerald-400" : "bg-amber-400"}`} /> {ov?.has_api_key ? `Model: ${ov.model}` : "No API key — offline mode"}</div>
+          <div className="flex items-center gap-2"><span className={`w-1.5 h-1.5 rounded-full ${ov?.has_api_key ? "bg-emerald-400" : "bg-amber-400"}`} /> {ov?.has_api_key ? `${ov.provider}: ${ov.model}` : "No model key — offline mode"}</div>
           <div className="flex items-center gap-2"><span className="w-1.5 h-1.5 rounded-full bg-ink-500" /> Policy: {ov?.policy ?? "—"}</div>
         </div>
       </aside>

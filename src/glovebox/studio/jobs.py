@@ -112,10 +112,12 @@ class JobManager:
                     def factory(obs: Any) -> Any:
                         return ScriptedLLM(script, obs)
                 else:
-                    from glovebox.agent.llm import AnthropicLLM
+                    from glovebox.agent.llm import make_llm
+
+                    llm = make_llm(model)
 
                     def factory(obs: Any) -> Any:
-                        return AnthropicLLM(model)
+                        return llm
 
                 def on_ctx(run_id: str, run_dir: Path) -> None:
                     job.run_id, job.run_dir = run_id, run_dir

@@ -91,7 +91,7 @@ make target                     # http://127.0.0.1:8089/  (tenants /t/alpha/, /t
 Terminal 2 — discovery (real LLM), then deterministic replay:
 
 ```bash
-export ANTHROPIC_API_KEY=sk-ant-...            # or put it in .env
+export ANTHROPIC_API_KEY=sk-ant-...            # or OPENROUTER_API_KEY=sk-or-... (see .env.example)
 uv run glovebox discover \
   --goal "Look up member 100234 and read their current savings balance" \
   --app-url http://127.0.0.1:8089/ --capability-name member_savings_balance \
@@ -107,6 +107,13 @@ uv run glovebox replay member_savings_balance --param member_id=100234 --fault s
 uv run glovebox replay member_savings_balance --param member_id=100234 --fault interstitial \
       --attended --console-port 8790     # stuck → open http://127.0.0.1:8790, click OK, "resume"
 ```
+
+**Model providers.** Discovery is the only step that calls a model. Anthropic direct
+(`ANTHROPIC_API_KEY`, default `claude-opus-5`, adaptive thinking + prompt caching) or any
+OpenAI-compatible endpoint with tool calling — OpenRouter out of the box
+(`OPENROUTER_API_KEY`, `GLOVEBOX_MODEL=anthropic/claude-sonnet-4.5` or another tool-calling
+model; `--provider openrouter` or `GLOVEBOX_LLM_PROVIDER`). The artifact and the evidence are
+identical in shape whichever provider recorded them; replay never needs a key.
 
 Operator credentials for the fake app come from `GLOVEBOX_APP_USERNAME` / `GLOVEBOX_APP_PASSWORD`
 (defaults `teller1` / `teller1-pass`); they are sensitive parameters — substituted at run time,

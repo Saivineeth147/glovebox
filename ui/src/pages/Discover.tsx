@@ -45,7 +45,7 @@ export default function Discover() {
               <button className="btn" onClick={() => setParams([...params, ["", ""]])}><Plus className="w-3.5 h-3.5" /> parameter</button>
               <div className="text-[12px] text-ink-500 mt-2">Operator credentials are added automatically as sensitive parameters from the environment.</div>
             </div>
-            <label className={`flex items-center gap-2 text-[13px] ${!hasKey ? "text-amber-300" : ""}`}><input type="checkbox" checked={offline} onChange={(e) => setOffline(e.target.checked)} /> Offline (scripted decisions, no model){!hasKey ? " — no ANTHROPIC_API_KEY detected" : ""}</label>
+            <label className={`flex items-center gap-2 text-[13px] ${!hasKey ? "text-amber-300" : ""}`}><input type="checkbox" checked={offline} onChange={(e) => setOffline(e.target.checked)} /> Offline (scripted decisions, no model){!hasKey ? " — no ANTHROPIC_API_KEY / OPENROUTER_API_KEY detected" : ""}</label>
             {err && <div className="text-[12px] text-rose-300">{err}</div>}
             <button className="btn btn-primary" disabled={busy} onClick={start}><Compass className="w-3.5 h-3.5" /> {busy ? "Starting…" : offline ? "Run scripted discovery" : "Run discovery with Claude"}</button>
           </div>
