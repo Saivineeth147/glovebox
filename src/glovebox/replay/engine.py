@@ -25,6 +25,7 @@ from typing import Any
 from glovebox.control.session import ControlSession, InterventionKind
 from glovebox.evidence.logger import EvidenceLogger
 from glovebox.policy.guardrails import Guardrails, Verdict
+from glovebox.replay.extraction import extracted_value
 from glovebox.schema.capability import (
     ActionKind,
     Capability,
@@ -314,12 +315,18 @@ class ReplayEngine:
     def _extract(self, step: Step, text: str) -> None:
         assert step.extract_to is not None
         spec = next(o for o in self.cap.outputs if o.name == step.extract_to)
-        value: Any = text
-        if step.value:  # regex stored in value for extract steps
-            import re
-
-            m = re.search(step.value, text)
-            value = m.group(1) if m and m.groups() else (m.group(0) if m else text)
+        value = extracted_value(text, step.value)  # regex stored in value for extract steps
+        if value is None:
+            raise _Stop(
+                self._fail(
+                    FailureClass.CHECKPOINT_FAILED,
+                    step.id,
+                    f"{step.extract_to} did not match the shape recorded for it; the screen is "
+                    "not the one this step was recorded against",
+                    expected=f"text matching {step.value!r}",
+                    observed=text[:200],
+                )
+            )
         self.outputs[step.extract_to] = coerce_output(str(value), spec.type)
         if spec.sensitive:
             self.log.redactor.register_secret(str(value), step.extract_to)
