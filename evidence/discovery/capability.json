@@ -1,7 +1,7 @@
 {
   "schema_version": "1.0",
   "id": "member_savings_balance",
-  "version": "1.0.5",
+  "version": "1.0.0",
   "title": "Member Savings Balance Lookup",
   "description": "Signed in as operator, navigated to Member Inquiry, searched for member 100234, and read the Regular Savings (S01) current balance of $1250.75 from the Member Detail screen.",
   "app": {
@@ -277,7 +277,7 @@
       "expect": [
         {
           "kind": "text_visible",
-          "value": "Welcome, teller1.",
+          "value": "Welcome, [REDACTED:username#6b4632f44b].",
           "regex": false,
           "target": null,
           "frame": [],
@@ -622,10 +622,10 @@
     "recorded_by": "glovebox-recorder"
   },
   "review": {
-    "status": "approved",
-    "reviewed_by": "chintu",
-    "reviewed_at": "2026-09-12T15:18:56.803380Z",
-    "notes": "Steps, extraction target and risk reviewed; replays correctly for members 100234/100235/100236/100999. MEMBER_NOT_FOUND accepted UNVERIFIED: its detector 'No member found' was never observed, and the app's actual text is 'No member record matched number ...', so a missing member will hard-fail rather than return this outcome. Do not branch on MEMBER_NOT_FOUND until it is re-recorded against that screen.",
+    "status": "draft",
+    "reviewed_by": null,
+    "reviewed_at": null,
+    "notes": null,
     "replays": 0,
     "replay_successes": 0
   },

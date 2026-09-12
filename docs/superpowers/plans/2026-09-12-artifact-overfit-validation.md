@@ -303,29 +303,31 @@ git commit -m "Discovery: reject run-specific conditions as a retryable tool err
 
 ```python
 import json
-import subprocess
+from pathlib import Path
 
 from glovebox.schema.capability import Capability
 
+ROOT = Path(__file__).resolve().parents[2]
+
 
 def _committed_artifact() -> dict:
-    return json.loads(
-        subprocess.run(
-            ["git", "show", "HEAD:capabilities/member_savings_balance.json"],
-            capture_output=True, text=True, check=True,
-        ).stdout
-    )
+    return json.loads((ROOT / "capabilities" / "member_savings_balance.json").read_text())
 
 
 def test_should_reject_a_terminal_outcome_that_matches_the_success_screen() -> None:
     """MEMBER_FOUND ended the run before extraction and returned no outputs."""
     doc = _committed_artifact()
-    doc["outcomes"] = [{
-        "code": "MEMBER_FOUND",
-        "description": "found",
-        "detect": {"kind": "text_visible", "value": "Regular Savings balance", "timeout_ms": 0},
-        "terminal": True,
-    }]
+    # Derive the shadowing text from the artifact's own success condition, so this test
+    # survives the re-record in Task 5 rather than encoding today's wording.
+    shadowing = f"{doc['success'][0]['value']} detail"
+    doc["outcomes"] = [
+        {
+            "code": "MEMBER_FOUND",
+            "description": "found",
+            "detect": {"kind": "text_visible", "value": shadowing, "timeout_ms": 0},
+            "terminal": True,
+        }
+    ]
     with pytest.raises(ValueError, match="MEMBER_FOUND"):
         Capability.model_validate(doc)
 
@@ -341,7 +343,7 @@ Expected: FAIL on the first test — `DID NOT RAISE`. The second passes already.
 
 - [ ] **Step 3: Write minimal implementation**
 
-Append to `Capability._consistent`, before `return self`:
+Add a module-level helper before `class Capability` — inlining would push `_consistent` past the 20-line guideline — then call it from `_consistent` before `return self`:
 
 ```python
         success_values = [c.value.lower() for c in self.success if c.value]
@@ -424,3 +426,33 @@ git commit -m "Capability: re-record member_savings_balance from a real model ru
 ```
 
 Expected: `test_committed_capability_is_valid_and_approved` passes again.
+
+---
+
+### Task 6: Refuse to record an outcome that fires on the success screen
+
+Discovered while executing Task 5. The first re-record proved rule 1 works — the model chose
+`["Member Detail", "Share Accounts", "Regular Savings"]`, all static — and then declared
+`MEMBER_FOUND` with `detect_text: "Share Accounts"`. The Task 4 rule caught it, but only inside
+`Recorder.build`, which raised an unhandled `ValidationError` and cost the entire run. That is the
+same waste Task 3 was written to avoid.
+
+A tool error is the wrong repair here: `MEMBER_FOUND` *is* success, so no detector would make it
+valid, and erroring would loop the model to `max_steps`. The recorder drops it instead and the loop
+records the drop as evidence.
+
+**Files:**
+- Modify: `src/glovebox/agent/recorder.py` (`dropped_outcomes`, `_usable_outcomes`, `build`)
+- Modify: `src/glovebox/schema/capability.py` (`_shadowing_outcome` → public `shadowing_outcome`)
+- Modify: `src/glovebox/agent/loop.py` (log drops; `ValidationError` ends the run cleanly)
+- Test: `tests/unit/test_overfit.py` (append)
+
+**Interfaces:**
+- Consumes: `shadowing_outcome(success, outcomes) -> str | None` from Task 4, made public.
+- Produces: `Recorder.dropped_outcomes: list[str]`.
+
+- [x] **Step 1: Write the failing test** — `test_should_drop_a_terminal_outcome_detected_by_a_success_condition` and `test_should_keep_an_outcome_that_describes_a_genuinely_different_screen`.
+- [x] **Step 2: Run to verify it fails** — `AttributeError: 'Recorder' object has no attribute 'dropped_outcomes'`.
+- [x] **Step 3: Implement** — `_usable_outcomes` filters at the single choke point in `build`; the loop emits an `EventKind.ERROR` naming each dropped code and converts a `ValidationError` into a failed run with the reason.
+- [x] **Step 4: Run to verify it passes** — 13 tests in the file, 61 in the suite.
+- [x] **Step 5: Commit** — `Recorder: refuse to record an outcome that fires on the success screen`.
