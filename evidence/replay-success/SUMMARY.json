@@ -2,7 +2,7 @@
   "fault_injected": null,
   "status": "success",
   "outputs": {
-    "savings_balance": "$18930.00"
+    "savings_balance": 18930.0
   },
   "outcome_code": null,
   "failure": null,

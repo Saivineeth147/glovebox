@@ -5,16 +5,16 @@
   "outcome_code": null,
   "failure": {
     "failure_class": "target_not_found",
-    "step_id": "s09_click",
+    "step_id": "s08_click",
     "message": "click e24 failed: another element covers the target (modal/interstitial?)",
     "expected": "button 'Find Member'",
     "observed": "url=http://127.0.0.1:8089/t/alpha/ title='Meridian Core \u2014 Alpine Credit Union' text='[nav]\\nMeridian Core \u2014 Alpine Credit Union Not signed in\\n\\n[menu]\\nMENU\\nHome\\nMember Inquiry\\nTransactions\\nReports\\nAdministration\\n\\n[main]\\nMeridian Core \u2014 Alpine Credit Union \\xa0 v7.2.1\\nSystem Notice\\nNightly batch posting completed. Balances shown are as of 06:00.\\nMember Inquiry\\nMember No. \\n \\nMeridian Core '",
     "evidence": {
-      "screenshot": "/Users/chintu/Desktop/glovebox/runs/replay-20260913T202957-4f9f63/screenshots/0009-failure-s09_click.png",
-      "snapshot:top": "/Users/chintu/Desktop/glovebox/runs/replay-20260913T202957-4f9f63/snapshots/0010-failure-s09_click-top.html",
-      "snapshot:nav": "/Users/chintu/Desktop/glovebox/runs/replay-20260913T202957-4f9f63/snapshots/0011-failure-s09_click-nav.html",
-      "snapshot:menu": "/Users/chintu/Desktop/glovebox/runs/replay-20260913T202957-4f9f63/snapshots/0012-failure-s09_click-menu.html",
-      "snapshot:main": "/Users/chintu/Desktop/glovebox/runs/replay-20260913T202957-4f9f63/snapshots/0013-failure-s09_click-main.html"
+      "screenshot": "/Users/chintu/Desktop/glovebox/runs/replay-20260913T222049-2dee90/screenshots/0008-failure-s08_click.png",
+      "snapshot:top": "/Users/chintu/Desktop/glovebox/runs/replay-20260913T222049-2dee90/snapshots/0009-failure-s08_click-top.html",
+      "snapshot:nav": "/Users/chintu/Desktop/glovebox/runs/replay-20260913T222049-2dee90/snapshots/0010-failure-s08_click-nav.html",
+      "snapshot:menu": "/Users/chintu/Desktop/glovebox/runs/replay-20260913T222049-2dee90/snapshots/0011-failure-s08_click-menu.html",
+      "snapshot:main": "/Users/chintu/Desktop/glovebox/runs/replay-20260913T222049-2dee90/snapshots/0012-failure-s08_click-main.html"
     }
   },
   "handoff": null

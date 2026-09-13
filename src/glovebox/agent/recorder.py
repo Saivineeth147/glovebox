@@ -177,7 +177,12 @@ class Recorder:
         `string` where the run plainly read money — the caller of a capability should get a
         number, not a currency string it has to parse.
         """
-        if not self.paused and all(o.name != name for o in self.outputs):
+        if not self.paused:
+            # Last declaration wins, matching `_usable_steps`, which keeps the last extraction
+            # for an output and drops the ones it superseded. Keeping the first would leave the
+            # output described by a value that was thrown away — a run that read the member
+            # number before finding the balance declared the balance a string.
+            self.outputs = [o for o in self.outputs if o.name != name]
             self.outputs.append(
                 OutputSpec(
                     name=name,

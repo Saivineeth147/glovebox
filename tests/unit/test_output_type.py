@@ -53,3 +53,44 @@ def test_should_type_from_the_captured_group_not_the_surrounding_text() -> None:
     assert captured == "1250.75"
     assert inferred_output_type("string", captured) == "number"
     assert inferred_output_type("string", text) == "string", "the whole row is not an amount"
+
+
+def test_a_later_extraction_should_replace_an_abandoned_one_s_declaration() -> None:
+    """The step-level fix drops the superseded step; the declared type must follow it.
+
+    A live run read the member-number cell first, then the balance cell. Keeping the first
+    declaration left the balance described by the type of the value that was thrown away.
+    """
+    from glovebox.agent.recorder import Recorder
+    from glovebox.schema.capability import Parameter, ParamType, Target, TargetStrategy
+
+    def target(name: str) -> Target:
+        return Target(
+            description=name,
+            strategies=[TargetStrategy(kind="text", value={"text": name}, robustness="r")],
+        )
+
+    rec = Recorder(
+        capability_id="c",
+        app_id="a",
+        tenant=None,
+        entry_url="http://127.0.0.1:8089/t/alpha/",
+        params=[Parameter(name="member_id", type=ParamType.STRING, description="d")],
+        model_name="test",
+        run_id="r",
+    )
+    rec.navigate("http://127.0.0.1:8089/t/alpha/", "open the application entry point")
+    rec.extract(target("cell '100234'"), "savings_balance", "balance", "string", None, "100234")
+    rec.extract(
+        target("cell 'Current Balance'"), "savings_balance", "balance", "string", None, "$1250.75"
+    )
+
+    cap = rec.build(
+        title="t",
+        description="d",
+        success_text=["Share Accounts"],
+        transcript=[],
+        surface_name="TestSurface",
+    )
+    assert [(o.name, str(o.type)) for o in cap.outputs] == [("savings_balance", "number")]
+    assert [s.target.description for s in cap.steps if s.extract_to] == ["cell 'Current Balance'"]

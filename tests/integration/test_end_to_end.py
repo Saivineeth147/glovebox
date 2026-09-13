@@ -557,7 +557,7 @@ def test_the_same_capability_replays_through_a_surface_with_no_browser(
     )
 
     assert result.status == ReplayStatus.SUCCESS, result.failure
-    assert str(result.outputs["savings_balance"]).endswith("1250.75")
+    assert float(result.outputs["savings_balance"]) == 1250.75
 
 
 @pytest.mark.integration
@@ -676,5 +676,5 @@ def test_a_warm_session_lets_a_replay_skip_signing_in_again(
         warm.close()
 
     assert without_credentials.status == ReplayStatus.SUCCESS, without_credentials.failure
-    assert str(without_credentials.outputs["savings_balance"]).endswith("18930.00")
+    assert float(without_credentials.outputs["savings_balance"]) == 18930.0
     assert len(without_credentials.steps) < len(first.steps)

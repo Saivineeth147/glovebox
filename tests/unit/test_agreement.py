@@ -53,8 +53,11 @@ def test_should_report_an_outcome_only_one_run_declared() -> None:
 
 def test_should_report_an_output_whose_type_changed_between_runs() -> None:
     base = _artifact()
+    # Flip to whichever type the artifact does not currently declare, so this stays a real
+    # divergence whatever the committed capability happens to say.
+    other = "string" if str(base.outputs[0].type) == "number" else "number"
     retyped = base.model_copy(
-        update={"outputs": [base.outputs[0].model_copy(update={"type": "number"})]}
+        update={"outputs": [base.outputs[0].model_copy(update={"type": other})]}
     )
     detail = next(d for d in compare(base, retyped) if d.aspect == "outputs").detail
     assert "savings_balance" in detail

@@ -1,7 +1,7 @@
 {
   "status": "success",
   "outputs": {
-    "savings_balance": "$1250.75"
+    "savings_balance": 1250.75
   },
   "strategies_used": {
     "s01_navigate": "url",
@@ -10,10 +10,10 @@
     "s04_click": "role_name",
     "s05_assert": null,
     "s06_click": "role_name",
-    "s07_assert": null,
-    "s08_fill": "name_attr",
-    "s09_click": "css",
-    "s12_extract": "table_cell",
-    "s19_assert": null
+    "s07_fill": "name_attr",
+    "s08_click": "css",
+    "s09_assert": null,
+    "s11_extract": "table_cell",
+    "s18_assert": null
   }
 }

@@ -2,14 +2,14 @@
   "fault_injected": "interstitial",
   "status": "success",
   "outputs": {
-    "savings_balance": "$1250.75"
+    "savings_balance": 1250.75
   },
   "outcome_code": null,
   "failure": null,
   "handoff": {
-    "intervention_id": "int_c614572616",
+    "intervention_id": "int_f85bd096f3",
     "reason": "click e24 failed: another element covers the target (modal/interstitial?) (expected button 'Find Member')",
-    "step_id": "s09_click",
+    "step_id": "s08_click",
     "resolution": "resume",
     "human_actions": 2,
     "operator": "jane.operator"

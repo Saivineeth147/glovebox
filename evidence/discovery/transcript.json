@@ -8,7 +8,7 @@
     "content": [
       {
         "type": "tool_use",
-        "id": "toolu_01MayVAT9m676AoL7xGQiKy5",
+        "id": "toolu_01VvVBbipkzZSMMNabSLUJHw",
         "name": "observe",
         "input": {}
       }
@@ -19,7 +19,7 @@
     "content": [
       {
         "type": "tool_result",
-        "tool_use_id": "toolu_01MayVAT9m676AoL7xGQiKy5",
+        "tool_use_id": "toolu_01VvVBbipkzZSMMNabSLUJHw",
         "content": "URL: http://127.0.0.1:8089/t/alpha/\nTITLE: Meridian Core \u2014 Alpine Credit Union\nLAST HTTP STATUS: 200\nFRAMES: ['(top)', 'nav', 'menu', 'main']\nINTERACTIVE ELEMENTS:\n  [e7] link \"Home\" frame=menu\n  [e9] link \"Member Inquiry\" frame=menu\n  [e21] textbox \"Operator ID\" name=username frame=main\n  [e23] textbox \"Password\" name=password frame=main\n  [e24] button \"Sign In\" value='Sign In' frame=main\nVISIBLE TEXT:\n[nav]\nMeridian Core \u2014 Alpine Credit Union Not signed in\n\n[menu]\nMENU\nHome\nMember Inquiry\nTransactions\nReports\nAdministration\n\n[main]\nMeridian Core \u2014 Alpine Credit Union \u00a0 v7.2.1\nOperator Sign-In\nOperator ID \nPassword \n \nMeridian Core (simulated). All data fictional."
       }
     ]
@@ -29,7 +29,7 @@
     "content": [
       {
         "type": "tool_use",
-        "id": "toolu_014hXEAc4n2yh958U63CCYw2",
+        "id": "toolu_013uSBvP47e1jTmEHW27i11c",
         "name": "fill",
         "input": {
           "ref": "e21",
@@ -39,7 +39,7 @@
       },
       {
         "type": "tool_use",
-        "id": "toolu_01DA9r5URFDricS6RCFTMgeG",
+        "id": "toolu_01XJKDGmR4EUd6rWDkt4dTbH",
         "name": "fill",
         "input": {
           "ref": "e23",
@@ -54,12 +54,12 @@
     "content": [
       {
         "type": "tool_result",
-        "tool_use_id": "toolu_014hXEAc4n2yh958U63CCYw2",
+        "tool_use_id": "toolu_013uSBvP47e1jTmEHW27i11c",
         "content": "done: filled textbox 'Operator ID'\n\nURL: http://127.0.0.1:8089/t/alpha/\nTITLE: Meridian Core \u2014 Alpine Credit Union\nLAST HTTP STATUS: 200\nFRAMES: ['(top)', 'nav', 'menu', 'main']\nINTERACTIVE ELEMENTS:\n  [e7] link \"Home\" frame=menu\n  [e9] link \"Member Inquiry\" frame=menu\n  [e21] textbox \"Operator ID\" name=username value='[REDACTED:username#6b4632f44b]' frame=main\n  [e23] textbox \"Password\" name=password frame=main\n  [e24] button \"Sign In\" value='Sign In' frame=main\nVISIBLE TEXT:\n[nav]\nMeridian Core \u2014 Alpine Credit Union Not signed in\n\n[menu]\nMENU\nHome\nMember Inquiry\nTransactions\nReports\nAdministration\n\n[main]\nMeridian Core \u2014 Alpine Credit Union \u00a0 v7.2.1\nOperator Sign-In\nOperator ID \nPassword \n \nMeridian Core (simulated). All data fictional."
       },
       {
         "type": "tool_result",
-        "tool_use_id": "toolu_01DA9r5URFDricS6RCFTMgeG",
+        "tool_use_id": "toolu_01XJKDGmR4EUd6rWDkt4dTbH",
         "content": "done: filled textbox 'Password'\n\nURL: http://127.0.0.1:8089/t/alpha/\nTITLE: Meridian Core \u2014 Alpine Credit Union\nLAST HTTP STATUS: 200\nFRAMES: ['(top)', 'nav', 'menu', 'main']\nINTERACTIVE ELEMENTS:\n  [e7] link \"Home\" frame=menu\n  [e9] link \"Member Inquiry\" frame=menu\n  [e21] textbox \"Operator ID\" name=username value='[REDACTED:username#6b4632f44b]' frame=main\n  [e23] textbox \"Password\" name=password value='\u2022\u2022\u2022\u2022' frame=main\n  [e24] button \"Sign In\" value='Sign In' frame=main\nVISIBLE TEXT:\n[nav]\nMeridian Core \u2014 Alpine Credit Union Not signed in\n\n[menu]\nMENU\nHome\nMember Inquiry\nTransactions\nReports\nAdministration\n\n[main]\nMeridian Core \u2014 Alpine Credit Union \u00a0 v7.2.1\nOperator Sign-In\nOperator ID \nPassword \n \nMeridian Core (simulated). All data fictional."
       }
     ]
@@ -69,7 +69,7 @@
     "content": [
       {
         "type": "tool_use",
-        "id": "toolu_01VJ2pYYrJ4FkJomqVREPvPg",
+        "id": "toolu_01CqtWGJTNboJFG8CiosQo5z",
         "name": "click",
         "input": {
           "ref": "e24",
@@ -83,7 +83,7 @@
     "content": [
       {
         "type": "tool_result",
-        "tool_use_id": "toolu_01VJ2pYYrJ4FkJomqVREPvPg",
+        "tool_use_id": "toolu_01CqtWGJTNboJFG8CiosQo5z",
         "content": "done: clicked button 'Sign In'\n\nURL: http://127.0.0.1:8089/t/alpha/\nTITLE: Meridian Core \u2014 Alpine Credit Union\nLAST HTTP STATUS: 200\nFRAMES: ['(top)', 'nav', 'menu', 'main']\nINTERACTIVE ELEMENTS:\n  [e7] link \"Home\" frame=menu\n  [e9] link \"Member Inquiry\" frame=menu\n  [e21] link \"Member Inquiry\" frame=main\nVISIBLE TEXT:\n[nav]\nMeridian Core \u2014 Alpine Credit Union Not signed in\n\n[menu]\nMENU\nHome\nMember Inquiry\nTransactions\nReports\nAdministration\n\n[main]\nMeridian Core \u2014 Alpine Credit Union \u00a0 v7.2.1\nWelcome, [REDACTED:username#6b4632f44b].\nUse the menu on the left to begin. Common tasks:\nMember Inquiry \u2014 look up a member and view balances.\nMeridian Core (simulated). All data fictional."
       }
     ]
@@ -93,11 +93,11 @@
     "content": [
       {
         "type": "tool_use",
-        "id": "toolu_013vPtvNW9t7quhiKzURVNR6",
+        "id": "toolu_01CgtyCwvhc9i84geVkscgCk",
         "name": "assert_text",
         "input": {
           "text": "Welcome, [REDACTED:username#6b4632f44b].",
-          "why": "Verify sign-in success"
+          "why": "Confirm successful sign-in"
         }
       }
     ]
@@ -107,7 +107,7 @@
     "content": [
       {
         "type": "tool_result",
-        "tool_use_id": "toolu_013vPtvNW9t7quhiKzURVNR6",
+        "tool_use_id": "toolu_01CgtyCwvhc9i84geVkscgCk",
         "content": "checkpoint recorded: 'Welcome, [REDACTED:username#6b4632f44b].' is visible"
       }
     ]
@@ -117,11 +117,11 @@
     "content": [
       {
         "type": "tool_use",
-        "id": "toolu_011LUKjdoZE1iMJk48iv5MQe",
+        "id": "toolu_01Qf6dJRH2TwW2W1uQzix1WB",
         "name": "click",
         "input": {
           "ref": "e9",
-          "why": "Navigate to Member Inquiry page"
+          "why": "Navigate to Member Inquiry to look up member"
         }
       }
     ]
@@ -131,7 +131,7 @@
     "content": [
       {
         "type": "tool_result",
-        "tool_use_id": "toolu_011LUKjdoZE1iMJk48iv5MQe",
+        "tool_use_id": "toolu_01Qf6dJRH2TwW2W1uQzix1WB",
         "content": "done: clicked link 'Member Inquiry'\n\nURL: http://127.0.0.1:8089/t/alpha/\nTITLE: Meridian Core \u2014 Alpine Credit Union\nLAST HTTP STATUS: 200\nFRAMES: ['(top)', 'nav', 'menu', 'main']\nINTERACTIVE ELEMENTS:\n  [e7] link \"Home\" frame=menu\n  [e9] link \"Member Inquiry\" frame=menu\n  [e21] textbox \"Member No.\" name=member_no frame=main\n  [e22] button \"Find Member\" value='Find Member' frame=main\nVISIBLE TEXT:\n[nav]\nMeridian Core \u2014 Alpine Credit Union Not signed in\n\n[menu]\nMENU\nHome\nMember Inquiry\nTransactions\nReports\nAdministration\n\n[main]\nMeridian Core \u2014 Alpine Credit Union \u00a0 v7.2.1\nMember Inquiry\nMember No. \n \nMeridian Core (simulated). All data fictional."
       }
     ]
@@ -141,21 +141,12 @@
     "content": [
       {
         "type": "tool_use",
-        "id": "toolu_01GUy7TMVWwBY5TDyBe5Fbro",
-        "name": "assert_text",
-        "input": {
-          "text": "Member Inquiry",
-          "why": "Verify navigation to Member Inquiry page"
-        }
-      },
-      {
-        "type": "tool_use",
-        "id": "toolu_014eK3ovytbUXiEvhLWrtH7z",
+        "id": "toolu_01XHXotgpdPBmvka2jotusgR",
         "name": "fill",
         "input": {
           "ref": "e21",
           "param": "member_id",
-          "why": "Enter member number to search"
+          "why": "Enter member number to look up"
         }
       }
     ]
@@ -165,12 +156,7 @@
     "content": [
       {
         "type": "tool_result",
-        "tool_use_id": "toolu_01GUy7TMVWwBY5TDyBe5Fbro",
-        "content": "checkpoint recorded: 'Member Inquiry' is visible"
-      },
-      {
-        "type": "tool_result",
-        "tool_use_id": "toolu_014eK3ovytbUXiEvhLWrtH7z",
+        "tool_use_id": "toolu_01XHXotgpdPBmvka2jotusgR",
         "content": "done: filled textbox 'Member No.'\n\nURL: http://127.0.0.1:8089/t/alpha/\nTITLE: Meridian Core \u2014 Alpine Credit Union\nLAST HTTP STATUS: 200\nFRAMES: ['(top)', 'nav', 'menu', 'main']\nINTERACTIVE ELEMENTS:\n  [e7] link \"Home\" frame=menu\n  [e9] link \"Member Inquiry\" frame=menu\n  [e21] textbox \"Member No.\" name=member_no value='100234' frame=main\n  [e22] button \"Find Member\" value='Find Member' frame=main\nVISIBLE TEXT:\n[nav]\nMeridian Core \u2014 Alpine Credit Union Not signed in\n\n[menu]\nMENU\nHome\nMember Inquiry\nTransactions\nReports\nAdministration\n\n[main]\nMeridian Core \u2014 Alpine Credit Union \u00a0 v7.2.1\nMember Inquiry\nMember No. \n \nMeridian Core (simulated). All data fictional."
       }
     ]
@@ -180,7 +166,7 @@
     "content": [
       {
         "type": "tool_use",
-        "id": "toolu_01XfyYocTuSz1ZiEFmHG8p8F",
+        "id": "toolu_014Ryw4Jx62DoWGuEF1B8oTf",
         "name": "click",
         "input": {
           "ref": "e22",
@@ -194,7 +180,7 @@
     "content": [
       {
         "type": "tool_result",
-        "tool_use_id": "toolu_01XfyYocTuSz1ZiEFmHG8p8F",
+        "tool_use_id": "toolu_014Ryw4Jx62DoWGuEF1B8oTf",
         "content": "done: clicked button 'Find Member'\n\nURL: http://127.0.0.1:8089/t/alpha/\nTITLE: Meridian Core \u2014 Alpine Credit Union\nLAST HTTP STATUS: 200\nFRAMES: ['(top)', 'nav', 'menu', 'main']\nINTERACTIVE ELEMENTS:\n  [e7] link \"Home\" frame=menu\n  [e9] link \"Member Inquiry\" frame=menu\n  [e38] link \"Open Sub-Account\" frame=main\n  [e39] link \"New Inquiry\" frame=main\nVISIBLE TEXT:\n[nav]\nMeridian Core \u2014 Alpine Credit Union Not signed in\n\n[menu]\nMENU\nHome\nMember Inquiry\nTransactions\nReports\nAdministration\n\n[main]\nMeridian Core \u2014 Alpine Credit Union \u00a0 v7.2.1\nMember Detail\nMember No. 100234 Status Active\nName Doe, Jane\nShare Accounts\nShare Description Current Balance\nS01 Regular Savings $1250.75\nS09 Checking $402.10\nOpen Sub-Account \u00a0|\u00a0 New Inquiry\nMeridian Core (simulated). All data fictional."
       }
     ]
@@ -204,11 +190,60 @@
     "content": [
       {
         "type": "text",
-        "text": "Found member details with savings balance. Let me extract the value."
+        "text": "Found the member detail with savings balance visible."
       },
       {
         "type": "tool_use",
-        "id": "toolu_01FjVQ9Jxdej764LgZp3FrS8",
+        "id": "toolu_01VTyyAT5Jt5K5eU6GvKNfXg",
+        "name": "assert_text",
+        "input": {
+          "text": "Regular Savings",
+          "why": "Confirm savings account row is visible on member detail page"
+        }
+      }
+    ]
+  },
+  {
+    "role": "user",
+    "content": [
+      {
+        "type": "tool_result",
+        "tool_use_id": "toolu_01VTyyAT5Jt5K5eU6GvKNfXg",
+        "content": "checkpoint recorded: 'Regular Savings' is visible"
+      }
+    ]
+  },
+  {
+    "role": "assistant",
+    "content": [
+      {
+        "type": "tool_use",
+        "id": "toolu_01JYJtaMNSKuGtkMVXeJsiBf",
+        "name": "extract",
+        "input": {
+          "ref": "e21",
+          "output": "savings_balance",
+          "description": "Current savings balance for member 100234 (Regular Savings share account)"
+        }
+      }
+    ]
+  },
+  {
+    "role": "user",
+    "content": [
+      {
+        "type": "tool_result",
+        "tool_use_id": "toolu_01JYJtaMNSKuGtkMVXeJsiBf",
+        "content": "savings_balance = '100234' (from cell '100234')"
+      }
+    ]
+  },
+  {
+    "role": "assistant",
+    "content": [
+      {
+        "type": "tool_use",
+        "id": "toolu_01KGotXfs97D52pJAgUYFMTm",
         "name": "observe",
         "input": {}
       }
@@ -219,7 +254,7 @@
     "content": [
       {
         "type": "tool_result",
-        "tool_use_id": "toolu_01FjVQ9Jxdej764LgZp3FrS8",
+        "tool_use_id": "toolu_01KGotXfs97D52pJAgUYFMTm",
         "content": "URL: http://127.0.0.1:8089/t/alpha/\nTITLE: Meridian Core \u2014 Alpine Credit Union\nLAST HTTP STATUS: 200\nFRAMES: ['(top)', 'nav', 'menu', 'main']\nINTERACTIVE ELEMENTS:\n  [e7] link \"Home\" frame=menu\n  [e9] link \"Member Inquiry\" frame=menu\n  [e38] link \"Open Sub-Account\" frame=main\n  [e39] link \"New Inquiry\" frame=main\nVISIBLE TEXT:\n[nav]\nMeridian Core \u2014 Alpine Credit Union Not signed in\n\n[menu]\nMENU\nHome\nMember Inquiry\nTransactions\nReports\nAdministration\n\n[main]\nMeridian Core \u2014 Alpine Credit Union \u00a0 v7.2.1\nMember Detail\nMember No. 100234 Status Active\nName Doe, Jane\nShare Accounts\nShare Description Current Balance\nS01 Regular Savings $1250.75\nS09 Checking $402.10\nOpen Sub-Account \u00a0|\u00a0 New Inquiry\nMeridian Core (simulated). All data fictional."
       }
     ]
@@ -229,7 +264,7 @@
     "content": [
       {
         "type": "tool_use",
-        "id": "toolu_01CHkhTjHBsu2fUB3nVebrTx",
+        "id": "toolu_01AWAVNpD5RCLGZVy2ewnEvt",
         "name": "observe",
         "input": {
           "screenshot": true
@@ -242,7 +277,7 @@
     "content": [
       {
         "type": "tool_result",
-        "tool_use_id": "toolu_01CHkhTjHBsu2fUB3nVebrTx",
+        "tool_use_id": "toolu_01AWAVNpD5RCLGZVy2ewnEvt",
         "content": [
           {
             "type": "text",
@@ -265,16 +300,16 @@
     "content": [
       {
         "type": "text",
-        "text": "I can see the savings balance clearly. Let me extract it and check for a not-found outcome before finishing."
+        "text": "I can see the balance in the screenshot. Let me extract it properly from the correct cell."
       },
       {
         "type": "tool_use",
-        "id": "toolu_012gyF6voNwJ8fZKNjaQiuey",
+        "id": "toolu_019EiBCKWEYBU4bBawLrvCgs",
         "name": "extract",
         "input": {
-          "ref": "e21",
+          "ref": "e38",
           "output": "savings_balance",
-          "description": "Current balance of Regular Savings (S01) share account",
+          "description": "Current savings balance for member 100234",
           "regex": "\\$([\\d,.]+)"
         }
       }
@@ -285,8 +320,8 @@
     "content": [
       {
         "type": "tool_result",
-        "tool_use_id": "toolu_012gyF6voNwJ8fZKNjaQiuey",
-        "content": "ERROR: ValueError: regex '\\\\$([\\\\d,.]+)' does not match the text of this element ('100234'). Extract from the element that actually holds the value, or drop the regex.",
+        "tool_use_id": "toolu_019EiBCKWEYBU4bBawLrvCgs",
+        "content": "ERROR: ValueError: regex '\\\\$([\\\\d,.]+)' does not match the text of this element ('Open Sub-Account'). Extract from the element that actually holds the value, or drop the regex.",
         "is_error": true
       }
     ]
@@ -296,7 +331,7 @@
     "content": [
       {
         "type": "tool_use",
-        "id": "toolu_018bb52aJg9iZMztzobTRR7Z",
+        "id": "toolu_01U5cjCZfNPs67jDENPp22kv",
         "name": "observe",
         "input": {}
       }
@@ -307,7 +342,7 @@
     "content": [
       {
         "type": "tool_result",
-        "tool_use_id": "toolu_018bb52aJg9iZMztzobTRR7Z",
+        "tool_use_id": "toolu_01U5cjCZfNPs67jDENPp22kv",
         "content": "URL: http://127.0.0.1:8089/t/alpha/\nTITLE: Meridian Core \u2014 Alpine Credit Union\nLAST HTTP STATUS: 200\nFRAMES: ['(top)', 'nav', 'menu', 'main']\nINTERACTIVE ELEMENTS:\n  [e7] link \"Home\" frame=menu\n  [e9] link \"Member Inquiry\" frame=menu\n  [e38] link \"Open Sub-Account\" frame=main\n  [e39] link \"New Inquiry\" frame=main\nVISIBLE TEXT:\n[nav]\nMeridian Core \u2014 Alpine Credit Union Not signed in\n\n[menu]\nMENU\nHome\nMember Inquiry\nTransactions\nReports\nAdministration\n\n[main]\nMeridian Core \u2014 Alpine Credit Union \u00a0 v7.2.1\nMember Detail\nMember No. 100234 Status Active\nName Doe, Jane\nShare Accounts\nShare Description Current Balance\nS01 Regular Savings $1250.75\nS09 Checking $402.10\nOpen Sub-Account \u00a0|\u00a0 New Inquiry\nMeridian Core (simulated). All data fictional."
       }
     ]
@@ -317,36 +352,13 @@
     "content": [
       {
         "type": "tool_use",
-        "id": "toolu_01FDQne4RYJWDxHvVmZdwzfM",
-        "name": "observe",
-        "input": {
-          "screenshot": false
-        }
-      }
-    ]
-  },
-  {
-    "role": "user",
-    "content": [
-      {
-        "type": "tool_result",
-        "tool_use_id": "toolu_01FDQne4RYJWDxHvVmZdwzfM",
-        "content": "URL: http://127.0.0.1:8089/t/alpha/\nTITLE: Meridian Core \u2014 Alpine Credit Union\nLAST HTTP STATUS: 200\nFRAMES: ['(top)', 'nav', 'menu', 'main']\nINTERACTIVE ELEMENTS:\n  [e7] link \"Home\" frame=menu\n  [e9] link \"Member Inquiry\" frame=menu\n  [e38] link \"Open Sub-Account\" frame=main\n  [e39] link \"New Inquiry\" frame=main\nVISIBLE TEXT:\n[nav]\nMeridian Core \u2014 Alpine Credit Union Not signed in\n\n[menu]\nMENU\nHome\nMember Inquiry\nTransactions\nReports\nAdministration\n\n[main]\nMeridian Core \u2014 Alpine Credit Union \u00a0 v7.2.1\nMember Detail\nMember No. 100234 Status Active\nName Doe, Jane\nShare Accounts\nShare Description Current Balance\nS01 Regular Savings $1250.75\nS09 Checking $402.10\nOpen Sub-Account \u00a0|\u00a0 New Inquiry\nMeridian Core (simulated). All data fictional."
-      }
-    ]
-  },
-  {
-    "role": "assistant",
-    "content": [
-      {
-        "type": "tool_use",
-        "id": "toolu_01GA3S6UrHaepk9C4QWoYeXp",
+        "id": "toolu_01PYyP8CHM6tVSuW8FcgS2yZ",
         "name": "extract",
         "input": {
-          "ref": "e38",
+          "ref": "e39",
           "output": "savings_balance",
-          "description": "Current balance of Regular Savings (S01) share account shown in the Share Accounts table",
-          "regex": "Regular Savings\\s*\\$([\\d,.]+)"
+          "description": "Current savings balance for member 100234 found in the Share Accounts table under Regular Savings row",
+          "regex": "Regular Savings \\$([\\d,.]+)"
         }
       }
     ]
@@ -356,8 +368,8 @@
     "content": [
       {
         "type": "tool_result",
-        "tool_use_id": "toolu_01GA3S6UrHaepk9C4QWoYeXp",
-        "content": "ERROR: ValueError: regex 'Regular Savings\\\\s*\\\\$([\\\\d,.]+)' does not match the text of this element ('Open Sub-Account'). Extract from the element that actually holds the value, or drop the regex.",
+        "tool_use_id": "toolu_01PYyP8CHM6tVSuW8FcgS2yZ",
+        "content": "ERROR: ValueError: regex 'Regular Savings \\\\$([\\\\d,.]+)' does not match the text of this element ('New Inquiry'). Extract from the element that actually holds the value, or drop the regex.",
         "is_error": true
       }
     ]
@@ -367,98 +379,12 @@
     "content": [
       {
         "type": "tool_use",
-        "id": "toolu_015JTiHewmfPzqLUSjwRnrzQ",
-        "name": "extract",
-        "input": {
-          "ref": "e39",
-          "output": "savings_balance",
-          "description": "Current balance of Regular Savings (S01) share account shown in the Share Accounts table"
-        }
-      }
-    ]
-  },
-  {
-    "role": "user",
-    "content": [
-      {
-        "type": "tool_result",
-        "tool_use_id": "toolu_015JTiHewmfPzqLUSjwRnrzQ",
-        "content": "savings_balance = 'New Inquiry' (from link 'New Inquiry')"
-      }
-    ]
-  },
-  {
-    "role": "assistant",
-    "content": [
-      {
-        "type": "tool_use",
-        "id": "toolu_01DmDa9a6BjopBcYQt8yzLWi",
-        "name": "observe",
-        "input": {
-          "screenshot": true
-        }
-      }
-    ]
-  },
-  {
-    "role": "user",
-    "content": [
-      {
-        "type": "tool_result",
-        "tool_use_id": "toolu_01DmDa9a6BjopBcYQt8yzLWi",
-        "content": [
-          {
-            "type": "text",
-            "text": "URL: http://127.0.0.1:8089/t/alpha/\nTITLE: Meridian Core \u2014 Alpine Credit Union\nLAST HTTP STATUS: 200\nFRAMES: ['(top)', 'nav', 'menu', 'main']\nINTERACTIVE ELEMENTS:\n  [e7] link \"Home\" frame=menu\n  [e9] link \"Member Inquiry\" frame=menu\n  [e38] link \"Open Sub-Account\" frame=main\n  [e39] link \"New Inquiry\" frame=main\nVISIBLE TEXT:\n[nav]\nMeridian Core \u2014 Alpine Credit Union Not signed in\n\n[menu]\nMENU\nHome\nMember Inquiry\nTransactions\nReports\nAdministration\n\n[main]\nMeridian Core \u2014 Alpine Credit Union \u00a0 v7.2.1\nMember Detail\nMember No. 100234 Status Active\nName Doe, Jane\nShare Accounts\nShare Description Current Balance\nS01 Regular Savings $1250.75\nS09 Checking $402.10\nOpen Sub-Account \u00a0|\u00a0 New Inquiry\nMeridian Core (simulated). All data fictional."
-          },
-          {
-            "type": "image",
-            "source": {
-              "type": "base64",
-              "media_type": "image/png",
-              "data": "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AABRRA4AABBF5AAAAFFEDgAAEEXkAAAAUUQOAAAQReQAAABRRA4AABBF5AAAAFFEDgAAEEXkAAAAUUQOAAAQReQAAABRRA4AABBF5AAAAFFEDgAAEEXkAAAAUUQOAAAQReQAAABRRA4AABBF5AAAAFFEDgAAEEXkAAAAUUQOAAAQReQAAABRRA4AABBF5AAAAFFEDgAAEEXkAAAAUUQOAAAQReQAAABRRA4AABBF5AAAAFFEDgAAEEXkAAAAUUQOAAAQReQAAABRRA4AABBF5AAAAFFEDgAAEEXkAAAAUUQOAAAQReQAAABRRA4AABBF5AAAAFFEDgAAEEXkAAAAUUQOAAAQReQAAABRRA4AABBF5AAAAFFEDgAAEEXkAAAAUUQOAAAQReQAAABRRA4AABBF5AAAAFFEDgAAEEXkAAAAUUQOAAAQReQAAABRRA4AABBF5AAAAFFEDgAAEEXkAAAAUUQOAAAQReQAAABRRA4AABBF5AAAAFFEDgAAEEXkAAAAUUQOAAAQReQAAABRRA4AABBF5AAAAFFEDgAAEEXkAAAAUUQOAAAQReQAAABRRA4AABBF5AAAAFFEDgAAEEXkAAAAUUQOAAAQReQAAABRRA4AABBF5AAAAFFEDgAAEEXkAAAAUUQOAAAQReQAAABRRA4AABBF5AAAAFFEDgAAEEXkAAAAUUQOAAAQReQAAABRRA4AABBF5AAAAFFEDgAAEEXkAAAAUUQOAAAQReQAAABRRA4AABBF5AAAAFFEDgAAEEXkAAAAUUQOAAAQReQAAABRRA4AABBF5AAAAFFEDgAAEEXkAAAAUUQOAAAQReQAAABRRA4AABBF5AAAAFFEDgAAEEXkAAAAUUQOAAAQReQAAABRRA4AABBF5AAAAFFEDgAAEEXkAAAAUUQOAAAQReQAAABRRA4AABBF5AAAAFFEDgAAEEXkAAAAUUQOAAAQReRPZv+jAAAF80lEQVQAAABRRA4AABBF5AAAAFFEDgAAEEXkAAAAUUQOAAAQReQAAABRRA4AABBF5AAAAFFEDgAAEEXkAAAAUUQOAAAQReQAAABRRA4AABBF5AAAAFFEDgAAEEXkAAAAUUQOAAAQReQAAABRRA4AABBF5AAAAFFEDgAAEEXkAAAAUUQOAAAQReQAAABRRA4AABBF5AAAAFFEDgAAEEXkAAAAUUQOAAAQReQAAABRRA4AABBF5AAAAFFEDgAAEEXkAAAAUUQOAAAQReQAAABRRA4AABBF5AAAAFFEDgAAEEXkAAAAUUQOAAAQReQAAABRRA4AABBF5AAAAFFEDgAAEEXkAAAAUUQOAAAQReQAAABRRA4AABBF5AAAAFFEDgAAEEXkAAAAUUQOAAAQReQAAABRRA4AABBF5AAAAFFEDgAAEEXkAAAAUUQOAAAQReQAAABRRA4AABBF5AAAAFFEDgAAEEXkAAAAUUQOAAAQReQAAABRRA4AABBF5AAAAFFEDgAAEEXkAAAAUUQOAAAQReQAAABRRA4AABBF5AAAAFFEDgAAEEXkAAAAUUQOAAAQReQAAABRRA4AABBF5AAAAFFEDgAAEEXkAAAAUUQOAAAQReQAAABRRA4AABBF5AAAAFFEDgAAEEXkAAAAUUQOAAAQReQAAABRRA4AABBF5AAAAFFEDgAAEEXkAAAAUUQOAAAQReQAAABRRA4AABBF5AAAAFFEDgAAEEXkAAAAUUQOAAAQReQAAABRRA4AABBF5AAAAFFEDgAAEEXkAAAAUUQOAAAQReQAAABRRA4AABBF5AAAAFFEDgAAEEXkAAAAUUQOAAAQReQAAABRRA4AABBF5AAAAFFEDgAAEEXkAAAAUUQOAAAQReQAAABRRA4AABBF5AAAAFFEDgAAEEXkAAAAUUQOAAAQReQAAABRRA4AABBF5AAAAFFEDgAAEEXkAAAAUUQOAAAQReQAAABRRA4AABBF5AAAAFFEDgAAEEXkAAAAUUQOAAAQReQAAABRRA4AABBF5AAAAFFEDgAAEEXkAAAAUUQOAAAQReQAAABRRA4AABBF5AAAAFFEDgAAEEXkAAAAUUQOAAAQReQAAABRRA4AABBF5AAAAFFEDgAAEEXkAAAAUUQOAAAQReQAAABRRA4AABBF5AAAAFFEDgAAEEXkAAAAUUQOAAAQReQAAABRRA4AABBF5AAAAFFEDgAAEEXkAAAAUUQOAAAQReQAAABRRA4AABBF5AAAAFFEDgAAEEXkAAAAUUQOAAAQReQAAABRRA4AABBF5AAAAFFEDgAAEEXkAAAAUUQOAAAQReQAAABRRA4AABBF5AAAAFFEDgAAEEXkAAAAUUQOAAAQReQAAABRRA4AABBF5AAAAFFEDgAAEEXkAAAAUUQOAAAQReQAAABRRA4AABBF5AAAAFFEDgAAEEXkAAAAUUQOAAAQReQAAABRRA4AABBF5AAAAFFEDgAAEEXkAAAAUUQOAAAQReQAAABRRA4AABBF5AAAAFFEDgAAEEXkAAAAUUQOAAAQReQAAABRRA4AABBF5AAAAFFEDgAAEEXkAAAAUUQOAAAQReQAAABRRA4AABBF5AAAAFFEDgAAEEXkAAAAUUQOAAAQReQAAABRRA4AABBF5AAAAFFEDgAAEEXkAAAAUUQOAAAQReQAAABRRA4AABBF5AAAAFFEDgAAEEXkAAAAUUQOAAAQReQAAABRRA4AABBF5AAAAFFEDgAAEEXkAAAAUUQOAAAQReQAAABRRA4AABBF5AAAAFFEDgAAEEXkAAAAUUQOAAAQReQAAABRRA4AABBF5AAAAFFEDgAAEEXkAAAAUUQOAAAQReQAAABRRA4AABBF5AAAAFFEDgAAEEXkAAAAUUQOAAAQReQAAABRRA4AABBF5AAAAFFEDgAAEEXkAAAAUUQOAAAQReQAAABRRA4AABBF5AAAAFFEDgAAEEXkAAAAUUQOAAAQReQAAABRRA4AABBF5AAAAFFEDgAAEEXkAAAAUUQOAAAQ5T8AAAD//4vFdBMAAAAGSURBVAMAdcc4nedC6AcAAAAASUVORK5CYII="
-            }
-          }
-        ]
-      }
-    ]
-  },
-  {
-    "role": "assistant",
-    "content": [
-      {
-        "type": "tool_use",
-        "id": "toolu_017NAsR3KgLtGLBYhM4ZUNhF",
-        "name": "extract",
-        "input": {
-          "ref": "e30",
-          "output": "savings_balance",
-          "description": "Current balance of Regular Savings (S01) share account"
-        }
-      }
-    ]
-  },
-  {
-    "role": "user",
-    "content": [
-      {
-        "type": "tool_result",
-        "tool_use_id": "toolu_017NAsR3KgLtGLBYhM4ZUNhF",
-        "content": "savings_balance = 'Current Balance' (from cell 'Current Balance')"
-      }
-    ]
-  },
-  {
-    "role": "assistant",
-    "content": [
-      {
-        "type": "tool_use",
-        "id": "toolu_01AQha2yqEBLJMsf8p4fz7jc",
+        "id": "toolu_012C4pj38aiaifRaag2HojzE",
         "name": "extract",
         "input": {
           "ref": "e33",
           "output": "savings_balance",
-          "description": "Current balance of Regular Savings (S01) share account"
+          "description": "Attempt to read savings balance cell value"
         }
       }
     ]
@@ -468,7 +394,7 @@
     "content": [
       {
         "type": "tool_result",
-        "tool_use_id": "toolu_01AQha2yqEBLJMsf8p4fz7jc",
+        "tool_use_id": "toolu_012C4pj38aiaifRaag2HojzE",
         "content": "savings_balance = '$1250.75' (from cell 'Current Balance' in row 'S01')"
       }
     ]
@@ -478,14 +404,16 @@
     "content": [
       {
         "type": "text",
-        "text": "Got the exact savings balance: $1250.75. Now let me probe the \"not found\" outcome before finishing."
+        "text": "Successfully extracted the savings balance: $1250.75"
       },
       {
         "type": "tool_use",
-        "id": "toolu_014fi4e7iydiDTRQV3bTT5Vj",
-        "name": "begin_probe",
+        "id": "toolu_01A1TefCdX6HEvdFRWsQFgQH",
+        "name": "declare_outcome",
         "input": {
-          "why": "Check what the UI shows when a member is not found, to declare a legitimate non-success outcome"
+          "code": "MEMBER_NOT_FOUND",
+          "description": "Member number entered does not match any existing member record",
+          "detect_text": "No member found"
         }
       }
     ]
@@ -495,7 +423,30 @@
     "content": [
       {
         "type": "tool_result",
-        "tool_use_id": "toolu_014fi4e7iydiDTRQV3bTT5Vj",
+        "tool_use_id": "toolu_01A1TefCdX6HEvdFRWsQFgQH",
+        "content": "outcome MEMBER_NOT_FOUND recorded"
+      }
+    ]
+  },
+  {
+    "role": "assistant",
+    "content": [
+      {
+        "type": "tool_use",
+        "id": "toolu_01UzdtdRNwPPqx7GuG6NScLC",
+        "name": "begin_probe",
+        "input": {
+          "why": "Verify the exact wording shown when a member lookup finds no matching record"
+        }
+      }
+    ]
+  },
+  {
+    "role": "user",
+    "content": [
+      {
+        "type": "tool_result",
+        "tool_use_id": "toolu_01UzdtdRNwPPqx7GuG6NScLC",
         "content": "Recording paused. Nothing until end_probe becomes part of the capability."
       }
     ]
@@ -505,12 +456,9 @@
     "content": [
       {
         "type": "tool_use",
-        "id": "toolu_01TXQiXin8svCkegm7fNH9x2",
-        "name": "click",
-        "input": {
-          "ref": "e39",
-          "why": "Start a new inquiry to test not-found scenario"
-        }
+        "id": "toolu_01Lpsu2Vp8fT9ZGg2keYVkyr",
+        "name": "observe",
+        "input": {}
       }
     ]
   },
@@ -519,8 +467,8 @@
     "content": [
       {
         "type": "tool_result",
-        "tool_use_id": "toolu_01TXQiXin8svCkegm7fNH9x2",
-        "content": "done: clicked link 'New Inquiry'\n\nURL: http://127.0.0.1:8089/t/alpha/\nTITLE: Meridian Core \u2014 Alpine Credit Union\nLAST HTTP STATUS: 200\nFRAMES: ['(top)', 'nav', 'menu', 'main']\nINTERACTIVE ELEMENTS:\n  [e7] link \"Home\" frame=menu\n  [e9] link \"Member Inquiry\" frame=menu\n  [e21] textbox \"Member No.\" name=member_no frame=main\n  [e22] button \"Find Member\" value='Find Member' frame=main\nVISIBLE TEXT:\n[nav]\nMeridian Core \u2014 Alpine Credit Union Not signed in\n\n[menu]\nMENU\nHome\nMember Inquiry\nTransactions\nReports\nAdministration\n\n[main]\nMeridian Core \u2014 Alpine Credit Union \u00a0 v7.2.1\nMember Inquiry\nMember No. \n \nMeridian Core (simulated). All data fictional."
+        "tool_use_id": "toolu_01Lpsu2Vp8fT9ZGg2keYVkyr",
+        "content": "URL: http://127.0.0.1:8089/t/alpha/\nTITLE: Meridian Core \u2014 Alpine Credit Union\nLAST HTTP STATUS: 200\nFRAMES: ['(top)', 'nav', 'menu', 'main']\nINTERACTIVE ELEMENTS:\n  [e7] link \"Home\" frame=menu\n  [e9] link \"Member Inquiry\" frame=menu\n  [e38] link \"Open Sub-Account\" frame=main\n  [e39] link \"New Inquiry\" frame=main\nVISIBLE TEXT:\n[nav]\nMeridian Core \u2014 Alpine Credit Union Not signed in\n\n[menu]\nMENU\nHome\nMember Inquiry\nTransactions\nReports\nAdministration\n\n[main]\nMeridian Core \u2014 Alpine Credit Union \u00a0 v7.2.1\nMember Detail\nMember No. 100234 Status Active\nName Doe, Jane\nShare Accounts\nShare Description Current Balance\nS01 Regular Savings $1250.75\nS09 Checking $402.10\nOpen Sub-Account \u00a0|\u00a0 New Inquiry\nMeridian Core (simulated). All data fictional."
       }
     ]
   },
@@ -529,12 +477,11 @@
     "content": [
       {
         "type": "tool_use",
-        "id": "toolu_01QB9h2a7trZcxssHSzJEMui",
-        "name": "fill",
+        "id": "toolu_01HfN1PiLkguCEK68B1mAYqm",
+        "name": "click",
         "input": {
-          "ref": "e21",
-          "text": "999999",
-          "why": "Test with a non-existent member number"
+          "ref": "e9",
+          "why": "Go back to Member Inquiry to test a non-existent member ID"
         }
       }
     ]
@@ -544,7 +491,32 @@
     "content": [
       {
         "type": "tool_result",
-        "tool_use_id": "toolu_01QB9h2a7trZcxssHSzJEMui",
+        "tool_use_id": "toolu_01HfN1PiLkguCEK68B1mAYqm",
+        "content": "done: clicked link 'Member Inquiry'\n\nURL: http://127.0.0.1:8089/t/alpha/\nTITLE: Meridian Core \u2014 Alpine Credit Union\nLAST HTTP STATUS: 200\nFRAMES: ['(top)', 'nav', 'menu', 'main']\nINTERACTIVE ELEMENTS:\n  [e7] link \"Home\" frame=menu\n  [e9] link \"Member Inquiry\" frame=menu\n  [e21] textbox \"Member No.\" name=member_no frame=main\n  [e22] button \"Find Member\" value='Find Member' frame=main\nVISIBLE TEXT:\n[nav]\nMeridian Core \u2014 Alpine Credit Union Not signed in\n\n[menu]\nMENU\nHome\nMember Inquiry\nTransactions\nReports\nAdministration\n\n[main]\nMeridian Core \u2014 Alpine Credit Union \u00a0 v7.2.1\nMember Inquiry\nMember No. \n \nMeridian Core (simulated). All data fictional."
+      }
+    ]
+  },
+  {
+    "role": "assistant",
+    "content": [
+      {
+        "type": "tool_use",
+        "id": "toolu_01GnhERF3GZp2rrtARNzB6wF",
+        "name": "fill",
+        "input": {
+          "ref": "e21",
+          "text": "999999",
+          "why": "Test lookup with a nonexistent member ID to see the not-found message"
+        }
+      }
+    ]
+  },
+  {
+    "role": "user",
+    "content": [
+      {
+        "type": "tool_result",
+        "tool_use_id": "toolu_01GnhERF3GZp2rrtARNzB6wF",
         "content": "done: filled textbox 'Member No.'\n\nURL: http://127.0.0.1:8089/t/alpha/\nTITLE: Meridian Core \u2014 Alpine Credit Union\nLAST HTTP STATUS: 200\nFRAMES: ['(top)', 'nav', 'menu', 'main']\nINTERACTIVE ELEMENTS:\n  [e7] link \"Home\" frame=menu\n  [e9] link \"Member Inquiry\" frame=menu\n  [e21] textbox \"Member No.\" name=member_no value='999999' frame=main\n  [e22] button \"Find Member\" value='Find Member' frame=main\nVISIBLE TEXT:\n[nav]\nMeridian Core \u2014 Alpine Credit Union Not signed in\n\n[menu]\nMENU\nHome\nMember Inquiry\nTransactions\nReports\nAdministration\n\n[main]\nMeridian Core \u2014 Alpine Credit Union \u00a0 v7.2.1\nMember Inquiry\nMember No. \n \nMeridian Core (simulated). All data fictional."
       }
     ]
@@ -554,11 +526,11 @@
     "content": [
       {
         "type": "tool_use",
-        "id": "toolu_01YRaVjiuJiQBNKR4sNeA74j",
+        "id": "toolu_01WbgfA27NSb5Q6569didK1i",
         "name": "click",
         "input": {
           "ref": "e22",
-          "why": "Search for non-existent member to see not-found message"
+          "why": "Search for nonexistent member to observe not-found message"
         }
       }
     ]
@@ -568,7 +540,7 @@
     "content": [
       {
         "type": "tool_result",
-        "tool_use_id": "toolu_01YRaVjiuJiQBNKR4sNeA74j",
+        "tool_use_id": "toolu_01WbgfA27NSb5Q6569didK1i",
         "content": "done: clicked button 'Find Member'\n\nURL: http://127.0.0.1:8089/t/alpha/\nTITLE: Meridian Core \u2014 Alpine Credit Union\nLAST HTTP STATUS: 200\nFRAMES: ['(top)', 'nav', 'menu', 'main']\nINTERACTIVE ELEMENTS:\n  [e7] link \"Home\" frame=menu\n  [e9] link \"Member Inquiry\" frame=menu\n  [e22] link \"Back to search\" frame=main\nVISIBLE TEXT:\n[nav]\nMeridian Core \u2014 Alpine Credit Union Not signed in\n\n[menu]\nMENU\nHome\nMember Inquiry\nTransactions\nReports\nAdministration\n\n[main]\nMeridian Core \u2014 Alpine Credit Union \u00a0 v7.2.1\nMember Inquiry\nNo member record matched number 999999.\nBack to search\nMeridian Core (simulated). All data fictional."
       }
     ]
@@ -578,15 +550,15 @@
     "content": [
       {
         "type": "text",
-        "text": "Found the not-found message. Now returning to the goal's final screen."
+        "text": "Found the exact wording. Now let me go back to the correct member record."
       },
       {
         "type": "tool_use",
-        "id": "toolu_01Vmn83cSyNn6uBsA7F63enJ",
+        "id": "toolu_01M2QwHgBhcSspYtuNcC1hFt",
         "name": "click",
         "input": {
           "ref": "e22",
-          "why": "Return to search screen"
+          "why": "Return to search form to look up correct member again"
         }
       }
     ]
@@ -596,7 +568,7 @@
     "content": [
       {
         "type": "tool_result",
-        "tool_use_id": "toolu_01Vmn83cSyNn6uBsA7F63enJ",
+        "tool_use_id": "toolu_01M2QwHgBhcSspYtuNcC1hFt",
         "content": "done: clicked link 'Back to search'\n\nURL: http://127.0.0.1:8089/t/alpha/\nTITLE: Meridian Core \u2014 Alpine Credit Union\nLAST HTTP STATUS: 200\nFRAMES: ['(top)', 'nav', 'menu', 'main']\nINTERACTIVE ELEMENTS:\n  [e7] link \"Home\" frame=menu\n  [e9] link \"Member Inquiry\" frame=menu\n  [e21] textbox \"Member No.\" name=member_no frame=main\n  [e22] button \"Find Member\" value='Find Member' frame=main\nVISIBLE TEXT:\n[nav]\nMeridian Core \u2014 Alpine Credit Union Not signed in\n\n[menu]\nMENU\nHome\nMember Inquiry\nTransactions\nReports\nAdministration\n\n[main]\nMeridian Core \u2014 Alpine Credit Union \u00a0 v7.2.1\nMember Inquiry\nMember No. \n \nMeridian Core (simulated). All data fictional."
       }
     ]
@@ -606,12 +578,12 @@
     "content": [
       {
         "type": "tool_use",
-        "id": "toolu_01D8VcJiiyVwMAPwd5TpPWM7",
+        "id": "toolu_0198YAVZKMjywzBbdTqPvunn",
         "name": "fill",
         "input": {
           "ref": "e21",
           "param": "member_id",
-          "why": "Re-enter the target member ID to return to the goal's final screen"
+          "why": "Re-enter correct member ID to return to member detail page"
         }
       }
     ]
@@ -621,7 +593,7 @@
     "content": [
       {
         "type": "tool_result",
-        "tool_use_id": "toolu_01D8VcJiiyVwMAPwd5TpPWM7",
+        "tool_use_id": "toolu_0198YAVZKMjywzBbdTqPvunn",
         "content": "done: filled textbox 'Member No.'\n\nURL: http://127.0.0.1:8089/t/alpha/\nTITLE: Meridian Core \u2014 Alpine Credit Union\nLAST HTTP STATUS: 200\nFRAMES: ['(top)', 'nav', 'menu', 'main']\nINTERACTIVE ELEMENTS:\n  [e7] link \"Home\" frame=menu\n  [e9] link \"Member Inquiry\" frame=menu\n  [e21] textbox \"Member No.\" name=member_no value='100234' frame=main\n  [e22] button \"Find Member\" value='Find Member' frame=main\nVISIBLE TEXT:\n[nav]\nMeridian Core \u2014 Alpine Credit Union Not signed in\n\n[menu]\nMENU\nHome\nMember Inquiry\nTransactions\nReports\nAdministration\n\n[main]\nMeridian Core \u2014 Alpine Credit Union \u00a0 v7.2.1\nMember Inquiry\nMember No. \n \nMeridian Core (simulated). All data fictional."
       }
     ]
@@ -631,11 +603,11 @@
     "content": [
       {
         "type": "tool_use",
-        "id": "toolu_01PkEfps1ULWD2HcMxxwrfjb",
+        "id": "toolu_01TZWEvcpVYfj3WRGGvuJtA6",
         "name": "click",
         "input": {
           "ref": "e22",
-          "why": "Search for member 100234 again to return to final screen"
+          "why": "Retrieve member detail for member 100234"
         }
       }
     ]
@@ -645,7 +617,7 @@
     "content": [
       {
         "type": "tool_result",
-        "tool_use_id": "toolu_01PkEfps1ULWD2HcMxxwrfjb",
+        "tool_use_id": "toolu_01TZWEvcpVYfj3WRGGvuJtA6",
         "content": "done: clicked button 'Find Member'\n\nURL: http://127.0.0.1:8089/t/alpha/\nTITLE: Meridian Core \u2014 Alpine Credit Union\nLAST HTTP STATUS: 200\nFRAMES: ['(top)', 'nav', 'menu', 'main']\nINTERACTIVE ELEMENTS:\n  [e7] link \"Home\" frame=menu\n  [e9] link \"Member Inquiry\" frame=menu\n  [e38] link \"Open Sub-Account\" frame=main\n  [e39] link \"New Inquiry\" frame=main\nVISIBLE TEXT:\n[nav]\nMeridian Core \u2014 Alpine Credit Union Not signed in\n\n[menu]\nMENU\nHome\nMember Inquiry\nTransactions\nReports\nAdministration\n\n[main]\nMeridian Core \u2014 Alpine Credit Union \u00a0 v7.2.1\nMember Detail\nMember No. 100234 Status Active\nName Doe, Jane\nShare Accounts\nShare Description Current Balance\nS01 Regular Savings $1250.75\nS09 Checking $402.10\nOpen Sub-Account \u00a0|\u00a0 New Inquiry\nMeridian Core (simulated). All data fictional."
       }
     ]
@@ -655,11 +627,11 @@
     "content": [
       {
         "type": "text",
-        "text": "Back on the goal's final screen."
+        "text": "Back on the correct member detail screen. Now closing the probe."
       },
       {
         "type": "tool_use",
-        "id": "toolu_01QuyjQQ7ydoEM5ZZm3b3bPR",
+        "id": "toolu_01CaFmkDeJySvLsQxxSUwH8K",
         "name": "end_probe",
         "input": {}
       }
@@ -670,7 +642,7 @@
     "content": [
       {
         "type": "tool_result",
-        "tool_use_id": "toolu_01QuyjQQ7ydoEM5ZZm3b3bPR",
+        "tool_use_id": "toolu_01CaFmkDeJySvLsQxxSUwH8K",
         "content": "Recording resumed."
       }
     ]
@@ -679,12 +651,39 @@
     "role": "assistant",
     "content": [
       {
+        "type": "text",
+        "text": "Now update the outcome declaration with the exact wording observed."
+      },
+      {
         "type": "tool_use",
-        "id": "toolu_01YQ6gxYCpmXP5AdG6az3ujM",
+        "id": "toolu_01F4aqHSKGTDLcmWJHfsSQxk",
+        "name": "drop_outcome",
+        "input": {
+          "code": "MEMBER_NOT_FOUND"
+        }
+      }
+    ]
+  },
+  {
+    "role": "user",
+    "content": [
+      {
+        "type": "tool_result",
+        "tool_use_id": "toolu_01F4aqHSKGTDLcmWJHfsSQxk",
+        "content": "outcome MEMBER_NOT_FOUND withdrawn"
+      }
+    ]
+  },
+  {
+    "role": "assistant",
+    "content": [
+      {
+        "type": "tool_use",
+        "id": "toolu_01VSetWVZG1r4GyKcCfs5PeE",
         "name": "declare_outcome",
         "input": {
           "code": "MEMBER_NOT_FOUND",
-          "description": "Search performed with a member number that does not exist in the system.",
+          "description": "Member number entered does not match any existing member record",
           "detect_text": "No member record matched number"
         }
       }
@@ -695,7 +694,7 @@
     "content": [
       {
         "type": "tool_result",
-        "tool_use_id": "toolu_01YQ6gxYCpmXP5AdG6az3ujM",
+        "tool_use_id": "toolu_01VSetWVZG1r4GyKcCfs5PeE",
         "content": "outcome MEMBER_NOT_FOUND recorded"
       }
     ]
@@ -704,12 +703,16 @@
     "role": "assistant",
     "content": [
       {
+        "type": "text",
+        "text": "Now let's finish with the final confirmation and extracted balance."
+      },
+      {
         "type": "tool_use",
-        "id": "toolu_01N8dFWbnY3Qket4EaXdYaLq",
+        "id": "toolu_01VxazmfNA4D7x3yHjAFe3zY",
         "name": "assert_text",
         "input": {
           "text": "Regular Savings",
-          "why": "Confirm the savings balance row is visible on final screen"
+          "why": "Final checkpoint confirming member detail page with savings balance is displayed"
         }
       }
     ]
@@ -719,7 +722,7 @@
     "content": [
       {
         "type": "tool_result",
-        "tool_use_id": "toolu_01N8dFWbnY3Qket4EaXdYaLq",
+        "tool_use_id": "toolu_01VxazmfNA4D7x3yHjAFe3zY",
         "content": "checkpoint recorded: 'Regular Savings' is visible"
       }
     ]
@@ -729,45 +732,16 @@
     "content": [
       {
         "type": "tool_use",
-        "id": "toolu_01KkyfhYfrbGcGNjtHnMZSkP",
+        "id": "toolu_01Q5MBfNTMa8EtVZVGDbZHqT",
         "name": "finish",
         "input": {
-          "title": "Look up member and read savings balance",
+          "title": "Look up member savings balance",
           "success_text": [
             "Member Detail",
             "Regular Savings",
             "Current Balance"
           ],
-          "summary": "Signed in as operator, navigated to Member Inquiry, searched for member 100234, and read the Regular Savings (S01) current balance from the Share Accounts table: $1250.75."
-        }
-      }
-    ]
-  },
-  {
-    "role": "user",
-    "content": [
-      {
-        "type": "tool_result",
-        "tool_use_id": "toolu_01KkyfhYfrbGcGNjtHnMZSkP",
-        "content": "ERROR: ValueError: success_text rejected: 'Current Balance' contains 'Current Balance', a value from this run. Replay conditions must hold for every input. Use static screen text such as a heading, label or column name instead.",
-        "is_error": true
-      }
-    ]
-  },
-  {
-    "role": "assistant",
-    "content": [
-      {
-        "type": "tool_use",
-        "id": "toolu_0163rPGq4gP3gVQVr4vSnwTY",
-        "name": "finish",
-        "input": {
-          "title": "Look up member and read savings balance",
-          "success_text": [
-            "Member Detail",
-            "Regular Savings"
-          ],
-          "summary": "Signed in as operator, navigated to Member Inquiry, searched for member 100234, and read the Regular Savings (S01) current balance from the Share Accounts table: $1250.75."
+          "summary": "Signed in as operator, navigated to Member Inquiry, searched for member 100234, and read the current savings balance ($1250.75) from the Regular Savings (S01) row in the Share Accounts table on the Member Detail page."
         }
       }
     ]

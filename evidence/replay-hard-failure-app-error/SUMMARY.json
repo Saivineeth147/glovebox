@@ -10,11 +10,11 @@
     "expected": "no failure signal",
     "observed": "found",
     "evidence": {
-      "screenshot": "/Users/chintu/Desktop/glovebox/runs/replay-20260913T202928-cefaf4/screenshots/0004-failure-s04_click.png",
-      "snapshot:top": "/Users/chintu/Desktop/glovebox/runs/replay-20260913T202928-cefaf4/snapshots/0005-failure-s04_click-top.html",
-      "snapshot:nav": "/Users/chintu/Desktop/glovebox/runs/replay-20260913T202928-cefaf4/snapshots/0006-failure-s04_click-nav.html",
-      "snapshot:menu": "/Users/chintu/Desktop/glovebox/runs/replay-20260913T202928-cefaf4/snapshots/0007-failure-s04_click-menu.html",
-      "snapshot:main": "/Users/chintu/Desktop/glovebox/runs/replay-20260913T202928-cefaf4/snapshots/0008-failure-s04_click-main.html"
+      "screenshot": "/Users/chintu/Desktop/glovebox/runs/replay-20260913T222020-42b81e/screenshots/0004-failure-s04_click.png",
+      "snapshot:top": "/Users/chintu/Desktop/glovebox/runs/replay-20260913T222020-42b81e/snapshots/0005-failure-s04_click-top.html",
+      "snapshot:nav": "/Users/chintu/Desktop/glovebox/runs/replay-20260913T222020-42b81e/snapshots/0006-failure-s04_click-nav.html",
+      "snapshot:menu": "/Users/chintu/Desktop/glovebox/runs/replay-20260913T222020-42b81e/snapshots/0007-failure-s04_click-menu.html",
+      "snapshot:main": "/Users/chintu/Desktop/glovebox/runs/replay-20260913T222020-42b81e/snapshots/0008-failure-s04_click-main.html"
     }
   },
   "handoff": null
