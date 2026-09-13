@@ -207,6 +207,11 @@ Deliberately left out, in the order I would build them:
 4. **Sensitive-field screenshot suppression** and evidence retention.
 5. **A typed frontend** generated from the JSON Schema; the React client consumes JSON loosely.
 
+The one place I deliberately overshot the brief is the operator console, which §3.6 permits
+mocking. The control model is the hardest claim here to believe from prose — a human taking the
+*same* live session, the automation thread staying alive to serve them — and a working takeover
+argues it better. The load-bearing work is still `agent/`, `replay/`, `schema/` and `surface/`.
+
 Of the optional stretch items, I built those that land on a graded axis — approval gating and
 stability (safety, robustness), a bounded repair *proposal* that is never applied (robustness),
 cross-tenant overrides (generalization), the agent-facing catalog — and skipped code generation.

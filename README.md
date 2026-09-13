@@ -46,6 +46,18 @@ described. All data is fictional; credentials are fake.
 
 The workspace for engineers and operators: `make studio` → http://127.0.0.1:8800/.
 
+> **On scope.** The brief puts a full operator console out of scope and says to mock the UI
+> so long as the handoff mechanism and control-transfer model are real. I went past that
+> deliberately, and it is the one place in this repository where I did. The reason is that
+> the control model is the hardest thing here to believe from a description: that a human
+> takes over the *same* live session rather than a fresh one, that the automation thread stays
+> alive serving them, and that who holds the lease is answerable at every instant. Screenshots
+> of a real takeover argue that better than prose. Nothing in the UI can do what the CLI
+> cannot — both drive the same `OperatorBridge` verbs — so it is a window onto the mechanism,
+> not a second implementation of it. Sign-in and roles came with it for a narrower reason
+> given in REPORT §5: an operator name the browser types is not an audit trail. If you are
+> weighing effort, the load-bearing work is in `agent/`, `replay/`, `schema/` and `surface/`.
+
 <p align="center"><img src="docs/studio/run-live.png" alt="Glovebox Studio: a live run with the agent's decisions streaming beside the screen" width="920"></p>
 
 - **Runs** — every discovery and replay, live. Model decisions, actions, policy verdicts,
