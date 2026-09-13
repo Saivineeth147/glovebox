@@ -87,9 +87,9 @@ export default function App() {
   return (
     <div className="h-full flex flex-col">
       {/* Containment band: what is true of the whole enclosure, always visible. */}
-      <header className="h-band shrink-0 flex items-center gap-4 px-3 border-b border-ink-700 bg-ink-900">
+      <header className="h-band shrink-0 flex items-center gap-5 px-5 border-b border-ink-800/80 bg-ink-950/70 backdrop-blur">
         <a href="#/" className="flex items-baseline gap-2 shrink-0">
-          <span className="text-[13px] font-semibold tracking-[0.14em] text-ink-100">GLOVEBOX</span>
+          <span className="text-[14px] font-semibold tracking-[0.16em] text-ink-100">GLOVEBOX</span>
           <span className="hint hidden sm:inline">Studio</span>
         </a>
         <div className="flex-1" />
@@ -127,7 +127,7 @@ export default function App() {
       <div className="flex-1 min-h-0 flex">
         <nav
           aria-label="Sections"
-          className="w-rail shrink-0 border-r border-ink-700 bg-ink-900 flex flex-col items-center py-2 gap-1"
+          className="w-rail shrink-0 border-r border-ink-800/80 bg-ink-950/40 flex flex-col items-center py-3 gap-1.5"
         >
           {NAV.map(({ path, label, icon: Icon }) => (
             <a
@@ -135,14 +135,14 @@ export default function App() {
               href={`#${path}`}
               title={label}
               aria-current={isActive(path) ? "page" : undefined}
-              className={`relative w-10 h-10 grid place-items-center rounded-panel transition-colors
-                focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-attention/60 ${
+              className={`relative w-11 h-11 grid place-items-center rounded-port transition-colors
+                focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ink-200/40 ${
                   isActive(path)
-                    ? "bg-ink-700 text-ink-100"
-                    : "text-ink-400 hover:bg-ink-800 hover:text-ink-200"
+                    ? "bg-ink-800 text-ink-100 border border-ink-600/70"
+                    : "text-ink-500 hover:bg-ink-850 hover:text-ink-200"
                 }`}
             >
-              <Icon className="w-[18px] h-[18px]" />
+              <Icon className="w-[18px] h-[18px]" strokeWidth={1.75} />
               <span className="sr-only">{label}</span>
               {path === "/runs" && interventions > 0 && (
                 <span className="absolute top-1.5 right-1.5 w-1.5 h-1.5 rounded-full bg-attention live" />
@@ -152,7 +152,7 @@ export default function App() {
         </nav>
 
         <main className="flex-1 min-w-0 overflow-auto">
-          <div className="max-w-[1440px] mx-auto px-6 py-5">{page}</div>
+          <div className="max-w-[1320px] mx-auto px-8 py-8">{page}</div>
         </main>
       </div>
     </div>

@@ -12,8 +12,10 @@ const ICON: Record<string, any> = {
   "evidence.captured": Camera, error: AlertTriangle, "run.started": Flag, "run.finished": Flag,
 };
 const TONE: Record<string, string> = {
-  "agent.decision": "text-accent-300", "surface.action": "text-sky-300", "policy.decision": "text-emerald-300", "replay.recovery": "text-amber-300",
-  "replay.outcome": "text-sky-300", "control.transition": "text-violet-300", "control.intervention": "text-violet-300", "control.human_action": "text-violet-300",
+  // The model reasoning aloud is information, not an alarm. Amber is reserved for the
+  // states that want a person.
+  "agent.decision": "text-ink-200", "surface.action": "text-sky-300", "policy.decision": "text-emerald-300", "replay.recovery": "text-attention-300",
+  "replay.outcome": "text-sky-300", "control.transition": "text-attention-300", "control.intervention": "text-attention-300", "control.human_action": "text-attention-300",
   error: "text-rose-300", "run.finished": "text-ink-100",
 };
 
@@ -99,7 +101,7 @@ export default function RunDetail({ runId }: { runId: string }) {
                       {e.data?.recoveries?.length > 0 && <span className="chip bg-amber-500/15 text-amber-300 border border-amber-500/30 !normal-case">{e.data.recoveries.join(", ")}</span>}
                       {sn && <Camera className="w-3 h-3 text-ink-500" />}
                     </div>
-                    <div className={`text-[13px] mt-0.5 break-words ${isDecision ? "text-ink-100 bg-accent/10 border border-accent/20 rounded-lg px-3 py-2 mt-1" : fail ? "text-rose-200" : "text-ink-200"}`}>{e.message}</div>
+                    <div className={`text-[13px] mt-0.5 break-words ${isDecision ? "text-ink-200 bg-ink-850/80 border border-ink-700/70 rounded-port px-3.5 py-2.5 mt-1.5 leading-relaxed" : fail ? "text-rose-200" : "text-ink-200"}`}>{e.message}</div>
                     {e.data?.observed && <div className="text-[12px] text-ink-400 mt-0.5 truncate">observed: {e.data.observed}</div>}
                     {e.data?.expected && <div className="text-[12px] text-ink-400">expected: {e.data.expected}</div>}
                     {e.data?.target && e.kind === "control.human_action" && <div className="text-[12px] text-violet-300">{e.data.target.description}{e.data.value ? ` ← "${e.data.value}"` : ""}</div>}

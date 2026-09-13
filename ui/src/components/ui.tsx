@@ -64,12 +64,12 @@ export function Panel({
   return (
     <section className={`panel ${className}`}>
       {(title || action) && (
-        <header className="flex items-center justify-between gap-3 px-4 h-11 border-b border-ink-700">
-          <h2 className="text-[13px] font-semibold text-ink-100">{title}</h2>
+        <header className="flex items-center justify-between gap-3 px-5 h-[52px] border-b border-ink-800/80">
+          <h2 className="text-[13.5px] font-semibold text-ink-100">{title}</h2>
           {action}
         </header>
       )}
-      <div className={padded ? "p-4" : ""}>{children}</div>
+      <div className={padded ? "p-5" : ""}>{children}</div>
     </section>
   );
 }
@@ -147,10 +147,10 @@ export function PageHeader({
   action?: ReactNode;
 }) {
   return (
-    <div className="flex items-end justify-between gap-6 mb-5">
+    <div className="flex flex-wrap items-end justify-between gap-6 mb-7">
       <div className="min-w-0">
-        <h1 className="text-[19px] font-semibold tracking-[-0.01em] text-ink-100">{title}</h1>
-        {subtitle && <p className="hint mt-1">{subtitle}</p>}
+        <h1 className="text-[24px] leading-tight font-semibold tracking-display text-ink-100">{title}</h1>
+        {subtitle && <p className="hint mt-2 max-w-[68ch]">{subtitle}</p>}
       </div>
       {action}
     </div>

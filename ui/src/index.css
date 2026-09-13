@@ -4,51 +4,75 @@
 
 :root { color-scheme: dark; }
 html, body, #root { height: 100%; }
-body { background: #0b1015; }
 
-/* Machine values are tabular so columns of ids, times and balances align down the page. */
+/* A single wash of light from the top so the page has a source and a depth, rather than
+   being a flat field of dark. */
+body {
+  background:
+    radial-gradient(1200px 420px at 50% -220px, rgba(120, 130, 160, 0.10), transparent 70%),
+    #0a0b0d;
+  -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
+}
+
 .tnum { font-variant-numeric: tabular-nums; }
 
-* { scrollbar-width: thin; scrollbar-color: #243039 transparent; }
-*::-webkit-scrollbar { width: 9px; height: 9px; }
-*::-webkit-scrollbar-thumb { background: #243039; border-radius: 9px; }
-*::-webkit-scrollbar-thumb:hover { background: #33424e; }
+* { scrollbar-width: thin; scrollbar-color: #2e323b transparent; }
+*::-webkit-scrollbar { width: 10px; height: 10px; }
+*::-webkit-scrollbar-thumb { background: #23262e; border-radius: 999px; border: 3px solid transparent; background-clip: content-box; }
+*::-webkit-scrollbar-thumb:hover { background: #414651; background-clip: content-box; }
 
-/* Regions are divided by rules on the housing, not stacked as elevated cards. */
-.panel { @apply bg-ink-900 border border-ink-700 rounded-panel; }
-.recess { @apply bg-ink-950 border border-ink-700 rounded-panel; }
+/* Surfaces: one panel, one recess. Anything else is a rule on the page. */
+.panel { @apply bg-ink-900/80 border border-ink-700/70 rounded-panel backdrop-blur-[2px]; }
+.recess { @apply bg-ink-980 border border-ink-700/70 rounded-port; }
 
-/* A status reads as a lamp: a lit dot and a word, in sentence case. */
-.lamp { @apply inline-flex items-center gap-1.5 text-[12px] leading-none font-medium; }
-.lamp::before { content: ""; @apply w-1.5 h-1.5 rounded-full bg-current shrink-0; }
+.lamp { @apply inline-flex items-center gap-2 text-[12.5px] leading-none font-medium; }
+.lamp::before { content: ""; @apply w-[7px] h-[7px] rounded-full bg-current shrink-0; }
 
-.label { @apply text-[12px] font-medium text-ink-300; }
-.hint { @apply text-[12px] text-ink-400; }
+.label { @apply text-[12.5px] font-medium text-ink-300; }
+.hint { @apply text-[12.5px] text-ink-400 leading-relaxed; }
 
-/* Controls are steel. Colour on a control would compete with colour that means something. */
-.btn { @apply inline-flex items-center gap-2 rounded-panel px-3 py-1.5 text-[13px] font-medium
-  border border-ink-600 bg-ink-800 text-ink-100 transition-colors
-  hover:border-ink-500 hover:bg-ink-700
-  focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-attention/60
-  disabled:opacity-40 disabled:cursor-not-allowed; }
-.btn-primary { @apply bg-ink-700 border-ink-500 text-ink-100 hover:bg-ink-600 hover:border-ink-400; }
-.btn-danger { @apply border-rose-700 text-rose-200 hover:bg-rose-950 hover:border-rose-600; }
-.btn-success { @apply border-emerald-700 text-emerald-200 hover:bg-emerald-950 hover:border-emerald-600; }
-.btn-human { @apply border-attention-600 text-attention-300 hover:bg-attention-600/15 hover:border-attention; }
+/* One high-contrast primary action per view; everything else recedes. That single bright
+   control is what makes an interface feel considered rather than busy. */
+.btn {
+  @apply inline-flex items-center justify-center gap-2 rounded-pill px-3.5 py-2 text-[13px]
+  font-medium border border-ink-600/80 bg-ink-800/80 text-ink-100
+  transition-[background,border-color,transform] duration-150
+  hover:bg-ink-700 hover:border-ink-500 active:scale-[0.985]
+  focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ink-200/50
+  disabled:opacity-40 disabled:cursor-not-allowed disabled:active:scale-100;
+}
+.btn-primary { @apply bg-ink-100 border-ink-100 text-ink-980 hover:bg-white hover:border-white; }
+.btn-danger { @apply border-rose-800/70 text-rose-200 hover:bg-rose-950/60 hover:border-rose-700; }
+.btn-success { @apply border-emerald-800/70 text-emerald-200 hover:bg-emerald-950/60 hover:border-emerald-700; }
+.btn-human { @apply border-attention-600/70 text-attention-300 hover:bg-attention-600/15 hover:border-attention; }
 
-.input { @apply w-full rounded-panel bg-ink-950 border border-ink-600 px-3 py-2 text-[13px]
+.chip {
+  @apply inline-flex items-center gap-1.5 rounded-pill px-2.5 py-[3px] text-[12px]
+  font-medium leading-5 border;
+}
+
+.input {
+  @apply w-full rounded-port bg-ink-980 border border-ink-600/80 px-3.5 py-2.5 text-[13.5px]
   text-ink-100 placeholder:text-ink-400 transition-colors
-  focus:outline-none focus:border-attention/70; }
+  focus:outline-none focus:border-ink-400 focus:ring-4 focus:ring-ink-100/5;
+}
 
 .kbd { @apply font-mono text-[11px] px-1.5 py-0.5 rounded bg-ink-800 border border-ink-600 text-ink-300; }
 
-/* A status chip is a lamp: a lit dot and a word in sentence case. Tracked-out capitals
-   read as decoration; an operator scanning a column wants the word itself. */
-.chip { @apply inline-flex items-center gap-1.5 rounded-panel px-2 py-0.5 text-[12px]
-  font-medium leading-5 border; }
+/* Rows that respond to the pointer, used for anything clickable in a list. */
+.row { @apply transition-colors hover:bg-ink-850/70; }
 
-/* The one moving thing: a live session breathes. Everything else is still. */
+/* The one moving thing: a live session breathes. */
 .live { animation: breathe 2.4s ease-in-out infinite; }
-@keyframes breathe { 0%, 100% { opacity: 1 } 50% { opacity: .35 } }
 .pulse-dot { animation: breathe 2.4s ease-in-out infinite; }
-@media (prefers-reduced-motion: reduce) { .live, .pulse-dot { animation: none } }
+@keyframes breathe { 0%, 100% { opacity: 1 } 50% { opacity: .3 } }
+
+/* One orchestrated entrance on first paint, not a fade on every element. */
+.enter { animation: enter .42s cubic-bezier(.2,.7,.2,1) both; }
+@keyframes enter { from { opacity: 0; transform: translateY(6px) } to { opacity: 1; transform: none } }
+
+@media (prefers-reduced-motion: reduce) {
+  .live, .pulse-dot, .enter { animation: none }
+  .btn { transition: none }
+}

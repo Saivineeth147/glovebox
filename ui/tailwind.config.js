@@ -4,25 +4,32 @@ export default {
   theme: {
     extend: {
       fontFamily: {
-        // No webfont: the console must work with the network down, which is also when an
-        // operator most needs it.
-        sans: ["ui-sans-serif", "system-ui", "-apple-system", "Segoe UI", "sans-serif"],
-        mono: ["ui-monospace", "SFMono-Regular", "Menlo", "Consolas", "monospace"],
+        // No webfont: the console has to work with the network down, which is also when an
+        // operator most needs it. The system stack is set deliberately, not by default.
+        sans: [
+          "ui-sans-serif", "-apple-system", "BlinkMacSystemFont", "Segoe UI Variable",
+          "Segoe UI", "Inter", "system-ui", "sans-serif",
+        ],
+        mono: ["ui-monospace", "SFMono-Regular", "Menlo", "JetBrains Mono", "monospace"],
       },
       colors: {
-        // Graphite with real blue in it — a machine housing, not a tinted black.
+        // Near-black with a trace of warmth, so the surface reads as material rather than void.
         ink: {
-          950: "#0b1015", 900: "#0f151b", 850: "#131b22", 800: "#161e26",
-          700: "#1e2833", 600: "#243039", 500: "#33424e", 400: "#5c6f7c",
-          300: "#7d8f9a", 200: "#aebcc4", 100: "#dfe7ea",
+          980: "#0a0b0d", 950: "#0d0e11", 900: "#111216", 850: "#16181d",
+          800: "#1b1e24", 700: "#23262e", 600: "#2e323b", 500: "#414651",
+          400: "#6b7180", 300: "#9aa0ac", 200: "#c9cdd6", 100: "#ecedf1",
         },
-        // Sodium lamp. Attention only — never decoration, never a button fill.
+        // Sodium lamp: attention only, never decoration.
         attention: { DEFAULT: "#f2a71b", 300: "#ffc75a", 600: "#c9860a" },
-        // Retained name so existing call sites keep compiling; it is the same lamp.
         accent: { DEFAULT: "#f2a71b", 300: "#ffc75a", 600: "#c9860a" },
       },
-      borderRadius: { panel: "4px", port: "6px" },
-      spacing: { band: "34px", rail: "56px" },
+      borderRadius: { panel: "12px", port: "10px", pill: "999px" },
+      spacing: { band: "52px", rail: "64px" },
+      boxShadow: {
+        // One soft lift, used only where something genuinely sits above the page.
+        lift: "0 1px 0 0 rgba(255,255,255,0.04) inset, 0 8px 30px -12px rgba(0,0,0,0.9)",
+      },
+      letterSpacing: { display: "-0.021em" },
     },
   },
   plugins: [],
