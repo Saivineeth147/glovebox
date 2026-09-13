@@ -293,7 +293,7 @@ def replay(
     if console:
         console.stop()
     if not capability.endswith(".json"):
-        cat.record_replay(cap.id, res.ok)
+        cat.record_replay(cap.id, res.answered)
     rprint("\n[bold]result[/bold]")
     print(res.model_dump_json(indent=2, exclude={"steps"}))
     if evidence_dir:

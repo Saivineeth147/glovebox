@@ -211,7 +211,7 @@ class JobManager:
                     trace=False,
                     on_start=on_ctx,
                 )
-                Catalog(self.catalog_dir).record_replay(cap.id, res.ok)
+                Catalog(self.catalog_dir).record_replay(cap.id, res.answered)
                 job.result = res.model_dump(mode="json")
                 job.status = "finished"
             except Exception as exc:

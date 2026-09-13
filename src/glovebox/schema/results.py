@@ -87,4 +87,16 @@ class ReplayResult(BaseModel):
 
     @property
     def ok(self) -> bool:
+        """The flow reached its success checkpoint and returned its outputs."""
         return self.status == ReplayStatus.SUCCESS
+
+    @property
+    def answered(self) -> bool:
+        """The capability gave the caller an answer its contract promises.
+
+        A business outcome is one of those answers — "no such member" is a result the caller
+        branches on, not the capability failing to run — so it belongs in the reliability
+        count even though it is not `ok`. Conflating the two is the mistake this schema is
+        arranged to prevent, and confidence is exactly where it would go unnoticed.
+        """
+        return self.status in (ReplayStatus.SUCCESS, ReplayStatus.BUSINESS_OUTCOME)

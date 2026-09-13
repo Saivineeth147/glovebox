@@ -72,3 +72,41 @@ def test_should_treat_a_capability_missing_from_the_catalog_as_superseded() -> N
     """A run whose capability was deleted says nothing about what is in the catalog now."""
     health = replay_health([_run("success", version="1.0.0")], {})
     assert (health.eligible, health.superseded) == (0, 1)
+
+
+def test_a_business_outcome_should_count_toward_a_capability_s_confidence(tmp_path) -> None:
+    """review.confidence is the per-artifact version of the same question the dashboard asks.
+
+    Counting a correct MEMBER_NOT_FOUND as an unsuccessful replay showed the committed
+    capability at 0% confidence while it replayed perfectly.
+    """
+    import json
+    from datetime import UTC, datetime
+    from pathlib import Path
+
+    from glovebox.catalog import Catalog
+    from glovebox.schema.capability import Capability
+    from glovebox.schema.results import ReplayResult, ReplayStatus
+
+    root = Path(__file__).resolve().parents[2]
+    doc = json.loads((root / "capabilities" / "member_savings_balance.json").read_text())
+    doc["review"] = {"status": "approved", "replays": 0, "replay_successes": 0}
+    catalog = Catalog(tmp_path)
+    catalog.save(Capability.model_validate(doc), bump=False)
+
+    outcome = ReplayResult(
+        run_id="r",
+        capability_id="member_savings_balance",
+        capability_version=doc["version"],
+        tenant="alpha",
+        status=ReplayStatus.BUSINESS_OUTCOME,
+        outcome_code="MEMBER_NOT_FOUND",
+        started_at=datetime.now(UTC),
+        finished_at=datetime.now(UTC),
+        evidence_dir="runs/r",
+    )
+    assert outcome.answered is True
+    assert outcome.ok is False, "ok still means strictly success"
+
+    catalog.record_replay("member_savings_balance", outcome.answered)
+    assert catalog.load("member_savings_balance").review.confidence == 1.0

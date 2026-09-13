@@ -651,7 +651,7 @@
     "reviewed_by": "chintu",
     "reviewed_at": "2026-09-13T20:35:37.838431Z",
     "notes": "Steps, extraction target and risk reviewed. Replays for members 100234/100235/100236; 999999 returns MEMBER_NOT_FOUND, whose detector the run verified by probing rather than guessing.",
-    "replays": 1,
+    "replays": 0,
     "replay_successes": 0
   },
   "overrides": [
@@ -709,7 +709,7 @@
           "max_attempts": 2
         }
       ],
-      "notes": "Bayview renames 'Member No.'→'Member Number' and 'Find Member'→'Search'; locators fall through to name_attr/text."
+      "notes": "Bayview renames 'Member No.'\u2192'Member Number' and 'Find Member'\u2192'Search'; locators fall through to name_attr/text."
     }
   ],
   "created_at": "2026-09-13T09:49:04.618250Z"
