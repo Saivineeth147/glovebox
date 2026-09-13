@@ -9,6 +9,7 @@ from datetime import UTC, datetime
 from typing import Any, Literal
 from urllib.parse import urlsplit
 
+from glovebox.agent.output_type import inferred_output_type
 from glovebox.agent.overfit import MIN_LITERAL_LENGTH, overfit_reason
 from glovebox.schema.capability import (
     ActionKind,
@@ -162,11 +163,27 @@ class Recorder:
         )
 
     def extract(
-        self, target: Target, name: str, description: str, type_: str, regex: str | None
+        self,
+        target: Target,
+        name: str,
+        description: str,
+        type_: str,
+        regex: str | None,
+        observed: str | None = None,
     ) -> Step:
+        """Record reading a value into a named output.
+
+        `observed` is what the value looked like on screen, used only to correct a defaulted
+        `string` where the run plainly read money — the caller of a capability should get a
+        number, not a currency string it has to parse.
+        """
         if not self.paused and all(o.name != name for o in self.outputs):
             self.outputs.append(
-                OutputSpec(name=name, type=ParamType(type_), description=description)
+                OutputSpec(
+                    name=name,
+                    type=ParamType(inferred_output_type(type_, observed)),
+                    description=description,
+                )
             )
         return self._add(
             Step(

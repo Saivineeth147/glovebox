@@ -147,13 +147,16 @@ class DiscoveryTools:
         value = el.text if el.value is None else (el.value or el.text)
         # Validate before recording: a regex that misses here records a step that reports
         # whatever sits under the wrong element as the output.
-        if regex and extracted_value(str(value), regex) is None:
+        captured = extracted_value(str(value), regex)
+        if regex and captured is None:
             raise ValueError(
                 f"regex {regex!r} does not match the text of this element ({str(value)[:80]!r}). "
                 "Extract from the element that actually holds the value, or drop the regex."
             )
         target = self.surface.describe_target(el)
-        self.recorder.extract(target, output, description, type, regex)
+        # The captured group is what the caller receives, so it is what the output's type
+        # should be read from — not the surrounding text the regex was there to strip.
+        self.recorder.extract(target, output, description, type, regex, captured)
         self.recorder.note_observed_value(str(value) if value is not None else None)
         self.log.emit(EventKind.ACTION, f"extract {output} from {target.description}", value=value)
         return f"{output} = {value!r} (from {target.description})"
