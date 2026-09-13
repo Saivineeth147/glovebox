@@ -30,6 +30,18 @@ jobs:
         run: for f in capabilities/*.json; do uv run glovebox validate "$f"; done
       - name: Tests (unit + browser integration against the simulated app)
         run: uv run pytest -q --timeout=300
+      - name: Resilience under simulated redesigns
+        # Replays every approved capability against each structural mutation of the target and
+        # fails if any of them stops surviving. This is the regression test for the locator
+        # ladder: a change that quietly narrows it shows up here rather than in production.
+        run: |
+          uv run glovebox target serve --port 8089 &
+          for _ in $(seq 1 30); do
+            curl -sf http://127.0.0.1:8089/__sim/health >/dev/null && break
+            sleep 1
+          done
+          uv run glovebox drift --param member_id=100234
+
       - name: Upload run evidence on failure
         if: failure()
         uses: actions/upload-artifact@v4

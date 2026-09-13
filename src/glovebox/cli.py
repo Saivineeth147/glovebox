@@ -341,7 +341,7 @@ def stability(
 
 @app.command()
 def drift(
-    capability: str,
+    capability: str | None = None,
     param: list[str] | None = None,
     tenant: str | None = None,
     policy: Path | None = None,
@@ -349,27 +349,40 @@ def drift(
     runs_dir: Path = Path("runs"),
     target_url: str = "http://127.0.0.1:8089",
 ) -> None:
-    """Replay a capability under each simulated redesign and report what survived."""
-    from glovebox.catalog import Catalog
-    from glovebox.drift_eval import (
-        DriftEvalOptions,
-        evaluate_capability,
-        format_report,
-        survival_rate,
-    )
+    """Replay each capability under every simulated redesign and report what survived.
 
-    cap = Catalog(catalog_dir).load(capability)
-    baseline, results = evaluate_capability(
-        cap,
-        _with_app_credentials(cap, _params(param, None)[0]),
-        _policy(policy),
-        DriftEvalOptions(target_url=target_url, tenant=tenant, runs_dir=str(runs_dir)),
-    )
-    if not baseline.survived:
-        rprint(f"[red]baseline replay failed[/red] ({baseline.failure_class}); fix that first")
+    With no capability named, the whole approved catalog is evaluated: resilience is a
+    property of the set, not of whichever flow was recorded first. Exits non-zero if any
+    redesign was survived by fewer than all of them, so CI can hold the line.
+    """
+    from glovebox.catalog import Catalog
+    from glovebox.drift_eval import DriftEvalOptions, evaluate_capability, format_report
+
+    catalog = Catalog(catalog_dir)
+    chosen = [catalog.load(capability)] if capability else catalog.all()
+    if not chosen:
+        rprint("[red]no capabilities to evaluate[/red]")
         raise typer.Exit(code=1)
-    rprint(format_report(baseline, results, f"{capability}: survival under redesign"))
-    rprint(f"survived {survival_rate(results):.0%} of {len(results)} redesigns")
+    options = DriftEvalOptions(target_url=target_url, tenant=tenant, runs_dir=str(runs_dir))
+    survived = 0
+    evaluated = 0
+    for cap in chosen:
+        baseline, results = evaluate_capability(
+            cap, _with_app_credentials(cap, _params(param, None)[0]), _policy(policy), options
+        )
+        if not baseline.survived:
+            rprint(
+                f"[red]{cap.id}: baseline replay failed[/red] ({baseline.failure_class}); "
+                "fix that before measuring drift"
+            )
+            raise typer.Exit(code=1)
+        rprint(format_report(baseline, results, f"{cap.id}: survival under redesign"))
+        survived += sum(1 for r in results if r.survived)
+        evaluated += len(results)
+    rate = survived / evaluated if evaluated else 0.0
+    rprint(f"\nsurvived {rate:.0%} of {evaluated} redesigns across {len(chosen)} capabilities")
+    if rate < 1.0:
+        raise typer.Exit(code=1)
 
 
 @app.command()

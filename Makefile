@@ -48,8 +48,8 @@ discover-offline: ## same loop with scripted decisions (no key) — for seeing t
 replay: ## deterministic replay of the saved capability
 	$(RUN) glovebox replay capabilities/member_savings_balance.json --param member_id=100234 --evidence-dir evidence/replay-success
 
-drift: ## replay the capability under each simulated redesign and report what survived
-	$(RUN) glovebox drift member_savings_balance --param member_id=100234
+drift: ## replay every approved capability under each simulated redesign
+	$(RUN) glovebox drift --param member_id=100234
 
 evidence: ## regenerate every replay evidence bundle offline (discovery evidence needs `make discover`)
 	$(RUN) python scripts/generate_evidence.py

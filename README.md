@@ -177,14 +177,25 @@ make drift         # terminal 2
 ```
 
 ```
+member_savings_balance: survival under redesign
 redesign              outcome   rescued by
-insert_leading_table  survived  s11_extract: table_cell → near_text
-rename_action         survived  s08_click:   role_name  → css
-rename_label          survived  s07_fill:    role_name  → name_attr
+rename_action         survived  s08_click: role_name → css
+rename_label          survived  s07_fill:  role_name → name_attr
 reorder_columns       survived  —
-wrap_tables           survived  s11_extract: table_cell → near_text
-survived 100% of 5 redesigns
+wrap_tables           survived  —
+insert_leading_table  survived  —
+
+member_status: survival under redesign
+rename_action         survived  s07_click: role_name → css
+rename_label          survived  s06_fill:  role_name → name_attr
+...
+
+survived 100% of 10 redesigns across 2 capabilities
 ```
+
+With no capability named it evaluates the whole approved catalog and exits non-zero if any
+redesign stops being survived, so CI holds the line: a change that quietly narrows the
+locator ladder fails the build rather than surfacing in production.
 
 The last column is the point: it names the rung of the ladder that caught the fall. Swapping
 columns needs no fallback at all, because `table_cell` addresses a cell by its column header
