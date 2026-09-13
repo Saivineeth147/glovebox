@@ -26,7 +26,10 @@ studio: ## run Glovebox Studio (workspace UI + API) on :8800
 	$(RUN) glovebox studio --port 8800
 
 ui: ## rebuild the Studio frontend (needs node 20+); output is committed under src/glovebox/studio/static
-	cd ui && npm install --no-audit --no-fund && npx tsc --noEmit && npx vite build
+	cd ui && npm install --no-audit --no-fund && npx tsc --noEmit && npx vitest run && npx vite build
+
+ui-test: ## frontend unit tests only
+	cd ui && npx vitest run
 
 target: ## run the hostile legacy target app on :8089
 	$(RUN) glovebox target serve --port 8089

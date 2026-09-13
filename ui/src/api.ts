@@ -50,16 +50,41 @@ export const api = {
   clearFaults: () => req(`/api/target/faults`, { method: "DELETE" }),
 };
 
+/** An unparseable timestamp is shown as it arrived.
+ *
+ *  `new Date("nonsense").toLocaleTimeString()` returns the string "Invalid Date" rather than
+ *  throwing, so a try/catch never fires and the operator reads "Invalid Date" where a run id
+ *  or a raw value would at least be traceable.
+ */
+function parsed(ts: string): Date | null {
+  const at = new Date(ts);
+  return Number.isNaN(at.getTime()) ? null : at;
+}
+
 export function fmtTime(ts?: string | null) {
   if (!ts) return "";
-  try { return new Date(ts).toLocaleTimeString([], { hour12: false }); } catch { return ts; }
+  const at = parsed(ts);
+  return at ? at.toLocaleTimeString([], { hour12: false }) : ts;
 }
+
 export function fmtDate(ts?: string | null) {
   if (!ts) return "";
-  try { return new Date(ts).toLocaleString([], { hour12: false, month: "short", day: "numeric", hour: "2-digit", minute: "2-digit" }); } catch { return ts; }
+  const at = parsed(ts);
+  return at
+    ? at.toLocaleString([], {
+        hour12: false,
+        month: "short",
+        day: "numeric",
+        hour: "2-digit",
+        minute: "2-digit",
+      })
+    : ts;
 }
 export function duration(a?: string | null, b?: string | null) {
   if (!a || !b) return "";
-  const ms = new Date(b).getTime() - new Date(a).getTime();
+  const from = parsed(a);
+  const to = parsed(b);
+  if (!from || !to) return "";
+  const ms = to.getTime() - from.getTime();
   return ms < 1000 ? `${ms} ms` : `${(ms / 1000).toFixed(1)} s`;
 }

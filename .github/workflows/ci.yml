@@ -30,6 +30,13 @@ jobs:
         run: for f in capabilities/*.json; do uv run glovebox validate "$f"; done
       - name: Tests (unit + browser integration against the simulated app)
         run: uv run pytest -q --timeout=300
+      - name: Frontend
+        run: |
+          cd ui
+          npm ci --no-audit --no-fund
+          npx tsc --noEmit
+          npx vitest run
+
       - name: Resilience under simulated redesigns
         # Replays every approved capability against each structural mutation of the target and
         # fails if any of them stops surviving. This is the regression test for the locator
