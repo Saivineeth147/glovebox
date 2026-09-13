@@ -65,6 +65,40 @@ version would also require the detector to be absent on the success screen at re
 **Why does each replay sign in?** Simplicity. A session-bootstrap capability plus a session
 pool is the first cut to restore (REPORT §7).
 
+## Evidence, not adjectives
+
+**You say the locator ladder is robust. Prove it.** `glovebox drift` rewrites the target's own
+rendered pages the way a redesign would — renames the search control, renames the member field,
+swaps two table columns, wraps every table, inserts a table ahead of the content — and replays
+every approved capability against each. Both currently survive all five, and the report names
+the rung that caught each fall: renaming the control drops `role_name` to `css`, renaming the
+label drops it to `name_attr`. Swapping columns needs no fallback, because `table_cell`
+addresses a cell by its column header. CI fails the build if that stops being true.
+
+**You say the artifact is surface-agnostic. Prove that too.** `surface/http/` drives the target
+over HTTP with no DOM, no JavaScript and no layout engine, and the committed capability replays
+through it in 0.03 s against 2.80 s in the browser. Writing it found two defects: `near_text`
+ranked candidates by geometry and, where nothing had been laid out, returned whichever parsed
+first — a confidently wrong element; and `table_cell` treated the recorded table's CSS path as
+an identity when a browser injects `<tbody>` and a parser does not.
+
+**Six discovery runs of one goal produced six different artifacts. Doesn't that sink the idea?**
+It sinks the idea that one recording is self-evidently right, which is why approval exists and
+why `glovebox compare` reports what two independent recordings share. Two of those runs agree on
+50%. What both runs agree on is a property of the application; what only one contains is a
+property of that sample.
+
+**Can the model repair a broken locator?** It can propose one. `repair.py` makes a single call,
+keeps the suggestion only if it resolves to exactly one control actually on screen — the same
+uniqueness rule every recorded strategy satisfies — writes it beside the evidence, and lets the
+run fail. A capability that healed itself would put a model back in the production path and
+hand a reviewer an artifact nobody approved.
+
+**How do you know an outcome detector is real?** Because the run saw it. `begin_probe` suspends
+recording so the model can walk to the not-found screen, read the wording, and come back without
+the walk landing in the capability. What it never saw is stamped `verified: false`, and approval
+refuses it unless a reviewer says so explicitly and on the record.
+
 ## Human in the loop
 
 **Is the handoff the same session?** Yes. The automation thread stays alive and executes the

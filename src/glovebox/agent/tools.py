@@ -159,6 +159,18 @@ TOOLS: list[dict[str, Any]] = [
         },
     },
     {
+        "name": "drop_outcome",
+        "description": "Withdraw an outcome you declared but cannot substantiate — you could "
+        "not reach that state, or the wording you guessed is not what the screen says. "
+        "Withdrawing is better than shipping a detector that never fires.",
+        "input_schema": {
+            "type": "object",
+            "properties": {"code": {"type": "string", "pattern": "^[A-Z][A-Z0-9_]*$"}},
+            "required": ["code"],
+            "additionalProperties": False,
+        },
+    },
+    {
         "name": "declare_recovery",
         "description": "Declare a known interstitial/exceptional state and how to clear it: text that identifies it "
         "and the ref of the control that dismisses it. Use when you had to dismiss something incidental.",

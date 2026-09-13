@@ -283,6 +283,16 @@ class Recorder:
                 )
             )
 
+    def drop_outcome(self, code: str) -> bool:
+        """Withdraw a declared outcome. Returns whether there was one to withdraw."""
+        before = len(self.outcomes)
+        self.outcomes = [o for o in self.outcomes if o.code != code]
+        return len(self.outcomes) < before
+
+    def unverified_outcomes(self) -> list[str]:
+        """Codes whose detector text this run never observed."""
+        return [o.code for o in self.outcomes if not self._verified(o.detect.value)]
+
     def declare_recovery(self, name: str, detect_text: str, dismiss: Target) -> None:
         self.recoveries.append(
             Recovery(

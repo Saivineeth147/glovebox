@@ -209,6 +209,8 @@ mutation rather than the capability.
 
 ```bash
 make test        # unit + browser integration (headless Chromium against the simulated app, ~2 min)
+make ui-test     # frontend unit tests (vitest + jsdom)
+make drift       # every approved capability under every simulated redesign
 make lint        # ruff + mypy --strict
 make evidence    # regenerate evidence/replay-* bundles offline
 ```
@@ -216,7 +218,33 @@ make evidence    # regenerate evidence/replay-* bundles offline
 The integration suite drives real discovery (scripted decisions), replay with different inputs,
 every injected fault, the handoff with a scripted human *and* through the HTTP operator console,
 the irreversible-step approval flow, the draft gate, policy violations and the cross-tenant
-override. CI runs all of it on every push.
+override. It also replays the committed capability through the browser-free surface, resumes a
+replay into a warm session with no credentials, and drives assisted repair under a live
+redesign. The frontend has its own suite over formatting, the status vocabulary and the whole
+sign-in flow. CI runs all of it, plus the drift gate, on every push.
+
+## Reusing a session
+
+Each replay signing in again is the obvious waste, and credentials in the main flow are the
+less obvious one. A caller can hand `run_replay` a surface it owns — not closed when the run
+ends — and resume a later replay at a named step:
+
+```python
+warm = HtmlSurface(app_url)
+run_replay(cap, {"member_id": "100234", **credentials}, policy, surface=warm)
+run_replay(
+    cap,
+    {"member_id": "100235"},
+    policy,
+    surface=warm,
+    start_at=cap.steps[len(session_prefix(cap))].id,
+)  # no credentials at all
+```
+
+`session_prefix()` finds the steps that exist only to sign in by following the sensitive
+parameters, and required-input validation narrows to what the remaining steps actually
+substitute — so the second call is not merely spared the sign-in, it is refused the
+credentials.
 
 ## Project layout
 

@@ -1,7 +1,7 @@
 {
   "schema_version": "1.0",
   "id": "member_savings_balance",
-  "version": "1.0.7",
+  "version": "1.0.0",
   "title": "Look up member and read savings balance",
   "description": "Signed in as operator, navigated to Member Inquiry, searched for member 100234, and read the Regular Savings (S01) current balance from the Share Accounts table: $1250.75.",
   "app": {
@@ -277,7 +277,7 @@
       "expect": [
         {
           "kind": "text_visible",
-          "value": "Welcome, teller1.",
+          "value": "Welcome, [REDACTED:username#6b4632f44b].",
           "regex": false,
           "target": null,
           "frame": [],
@@ -647,10 +647,10 @@
     "recorded_by": "glovebox-recorder"
   },
   "review": {
-    "status": "approved",
-    "reviewed_by": "chintu",
-    "reviewed_at": "2026-09-13T09:49:50.799757Z",
-    "notes": "Steps, extraction target and risk reviewed. Replays for members 100234/100235/100236; 999999 returns MEMBER_NOT_FOUND, whose detector the run verified by probing rather than guessing.",
+    "status": "draft",
+    "reviewed_by": null,
+    "reviewed_at": null,
+    "notes": null,
     "replays": 0,
     "replay_successes": 0
   },

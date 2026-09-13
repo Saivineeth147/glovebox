@@ -91,6 +91,7 @@ def _agent_with(rec: Recorder):
     agent = object.__new__(DiscoveryAgent)
     agent.recorder = rec
     agent.log = type("L", (), {"emit": lambda *a, **k: None})()
+    agent._nudged_about_outcomes = False
     return agent
 
 
@@ -151,3 +152,46 @@ def test_should_refuse_a_recovery_declared_while_probing() -> None:
     agent.recorder.paused = True
     with pytest.raises(ValueError, match="probed screen"):
         DiscoveryAgent._t_declare_recovery(agent, "stale_dialog", "Notice", "e1")
+
+
+def test_should_refuse_to_finish_with_an_outcome_the_run_never_saw() -> None:
+    """Prompt guidance did not get the model to probe; a tool error is what does."""
+    from glovebox.agent.loop import DiscoveryAgent
+
+    agent = _agent_with(_recorder())
+    agent.recorder.declare_outcome("MEMBER_NOT_FOUND", "no match", "No member found")
+    with pytest.raises(ValueError, match="MEMBER_NOT_FOUND"):
+        DiscoveryAgent._t_finish(agent, ["Share Accounts"], "summary", "title")
+
+
+def test_should_allow_finishing_once_the_detector_has_been_seen() -> None:
+    from glovebox.agent.loop import DiscoveryAgent
+
+    agent = _agent_with(_recorder())
+    agent.surface = type("S", (), {"check": lambda *a, **k: (True, "")})()
+    agent.recorder.note_observed_text("No member record matched number 999999.")
+    agent.recorder.declare_outcome("MEMBER_NOT_FOUND", "no match", "No member record matched")
+    agent._finish = None
+    from glovebox.agent.loop import _Finished
+
+    # _t_finish ends the run by raising; reaching that is what "allowed through" means here.
+    with pytest.raises(_Finished):
+        DiscoveryAgent._t_finish(agent, ["Share Accounts"], "summary", "title")
+    assert agent._finish is not None
+
+
+def test_should_let_the_model_drop_an_outcome_it_cannot_substantiate() -> None:
+    """The escape from the guard: withdraw the claim rather than assert it unverified."""
+    from glovebox.agent.loop import DiscoveryAgent
+
+    agent = _agent_with(_recorder())
+    agent.recorder.declare_outcome("MEMBER_NOT_FOUND", "no match", "No member found")
+    DiscoveryAgent._t_drop_outcome(agent, "MEMBER_NOT_FOUND")
+    assert agent.recorder.outcomes == []
+
+
+def test_should_refuse_to_drop_an_outcome_that_was_never_declared() -> None:
+    from glovebox.agent.loop import DiscoveryAgent
+
+    with pytest.raises(ValueError, match="not declared"):
+        DiscoveryAgent._t_drop_outcome(_agent_with(_recorder()), "NOPE")

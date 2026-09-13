@@ -231,6 +231,25 @@ OPEN_SUB_ACCOUNT: list[dict[str, Any]] = [
             },
         },
     },
+    # ACCESS_DENIED and VALIDATION_ERROR need states this operator cannot reach while
+    # recording — one needs a permission they do not have, the other a dialog dance that would
+    # land in the capability. The first finish is refused with that nudge; this second one
+    # accepts them unverified and leaves the judgement to approval.
+    {
+        "tool": "finish",
+        "input": {
+            "success_text": ["Sub-Account Opened"],
+            "title": "Open member sub-account",
+            "summary": "Open a new sub-account (share) for a member and reach the confirmation screen.",
+            "parameter_descriptions": {
+                "member_id": "Member number",
+                "product": "Share product name",
+                "nickname": "Nickname for the new share",
+                "username": "Operator ID",
+                "password": "Operator password",
+            },
+        },
+    },
 ]
 
 

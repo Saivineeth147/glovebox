@@ -88,6 +88,7 @@ class DiscoveryAgent:
         self.last_obs: Observation | None = None
         self._fingerprints: list[str] = []
         self._finish: dict[str, Any] | None = None
+        self._nudged_about_outcomes = False
         self._actions = 0
 
     # ------------------------------------------------------------------ run
@@ -385,6 +386,11 @@ class DiscoveryAgent:
         self.recorder.declare_outcome(code, description, detect_text)
         return f"outcome {code} recorded"
 
+    def _t_drop_outcome(self, code: str) -> str:
+        if not self.recorder.drop_outcome(code):
+            raise ValueError(f"outcome {code} was not declared, so there is nothing to drop")
+        return f"outcome {code} withdrawn"
+
     def _t_declare_recovery(self, name: str, detect_text: str, dismiss_ref: str) -> str:
         if self.recorder.paused:
             raise ValueError(
@@ -412,6 +418,20 @@ class DiscoveryAgent:
             raise ValueError(
                 "a probe is still open: return to the screen the goal ends on and call "
                 "end_probe before finishing"
+            )
+        unverified = self.recorder.unverified_outcomes()
+        if unverified and not self._nudged_about_outcomes:
+            # Once, not forever. A state may be genuinely unreachable during recording — an
+            # access-denied screen needs a permission the operator does not have — so insisting
+            # would forbid declaring real outcomes. Nudge, then let it through unverified and
+            # leave the decision to approval, which refuses it unless a reviewer says otherwise.
+            self._nudged_about_outcomes = True
+            raise ValueError(
+                f"outcome(s) {', '.join(unverified)} were declared with detector text this run "
+                "never saw on screen, so they would never fire and replay would report a hard "
+                "failure where the catalog promised a business outcome. Either use begin_probe "
+                "to go and read the exact wording on that screen and end_probe back here, or "
+                "call drop_outcome to withdraw the claim."
             )
         for t in success_text:
             if reason := self.recorder.overfit_reason(t):
