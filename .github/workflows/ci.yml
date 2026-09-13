@@ -41,6 +41,11 @@ jobs:
         # Replays every approved capability against each structural mutation of the target and
         # fails if any of them stops surviving. This is the regression test for the locator
         # ladder: a change that quietly narrows it shows up here rather than in production.
+        # The operator credentials are the simulated app's documented fixtures (see
+        # apps/legacy_bank/app.py); locally they come from .env, which a runner does not have.
+        env:
+          GLOVEBOX_APP_USERNAME: teller1
+          GLOVEBOX_APP_PASSWORD: teller1-pass
         run: |
           uv run glovebox target serve --port 8089 &
           for _ in $(seq 1 30); do
