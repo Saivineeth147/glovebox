@@ -44,11 +44,20 @@ from glovebox.schema.results import (
 )
 from glovebox.surface.base import Resolved, Surface, SurfaceError
 
-from .templating import InputError, coerce_output, render_template, validate_inputs
+from .templating import (
+    InputError,
+    coerce_output,
+    referenced_parameters,
+    render_template,
+    validate_inputs,
+)
 
 
 @dataclass
 class ReplayOptions:
+    #: Begin at this step instead of the first. Set when the caller already holds an
+    #: authenticated session, so the sign-in prefix does not need running again.
+    start_at: str | None = None
     #: When set, a target that stops resolving gets one model call proposing a replacement
     #: locator. The proposal is written beside the evidence and never applied: healing at
     #: replay time would put a model back in the production path.
@@ -77,6 +86,54 @@ class _ExtractionMismatch(Exception):
 class _Stop(Exception):
     def __init__(self, result: ReplayResult) -> None:
         self.result = result
+
+
+def steps_from(steps: list[Step], start_at: str | None) -> list[Step]:
+    """The steps to run, beginning at `start_at` when one is named.
+
+    An unknown id raises rather than running nothing: a typo would otherwise skip the whole
+    flow and report success on a run that did nothing at all.
+    """
+    if start_at is None:
+        return steps
+    for index, step in enumerate(steps):
+        if step.id != start_at:
+            continue
+        if index == 0 or steps[0].action != ActionKind.NAVIGATE:
+            return steps[index:]
+        # A warm session is a session, not a screen. The entry navigation is kept so the run
+        # starts where the capability expects, and only the sign-in it no longer needs is
+        # skipped.
+        return [steps[0], *steps[index:]]
+    raise ValueError(f"no step {start_at!r} in {steps[0].id}..{steps[-1].id}")
+
+
+def session_prefix(capability: Capability) -> list[Step]:
+    """The leading steps that exist only to establish a session.
+
+    Found by following the credentials: the last step that substitutes a sensitive parameter,
+    plus the click that submits it. This is what a session-bootstrap capability would own
+    instead, and what a caller holding a warm session can skip — REPORT §7's first cut.
+    """
+    sensitive = {p.name for p in capability.inputs if p.sensitive}
+    if not sensitive:
+        return []
+    last_credential = -1
+    for index, step in enumerate(capability.steps):
+        if step.value and any(f"params.{name}" in step.value for name in sensitive):
+            last_credential = index
+    if last_credential < 0:
+        return []
+    for index in range(last_credential + 1, len(capability.steps)):
+        if capability.steps[index].action != ActionKind.CLICK:
+            continue
+        end = index + 1
+        # The checkpoint that follows the submit is about the sign-in having worked, so it
+        # belongs to the prefix too; a resumed run has no sign-in for it to confirm.
+        if end < len(capability.steps) and capability.steps[end].action == ActionKind.ASSERT:
+            end += 1
+        return capability.steps[:end]
+    return capability.steps[: last_credential + 1]
 
 
 class ReplayEngine(ReplayReporting):
@@ -121,7 +178,11 @@ class ReplayEngine(ReplayReporting):
         )
         try:
             self._gate()
-            params = validate_inputs(self.cap, self.raw_params)
+            params = validate_inputs(
+                self.cap,
+                self.raw_params,
+                referenced_parameters(steps_from(self.cap.steps, self.opt.start_at)),
+            )
             for p in self.cap.inputs:
                 if p.sensitive and p.name in params:
                     self.log.redactor.register_secret(str(params[p.name]), p.name)
@@ -155,7 +216,7 @@ class ReplayEngine(ReplayReporting):
     # ------------------------------------------------------------------ main loop
     def _execute_all(self) -> None:
         i = 0
-        steps = self.cap.steps
+        steps = steps_from(self.cap.steps, self.opt.start_at)
         while i < len(steps):
             step = steps[i]
             action = self._run_step(step)

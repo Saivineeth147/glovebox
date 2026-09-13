@@ -14,15 +14,33 @@ class InputError(ValueError):
     pass
 
 
-def validate_inputs(cap: Capability, raw: dict[str, Any]) -> dict[str, Any]:
-    """Coerce and validate caller-supplied parameters against the capability contract."""
+def referenced_parameters(steps: list[Any]) -> set[str]:
+    """Parameter names the given steps actually substitute."""
+    return {
+        match.group(2)
+        for step in steps
+        for match in _TEMPLATE.finditer(step.value or "")
+        if match.group(1) == "params"
+    }
+
+
+def validate_inputs(
+    cap: Capability, raw: dict[str, Any], needed: set[str] | None = None
+) -> dict[str, Any]:
+    """Coerce and validate caller-supplied parameters against the capability contract.
+
+    `needed` narrows which parameters are required to those the steps about to run actually
+    substitute. A caller resuming into a warm session runs no sign-in step, so demanding the
+    credentials would be asking for secrets the run has no use for — the opposite of what
+    reusing a session is for.
+    """
     out: dict[str, Any] = {}
     known = {p.name for p in cap.inputs}
     if unknown := set(raw) - known:
         raise InputError(f"unknown parameters: {sorted(unknown)}; expected {sorted(known)}")
     for p in cap.inputs:
         if p.name not in raw or raw[p.name] is None:
-            if p.required and p.default is None:
+            if p.required and p.default is None and (needed is None or p.name in needed):
                 raise InputError(f"missing required parameter {p.name!r}")
             if p.default is not None:
                 out[p.name] = p.default

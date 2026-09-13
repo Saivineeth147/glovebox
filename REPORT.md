@@ -283,8 +283,15 @@ Redaction of free text is best-effort; structured sensitivity flags are the reli
 
 Cut deliberately, in order of what I would build next:
 
-1. **Session reuse.** Each replay signs in; a session-bootstrap capability plus a per-tenant
-   session pool would remove ~2 s per run and keep credentials out of the main flow entirely.
+1. ~~**Session reuse.**~~ Built. A caller can hand `run_replay` a surface it owns, which is not
+   closed at the end of a run, and resume a later replay at a named step with `start_at`.
+   `session_prefix()` finds the steps that exist only to sign in — the credential
+   substitutions, the submit, and the checkpoint that confirms it — by following the sensitive
+   parameters rather than guessing. Required-input validation narrows to the parameters the
+   steps about to run actually substitute, so a resumed replay is not merely spared the
+   sign-in: it is refused the credentials, which is the stronger property. The entry
+   navigation is still replayed, because a warm session is a session and not a screen. A
+   per-tenant pool on top of this is the remaining piece.
 2. ~~**Assisted repair.**~~ Built: `repair.py`. On `target_not_found`, one model call proposes
    a replacement `TargetStrategy`, which is kept only if it resolves to exactly one control on
    the screen that is actually there — the same uniqueness rule every recorded strategy has to

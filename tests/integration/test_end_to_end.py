@@ -625,3 +625,56 @@ def test_a_broken_locator_gets_a_reviewable_proposal_and_the_run_still_fails(
     saved = _json.loads(proposal.read_text())
     assert saved["status"] == "proposed"
     assert saved["strategy"]["value"]["name"] == "Locate Member"
+
+
+@pytest.mark.integration
+def test_a_warm_session_lets_a_replay_skip_signing_in_again(
+    policy: Policy,
+    runs_dir: Path,
+    app_url: str,
+) -> None:
+    """REPORT §7's first cut: every replay signs in, and it does not have to.
+
+    The first run establishes the session. The second starts after the sign-in prefix and is
+    given no credentials at all, which is the point — a reused session keeps them out of the
+    main flow entirely, not merely out of the log.
+    """
+    from glovebox.replay.engine import session_prefix
+    from glovebox.surface.http.html_surface import HtmlSurface
+
+    committed = Catalog(Path(__file__).resolve().parents[2] / "capabilities").load(
+        "member_savings_balance"
+    )
+    prefix = session_prefix(committed)
+    assert prefix, "no sign-in prefix found to skip"
+    resume_at = committed.steps[len(prefix)].id
+
+    warm = HtmlSurface(app_url)
+    try:
+        first = run_replay(
+            committed,
+            {"member_id": "100234", **creds()},
+            policy,
+            runs_dir=runs_dir,
+            allow_draft=True,
+            trace=False,
+            surface=warm,
+        )
+        assert first.status == ReplayStatus.SUCCESS, first.failure
+
+        without_credentials = run_replay(
+            committed,
+            {"member_id": "100235"},
+            policy,
+            runs_dir=runs_dir,
+            allow_draft=True,
+            trace=False,
+            surface=warm,
+            start_at=resume_at,
+        )
+    finally:
+        warm.close()
+
+    assert without_credentials.status == ReplayStatus.SUCCESS, without_credentials.failure
+    assert str(without_credentials.outputs["savings_balance"]).endswith("18930.00")
+    assert len(without_credentials.steps) < len(first.steps)

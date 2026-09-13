@@ -53,6 +53,7 @@ def _context(
     goal: str | None = None,
     trace: bool = True,
     surface_factory: SurfaceFactory | None = None,
+    surface: Surface | None = None,
 ) -> RunContext:
     run_id = new_run_id(prefix)
     run_dir = RunDir.create(runs_dir, run_id)
@@ -60,7 +61,7 @@ def _context(
     for env in ("GLOVEBOX_APP_PASSWORD", "ANTHROPIC_API_KEY"):
         redactor.register_secret(os.environ.get(env), env.lower())
     logger = EvidenceLogger(run_id, run_dir, redactor, echo=echo)
-    surface = (
+    surface = surface or (
         surface_factory(run_dir)
         if surface_factory
         else PlaywrightSurface(run_dir, headless=headless, trace=trace)
@@ -95,6 +96,8 @@ def run_replay(
     on_start: Callable[[str, Path], None] | None = None,
     surface_factory: SurfaceFactory | None = None,
     repair: Any = None,
+    surface: Surface | None = None,
+    start_at: str | None = None,
 ) -> ReplayResult:
     ctx = _context(
         "replay",
@@ -108,6 +111,7 @@ def run_replay(
         goal=capability.title,
         trace=trace,
         surface_factory=surface_factory,
+        surface=surface,
     )
     if on_context:
         on_context(ctx)
@@ -121,12 +125,20 @@ def run_replay(
             ctx.guardrails,
             ctx.logger,
             ctx.control,
-            ReplayOptions(attended=attended, allow_draft=allow_draft, repair=repair),
+            ReplayOptions(
+                attended=attended,
+                allow_draft=allow_draft,
+                repair=repair,
+                start_at=start_at,
+            ),
             tenant=tenant,
         )
         return engine.run()
     finally:
-        ctx.surface.close()
+        # A surface handed in belongs to the caller: closing it would throw away the very
+        # session they are keeping warm across runs.
+        if surface is None:
+            ctx.surface.close()
 
 
 def run_discovery(
