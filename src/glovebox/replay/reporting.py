@@ -9,6 +9,7 @@ need six arguments.
 
 from __future__ import annotations
 
+from collections.abc import Callable
 from datetime import UTC, datetime
 from typing import Any
 
@@ -46,11 +47,9 @@ class ReplayReporting:
     run_id: str
     tenant: str | None
 
-    def _first_failed(self, conds: list[Condition]) -> tuple[Condition, str] | None:
-        raise NotImplementedError
+    _first_failed: Callable[[list[Condition]], tuple[Condition, str] | None]
 
-    def _act(self, step: Step) -> str | None:
-        raise NotImplementedError
+    _act: Callable[[Step], str | None]
 
     def _finish_success(self, human_completed: bool = False) -> ReplayResult:
         failed = self._first_failed(self.cap.success)

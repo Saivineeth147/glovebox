@@ -26,12 +26,18 @@ from glovebox.control.session import ControlSession, InterventionKind
 from glovebox.evidence.logger import EvidenceLogger
 from glovebox.policy.guardrails import Guardrails, Verdict
 from glovebox.replay.extraction import extracted_value
+from glovebox.replay.recovery import ReplayRecovery
 from glovebox.replay.reporting import ReplayReporting
+from glovebox.replay.signals import (
+    _ExtractionMismatch,
+    _Recover,
+    _RestartAfterHuman,
+    _RetryAfterHuman,
+    _Stop,
+)
 from glovebox.schema.capability import (
     ActionKind,
     Capability,
-    Condition,
-    Recovery,
     ReviewStatus,
     Step,
 )
@@ -65,27 +71,6 @@ class ReplayOptions:
     attended: bool = False  # a human is reachable through the control session
     allow_draft: bool = False  # bypass the approval gate (dev only)
     screenshot_each_step: bool = True
-
-
-class _ExtractionMismatch(Exception):
-    """The text under a resolved target did not have the shape the step recorded.
-
-    Raised rather than stopping on the spot so the caller can record which strategy resolved
-    the target — the drift evaluation reads exactly that — and so an attended run offers the
-    operator the same takeover every other checkpoint failure does.
-    """
-
-    def __init__(self, output: str, expected: str, observed: str) -> None:
-        self.output, self.expected, self.observed = output, expected, observed
-        super().__init__(
-            f"{output} did not match the shape recorded for it; the screen is not the one "
-            "this step was recorded against"
-        )
-
-
-class _Stop(Exception):
-    def __init__(self, result: ReplayResult) -> None:
-        self.result = result
 
 
 def steps_from(steps: list[Step], start_at: str | None) -> list[Step]:
@@ -136,7 +121,7 @@ def session_prefix(capability: Capability) -> list[Step]:
     return capability.steps[: last_credential + 1]
 
 
-class ReplayEngine(ReplayReporting):
+class ReplayEngine(ReplayReporting, ReplayRecovery):
     def __init__(
         self,
         capability: Capability,
@@ -444,155 +429,3 @@ class ReplayEngine(ReplayReporting):
         )
 
     # ------------------------------------------------------------------ classification
-    def _classify_after(self, step: Step, rec: StepRecord) -> None:
-        self._check_signals_and_outcomes(step)
-        failed = self._first_failed(step.expect)
-        if failed is None:
-            return
-        cond, observed = failed
-        self.log.emit(
-            EventKind.CONDITION,
-            f"expectation failed: {cond.describe()} ({observed})",
-            step_id=step.id,
-        )
-        self._stuck(
-            step,
-            rec,
-            FailureClass.CHECKPOINT_FAILED,
-            f"post-condition not met after '{step.intent}'",
-            expected=cond.describe(),
-            observed=observed,
-        )
-
-    def _stuck(
-        self,
-        step: Step,
-        rec: StepRecord,
-        cls: FailureClass,
-        message: str,
-        *,
-        expected: str | None,
-        observed: str | None = None,
-    ) -> None:
-        """The step cannot proceed. In order: failure signals / outcomes, a declared recovery,
-        a human (attended), else a debuggable hard failure. Returns only if a human resolved it
-        with `resume` (the caller then retries the step's expectations)."""
-        self._check_signals_and_outcomes(step)
-        recovery = self._matching_recovery()
-        if recovery is not None:
-            raise _Recover(recovery)
-        observed = observed or self._observed_summary()
-        if not self.opt.attended:
-            raise _Stop(
-                self._fail(
-                    cls if cls != FailureClass.SURFACE_ERROR else FailureClass.TARGET_NOT_FOUND,
-                    step.id,
-                    message,
-                    expected=expected,
-                    observed=observed,
-                )
-            )
-        res = self.control.request_intervention(
-            InterventionKind.STUCK, f"{message} (expected {expected})", step.id, observed=observed
-        )
-        self._note_handoff(res, step.id)
-        if res.action == "resume":
-            rec.note = "human intervened; step retried"
-            raise _RetryAfterHuman
-        if res.action == "restart":
-            rec.note = "human intervened; capability restarted"
-            raise _RestartAfterHuman
-        if res.action == "complete":
-            raise _Stop(self._finish_success(human_completed=True))
-        raise _Stop(self._escalated(step.id, f"operator chose {res.action}"))
-
-    def _check_signals_and_outcomes(self, step: Step) -> None:
-        for sig in self.cap.failure_signals:
-            ok, obs = self.surface.check(sig.model_copy(update={"timeout_ms": 0}))
-            if ok:
-                raise _Stop(
-                    self._fail(
-                        FailureClass.FAILURE_SIGNAL,
-                        step.id,
-                        f"failure signal fired: {sig.describe()}",
-                        expected="no failure signal",
-                        observed=obs,
-                    )
-                )
-        for out in self.cap.outcomes:
-            ok, _ = self.surface.check(out.detect.model_copy(update={"timeout_ms": 0}))
-            if ok:
-                self.log.emit(
-                    EventKind.OUTCOME,
-                    f"business outcome {out.code}",
-                    step_id=step.id,
-                    code=out.code,
-                )
-                raise _Stop(self._outcome(out.code, out.description))
-
-    def _first_failed(self, conds: list[Condition]) -> tuple[Condition, str] | None:
-        for c in conds:
-            ok, observed = self.surface.check(c)
-            self.log.emit(
-                EventKind.CONDITION,
-                f"{'ok' if ok else 'FAIL'} {c.describe()}",
-                observed=observed[:300],
-            )
-            if not ok:
-                return c, observed
-        return None
-
-    def _matching_recovery(self) -> Recovery | None:
-        for r in self.cap.recoveries:
-            if self._recovery_uses.get(r.name, 0) >= r.max_attempts:
-                continue
-            ok, _ = self.surface.check(r.detect.model_copy(update={"timeout_ms": 0}))
-            if ok:
-                return r
-        return None
-
-    def _apply_recovery(self, step: Step, recovery: Recovery, attempt: int) -> str:
-        self._recovery_uses[recovery.name] = self._recovery_uses.get(recovery.name, 0) + 1
-        self.log.emit(
-            EventKind.RECOVERY,
-            f"recovery '{recovery.name}' (use {self._recovery_uses[recovery.name]}/{recovery.max_attempts}) then {recovery.then}",
-            step_id=step.id,
-        )
-        for a in recovery.actions:
-            self._act(a)
-            self.surface.wait_settled(a.wait.load_state, a.wait.settle_ms, a.wait.timeout_ms)
-        if recovery.then == "retry_step":
-            return self._run_step(step, attempt + 1)
-        if recovery.then == "continue":
-            return "next"
-        if recovery.then == "restart_capability":
-            self._restarts += 1
-            if self._restarts > 2:
-                raise _Stop(
-                    self._fail(FailureClass.RECOVERY_EXHAUSTED, step.id, "too many restarts")
-                )
-            return "restart"
-        res = self.control.request_intervention(
-            InterventionKind.STUCK, f"recovery '{recovery.name}' escalates", step.id
-        )
-        self._note_handoff(res, step.id)
-        if res.action == "resume":
-            return self._run_step(step, attempt + 1)
-        if res.action == "complete":
-            raise _Stop(self._finish_success(human_completed=True))
-        raise _Stop(self._escalated(step.id, f"operator chose {res.action}"))
-
-    # ------------------------------------------------------------------ results
-
-
-class _Recover(Exception):
-    def __init__(self, recovery: Recovery) -> None:
-        self.recovery = recovery
-
-
-class _RetryAfterHuman(Exception):
-    pass
-
-
-class _RestartAfterHuman(Exception):
-    pass
