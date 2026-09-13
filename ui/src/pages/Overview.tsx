@@ -13,6 +13,26 @@ const HOW_IT_WORKS = [
   ["Hand off", "When it is stuck or the step is risky, a person takes the live session and gives it back."],
 ];
 
+/** What the rate covers, and what it leaves out.
+ *
+ *  An earlier version of this counted every replay ever run — including versions of an artifact
+ *  that no longer exist — and read 78% on a catalog whose current capabilities never fail. A
+ *  rate with invisible exclusions is how that happened, so they are named here.
+ */
+function answeredNote(health?: {
+  answered: number;
+  eligible: number;
+  superseded: number;
+  refused: number;
+}): string {
+  if (!health || !health.eligible) return "no replays of the current versions yet";
+  const aside: string[] = [];
+  if (health.superseded) aside.push(`${health.superseded} on older versions`);
+  if (health.refused) aside.push(`${health.refused} refused before running`);
+  const scope = `${health.answered} of ${health.eligible} answered`;
+  return aside.length ? `${scope}; ${aside.join(", ")} set aside` : scope;
+}
+
 /** One reading. The number leads; its name and note stay quiet beneath it. */
 function Reading({
   label,
@@ -85,7 +105,7 @@ export default function Overview() {
         <Reading
           label="Replay success"
           value={rate == null ? "—" : `${Math.round(rate * 100)}%`}
-          note="of finished replays"
+          note={answeredNote(ov.replay_health)}
           tone={rate == null ? undefined : rate >= 0.9 ? "good" : rate >= 0.6 ? "warn" : "bad"}
         />
         <Reading

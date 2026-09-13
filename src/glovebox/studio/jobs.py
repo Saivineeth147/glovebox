@@ -272,6 +272,9 @@ class JobManager:
             else 0,
             "result": result,
             "capability_id": (first.get("data") or {}).get("capability"),
+            # The version matters as much as the id: reliability is a property of the
+            # artifact in the catalog now, not of every version it has ever had.
+            "capability_version": (first.get("data") or {}).get("version"),
             "job_id": job.id if job else None,
             "owner": ("human" if job and job.bridge.current else "automation"),
         }

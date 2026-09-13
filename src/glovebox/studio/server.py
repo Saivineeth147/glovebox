@@ -28,6 +28,7 @@ from glovebox.schema.policy import Policy
 
 from .accounts import Account, AccountStore, Role
 from .guards import require_role, require_user
+from .health import replay_health
 from .jobs import JobManager
 from .routes_auth import router as auth_router
 from .sessions import SessionStore
@@ -115,8 +116,7 @@ def create_studio(runs_dir: Path, catalog_dir: Path, policy_path: Path) -> FastA
     def overview() -> dict[str, Any]:
         runs = jobs.runs()
         caps = catalog.all()
-        replays = [r for r in runs if r["kind"] == "replay" and r["status"] != "running"]
-        ok = sum(1 for r in replays if r["status"] == "success")
+        health = replay_health(runs, {c.id: c.version for c in caps})
         try:
             t = httpx.get(f"{target_base()}/__sim/faults", timeout=1.5).json()
             target = {"up": True, "armed": t.get("armed", {}), "known": t.get("known", [])}
@@ -124,8 +124,14 @@ def create_studio(runs_dir: Path, catalog_dir: Path, policy_path: Path) -> FastA
             target = {"up": False, "armed": {}, "known": []}
         return {
             "runs": len(runs),
-            "replays": len(replays),
-            "replay_success_rate": (ok / len(replays)) if replays else None,
+            "replays": health.eligible,
+            "replay_success_rate": health.rate,
+            "replay_health": {
+                "answered": health.answered,
+                "eligible": health.eligible,
+                "superseded": health.superseded,
+                "refused": health.refused,
+            },
             "capabilities": len(caps),
             "approved": sum(1 for c in caps if c.review.status == "approved"),
             "open_interventions": sum(1 for j in jobs.all() if j.bridge.current),
