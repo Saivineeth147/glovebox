@@ -13,6 +13,10 @@ jobs:
       - uses: astral-sh/setup-uv@v5
         with:
           enable-cache: true
+          # Keep the cache, skip the post-job prune. Pruning this cache timed out at the
+          # action's five-minute limit and failed the run after every real step had passed,
+          # which puts a red cross on a green build.
+          prune-cache: false
       - uses: actions/setup-python@v5
         with:
           python-version: "3.12"
