@@ -8,11 +8,13 @@ artifact schema or the replay engine (REPORT.md §4).
 """
 
 from .base import DialogInfo, Element, Observation, Resolved, Surface, SurfaceError
+from .http.html_surface import HtmlSurface
 from .web.playwright_surface import PlaywrightSurface
 
 __all__ = [
     "DialogInfo",
     "Element",
+    "HtmlSurface",
     "Observation",
     "PlaywrightSurface",
     "Resolved",

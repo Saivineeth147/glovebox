@@ -165,6 +165,12 @@ def _match(s: TargetStrategy, els: list[Element]) -> list[Element]:
         if len(anchors) != 1:
             return []
         a = anchors[0]
+        if not _has_geometry(a):
+            # This strategy ranks candidates by distance. On a surface with no layout engine
+            # every box is the origin, so every candidate ties and the "nearest" is whichever
+            # happened to parse first. Refusing lets the next strategy answer; guessing would
+            # return a confidently wrong element.
+            return []
         ax, ay = a.bbox[0] + a.bbox[2], a.bbox[1]
         pool = [
             e
@@ -180,11 +186,14 @@ def _match(s: TargetStrategy, els: list[Element]) -> list[Element]:
         )
         return pool[:1]
     if s.kind == "table_cell":
-        cells = (
-            [e for e in els if e.role == "cell" and e.table == v["table"]]
-            if v.get("table")
-            else [e for e in els if e.role == "cell"]
-        )
+        all_cells = [e for e in els if e.role == "cell"]
+        cells = [e for e in all_cells if e.table == v["table"]] if v.get("table") else all_cells
+        if not cells:
+            # The recorded table path is a hint, not the identity: a browser injects <tbody>
+            # where a parser does not, so the same table has a different path on another
+            # surface. The row anchor and column header still name the cell, and the
+            # uniqueness check below is what keeps that safe.
+            cells = all_cells
         tables = {e.table for e in cells}
         found: list[Element] = []
         for t in tables:
@@ -205,6 +214,11 @@ def _match(s: TargetStrategy, els: list[Element]) -> list[Element]:
         best = pool[0]
         return [best] if math.hypot(best.nbox[0] - v["x"], best.nbox[1] - v["y"]) < 0.05 else []
     raise ValueError(f"unknown strategy kind {s.kind!r}")
+
+
+def _has_geometry(el: Element) -> bool:
+    """Whether this element was laid out. A zero-size box means nobody rendered it."""
+    return el.bbox[2] > 0 or el.bbox[3] > 0
 
 
 def _nearest_anchor(el: Element, els: list[Element]) -> Element | None:

@@ -137,6 +137,31 @@ Or do all of it from the UI: `make studio`.
 Other commands: `glovebox catalog list|tools` (the catalog as Claude tool definitions),
 `glovebox stability <cap> --runs 5`, `glovebox validate <cap.json>`, `glovebox schema`.
 
+## The surface seam, tested
+
+`Surface` is the only place that knows how a screen is reached. The artifact is supposed to
+describe what an operator perceives — role, name, label, a cell at a row and column — rather
+than what Playwright does. `surface/http/` is that claim under test: a second surface with no
+DOM, no JavaScript and no layout engine, which fetches pages and submits forms the way a
+terminal-era client would, and resolves recorded targets through the same `locators` module.
+
+The **same reviewed capability**, recorded through a browser, replays through it:
+
+```
+playwright (browser)    2.80s  success  {'savings_balance': '1250.75'}
+http (no browser)       0.03s  success  {'savings_balance': '1250.75'}
+```
+
+What it cannot do is as useful as what it can. There is no geometry, so a `bbox` strategy
+simply fails and `near_text` refuses rather than ranking candidates that all sit at the origin —
+writing this surface is what exposed that `near_text` would otherwise return a confidently
+wrong element whenever layout is unavailable. `table_cell` survives because a cell named by its
+row anchor and column header does not depend on being rendered, which is the same property
+that let it survive column reordering in the drift evaluation.
+
+The production second surface is Windows UI Automation, which reports the same role/name/label
+vocabulary. This one is what could be built and tested here, and it proves the seam with code.
+
 ## Resilience, measured
 
 The artifact stores several ordered locator strategies per target because which one survives a

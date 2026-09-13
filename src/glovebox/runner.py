@@ -21,6 +21,7 @@ from glovebox.replay.engine import ReplayEngine, ReplayOptions
 from glovebox.schema.capability import Capability, Parameter
 from glovebox.schema.policy import Policy
 from glovebox.schema.results import ReplayResult
+from glovebox.surface.base import Surface
 from glovebox.surface.web.playwright_surface import PlaywrightSurface
 
 
@@ -30,8 +31,13 @@ class RunContext:
     run_dir: RunDir
     logger: EvidenceLogger
     guardrails: Guardrails
-    surface: PlaywrightSurface
+    surface: Surface
     control: ControlSession
+
+
+#: Builds the surface a run drives. Injectable so the same reviewed capability can be
+#: replayed through another surface — the seam the artifact was designed around.
+SurfaceFactory = Callable[[RunDir], Surface]
 
 
 def _context(
@@ -46,6 +52,7 @@ def _context(
     capability_id: str | None = None,
     goal: str | None = None,
     trace: bool = True,
+    surface_factory: SurfaceFactory | None = None,
 ) -> RunContext:
     run_id = new_run_id(prefix)
     run_dir = RunDir.create(runs_dir, run_id)
@@ -53,7 +60,11 @@ def _context(
     for env in ("GLOVEBOX_APP_PASSWORD", "ANTHROPIC_API_KEY"):
         redactor.register_secret(os.environ.get(env), env.lower())
     logger = EvidenceLogger(run_id, run_dir, redactor, echo=echo)
-    surface = PlaywrightSurface(run_dir, headless=headless, trace=trace)
+    surface = (
+        surface_factory(run_dir)
+        if surface_factory
+        else PlaywrightSurface(run_dir, headless=headless, trace=trace)
+    )
     control = ControlSession(
         run_id,
         surface,
@@ -82,6 +93,7 @@ def run_replay(
     trace: bool = True,
     on_context: Callable[[RunContext], None] | None = None,
     on_start: Callable[[str, Path], None] | None = None,
+    surface_factory: SurfaceFactory | None = None,
 ) -> ReplayResult:
     ctx = _context(
         "replay",
@@ -94,6 +106,7 @@ def run_replay(
         capability_id=capability.id,
         goal=capability.title,
         trace=trace,
+        surface_factory=surface_factory,
     )
     if on_context:
         on_context(ctx)

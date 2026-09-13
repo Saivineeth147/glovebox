@@ -526,3 +526,35 @@ def test_the_scripted_flow_verifies_its_outcome_detector_by_probing(
     assert not any(step.value == "999999" for step in savings_capability.steps), (
         "the probe's bogus search was recorded into the capability"
     )
+
+
+@pytest.mark.integration
+def test_the_same_capability_replays_through_a_surface_with_no_browser(
+    policy: Policy,
+    runs_dir: Path,
+    app_url: str,
+) -> None:
+    """Seam 1, tested rather than argued.
+
+    The artifact was recorded through Playwright. Replaying it through a surface with no DOM,
+    no JavaScript and no layout engine — resolved by the same locators module — is what makes
+    "the vocabulary is surface-agnostic" a fact instead of a design intention.
+    """
+    from glovebox.surface.http.html_surface import HtmlSurface
+
+    committed = Catalog(Path(__file__).resolve().parents[2] / "capabilities").load(
+        "member_savings_balance"
+    )
+
+    result = run_replay(
+        committed,
+        {"member_id": "100234", **creds()},
+        policy,
+        runs_dir=runs_dir,
+        allow_draft=True,
+        trace=False,
+        surface_factory=lambda run_dir: HtmlSurface(app_url, evidence_dir=run_dir.root),
+    )
+
+    assert result.status == ReplayStatus.SUCCESS, result.failure
+    assert str(result.outputs["savings_balance"]).endswith("1250.75")
