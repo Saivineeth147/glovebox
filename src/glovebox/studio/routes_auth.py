@@ -20,6 +20,7 @@ from .accounts import (
 )
 from .guards import require_user
 from .sessions import SESSION_COOKIE_NAME, SESSION_LIFETIME_HOURS, SessionStore
+from .throttle import TooManyAttempts
 
 router = APIRouter(prefix="/api/auth", tags=["auth"])
 
@@ -76,9 +77,23 @@ def register(body: RegisterBody, request: Request, response: Response) -> dict[s
 @router.post("/login")
 def login(body: LoginBody, request: Request, response: Response) -> dict[str, str]:
     accounts, sessions = _stores(request)
+    limiter = request.app.state.login_limiter
+    identity = body.email.strip().lower()
+    try:
+        limiter.check(identity)
+    except TooManyAttempts as blocked:
+        # 429 rather than 401: the caller is being throttled, not told anything about the
+        # account, and Retry-After is the honest way to say for how long.
+        raise HTTPException(
+            status_code=429,
+            detail=str(blocked),
+            headers={"Retry-After": str(blocked.retry_after_seconds)},
+        ) from blocked
     account = accounts.authenticate(body.email, body.password)
     if account is None:
+        limiter.record_failure(identity)
         raise HTTPException(status_code=401, detail=INVALID_CREDENTIALS_MESSAGE)
+    limiter.clear(identity)
     _start_session(response, sessions, account.id)
     return _account_public(account)
 

@@ -66,3 +66,37 @@ def test_should_refuse_an_unknown_role_rather_than_storing_it(tmp_path: Path) ->
     refused = client.post("/api/users/admin@example.com/role", json={"role": "superuser"})
 
     assert refused.status_code in (400, 422)
+
+
+def test_should_throttle_repeated_failed_sign_ins(tmp_path: Path) -> None:
+    """Gating the API is worth little if the password can be guessed without limit."""
+    client = _studio(tmp_path)
+    _register(client, "admin@example.com")
+    client.post("/api/auth/logout")
+
+    statuses = [
+        client.post(
+            "/api/auth/login", json={"email": "admin@example.com", "password": "wrong-password"}
+        ).status_code
+        for _ in range(8)
+    ]
+
+    assert statuses[0] == 401
+    assert 429 in statuses, "sign-in attempts were never throttled"
+
+
+def test_should_not_lock_out_an_account_that_was_not_attacked(tmp_path: Path) -> None:
+    client = _studio(tmp_path)
+    _register(client, "admin@example.com")
+    _register(client, "other@example.com")
+    client.post("/api/auth/logout")
+    for _ in range(8):
+        client.post(
+            "/api/auth/login", json={"email": "admin@example.com", "password": "wrong-password"}
+        )
+
+    allowed = client.post(
+        "/api/auth/login", json={"email": "other@example.com", "password": PASSWORD}
+    )
+
+    assert allowed.status_code == 200

@@ -31,6 +31,7 @@ from .guards import require_role, require_user
 from .jobs import JobManager
 from .routes_auth import router as auth_router
 from .sessions import SessionStore
+from .throttle import AttemptLimiter
 
 STATIC = Path(__file__).parent / "static"
 STUDIO_DB_ENV_VAR = "GLOVEBOX_STUDIO_DB"
@@ -93,6 +94,7 @@ def create_studio(runs_dir: Path, catalog_dir: Path, policy_path: Path) -> FastA
     catalog = Catalog(catalog_dir)
 
     db_path = _resolve_db_path(runs_dir)
+    app.state.login_limiter = AttemptLimiter()
     app.state.account_store = AccountStore(db_path)
     app.state.session_store = SessionStore(db_path)
     app.state.jobs = jobs
