@@ -649,11 +649,68 @@
   "review": {
     "status": "approved",
     "reviewed_by": "chintu",
-    "reviewed_at": "2026-09-13T09:49:50.799757Z",
+    "reviewed_at": "2026-09-13T20:35:37.838431Z",
     "notes": "Steps, extraction target and risk reviewed. Replays for members 100234/100235/100236; 999999 returns MEMBER_NOT_FOUND, whose detector the run verified by probing rather than guessing.",
-    "replays": 0,
+    "replays": 1,
     "replay_successes": 0
   },
-  "overrides": [],
+  "overrides": [
+    {
+      "tenant": "bravo",
+      "origin": null,
+      "entry_path": "/t/bravo/",
+      "step_targets": {},
+      "step_values": {},
+      "extra_recoveries": [
+        {
+          "name": "post_login_notice",
+          "detect": {
+            "kind": "text_visible",
+            "value": "Scheduled maintenance",
+            "regex": false,
+            "target": null,
+            "frame": [],
+            "timeout_ms": 0
+          },
+          "actions": [
+            {
+              "id": "r_ack",
+              "action": "click",
+              "intent": "acknowledge maintenance notice",
+              "target": {
+                "description": "Acknowledge",
+                "frame": [
+                  "main"
+                ],
+                "strategies": [
+                  {
+                    "kind": "role_name",
+                    "value": {
+                      "role": "button",
+                      "name": "Acknowledge"
+                    },
+                    "robustness": "button text; tenant-specific notice"
+                  }
+                ]
+              },
+              "value": null,
+              "wait": {
+                "load_state": "load",
+                "settle_ms": 150,
+                "timeout_ms": 15000
+              },
+              "risk": "reversible",
+              "expect": [],
+              "extract_to": null,
+              "dialog_response": null
+            }
+          ],
+          "then": "continue",
+          "max_attempts": 2
+        }
+      ],
+      "notes": "Bayview renames 'Member No.'→'Member Number' and 'Find Member'→'Search'; locators fall through to name_attr/text."
+    }
+  ],
   "created_at": "2026-09-13T09:49:04.618250Z"
 }

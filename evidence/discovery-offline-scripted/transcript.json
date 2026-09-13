@@ -12,7 +12,7 @@
       },
       {
         "type": "tool_use",
-        "id": "toolu_1b4e9fe93179",
+        "id": "toolu_5c00331b371b",
         "name": "observe",
         "input": {}
       }
@@ -23,7 +23,7 @@
     "content": [
       {
         "type": "tool_result",
-        "tool_use_id": "toolu_1b4e9fe93179",
+        "tool_use_id": "toolu_5c00331b371b",
         "content": "URL: http://127.0.0.1:8089/t/alpha/\nTITLE: Meridian Core \u2014 Alpine Credit Union\nLAST HTTP STATUS: 200\nFRAMES: ['(top)', 'nav', 'menu', 'main']\nINTERACTIVE ELEMENTS:\n  [e7] link \"Home\" frame=menu\n  [e9] link \"Member Inquiry\" frame=menu\n  [e21] textbox \"Operator ID\" name=username frame=main\n  [e23] textbox \"Password\" name=password frame=main\n  [e24] button \"Sign In\" value='Sign In' frame=main\nVISIBLE TEXT:\n[nav]\nMeridian Core \u2014 Alpine Credit Union Not signed in\n\n[menu]\nMENU\nHome\nMember Inquiry\nTransactions\nReports\nAdministration\n\n[main]\nMeridian Core \u2014 Alpine Credit Union \u00a0 v7.2.1\nOperator Sign-In\nOperator ID \nPassword \n \nMeridian Core (simulated). All data fictional."
       }
     ]
@@ -37,7 +37,7 @@
       },
       {
         "type": "tool_use",
-        "id": "toolu_fecd31e241a7",
+        "id": "toolu_36b36929feb3",
         "name": "fill",
         "input": {
           "param": "username",
@@ -52,7 +52,7 @@
     "content": [
       {
         "type": "tool_result",
-        "tool_use_id": "toolu_fecd31e241a7",
+        "tool_use_id": "toolu_36b36929feb3",
         "content": "done: filled textbox 'Operator ID'\n\nURL: http://127.0.0.1:8089/t/alpha/\nTITLE: Meridian Core \u2014 Alpine Credit Union\nLAST HTTP STATUS: 200\nFRAMES: ['(top)', 'nav', 'menu', 'main']\nINTERACTIVE ELEMENTS:\n  [e7] link \"Home\" frame=menu\n  [e9] link \"Member Inquiry\" frame=menu\n  [e21] textbox \"Operator ID\" name=username value='[REDACTED:username#6b4632f44b]' frame=main\n  [e23] textbox \"Password\" name=password frame=main\n  [e24] button \"Sign In\" value='Sign In' frame=main\nVISIBLE TEXT:\n[nav]\nMeridian Core \u2014 Alpine Credit Union Not signed in\n\n[menu]\nMENU\nHome\nMember Inquiry\nTransactions\nReports\nAdministration\n\n[main]\nMeridian Core \u2014 Alpine Credit Union \u00a0 v7.2.1\nOperator Sign-In\nOperator ID \nPassword \n \nMeridian Core (simulated). All data fictional."
       }
     ]
@@ -66,7 +66,7 @@
       },
       {
         "type": "tool_use",
-        "id": "toolu_8220a3a34e4f",
+        "id": "toolu_d52c161953c0",
         "name": "fill",
         "input": {
           "param": "password",
@@ -81,7 +81,7 @@
     "content": [
       {
         "type": "tool_result",
-        "tool_use_id": "toolu_8220a3a34e4f",
+        "tool_use_id": "toolu_d52c161953c0",
         "content": "done: filled textbox 'Password'\n\nURL: http://127.0.0.1:8089/t/alpha/\nTITLE: Meridian Core \u2014 Alpine Credit Union\nLAST HTTP STATUS: 200\nFRAMES: ['(top)', 'nav', 'menu', 'main']\nINTERACTIVE ELEMENTS:\n  [e7] link \"Home\" frame=menu\n  [e9] link \"Member Inquiry\" frame=menu\n  [e21] textbox \"Operator ID\" name=username value='[REDACTED:username#6b4632f44b]' frame=main\n  [e23] textbox \"Password\" name=password value='\u2022\u2022\u2022\u2022' frame=main\n  [e24] button \"Sign In\" value='Sign In' frame=main\nVISIBLE TEXT:\n[nav]\nMeridian Core \u2014 Alpine Credit Union Not signed in\n\n[menu]\nMENU\nHome\nMember Inquiry\nTransactions\nReports\nAdministration\n\n[main]\nMeridian Core \u2014 Alpine Credit Union \u00a0 v7.2.1\nOperator Sign-In\nOperator ID \nPassword \n \nMeridian Core (simulated). All data fictional."
       }
     ]
@@ -95,7 +95,7 @@
       },
       {
         "type": "tool_use",
-        "id": "toolu_e57f5a5df013",
+        "id": "toolu_56840ec0f933",
         "name": "click",
         "input": {
           "why": "submit the sign-in form",
@@ -109,7 +109,7 @@
     "content": [
       {
         "type": "tool_result",
-        "tool_use_id": "toolu_e57f5a5df013",
+        "tool_use_id": "toolu_56840ec0f933",
         "content": "done: clicked button 'Sign In'\n\nURL: http://127.0.0.1:8089/t/alpha/\nTITLE: Meridian Core \u2014 Alpine Credit Union\nLAST HTTP STATUS: 200\nFRAMES: ['(top)', 'nav', 'menu', 'main']\nINTERACTIVE ELEMENTS:\n  [e7] link \"Home\" frame=menu\n  [e9] link \"Member Inquiry\" frame=menu\n  [e21] link \"Member Inquiry\" frame=main\nVISIBLE TEXT:\n[nav]\nMeridian Core \u2014 Alpine Credit Union Not signed in\n\n[menu]\nMENU\nHome\nMember Inquiry\nTransactions\nReports\nAdministration\n\n[main]\nMeridian Core \u2014 Alpine Credit Union \u00a0 v7.2.1\nWelcome, [REDACTED:username#6b4632f44b].\nUse the menu on the left to begin. Common tasks:\nMember Inquiry \u2014 look up a member and view balances.\nMeridian Core (simulated). All data fictional."
       }
     ]
@@ -123,7 +123,7 @@
       },
       {
         "type": "tool_use",
-        "id": "toolu_f04fd0ab3d2a",
+        "id": "toolu_61d6e869f708",
         "name": "assert_text",
         "input": {
           "text": "Welcome, ",
@@ -137,7 +137,7 @@
     "content": [
       {
         "type": "tool_result",
-        "tool_use_id": "toolu_f04fd0ab3d2a",
+        "tool_use_id": "toolu_61d6e869f708",
         "content": "checkpoint recorded: 'Welcome, ' is visible"
       }
     ]
@@ -151,7 +151,7 @@
       },
       {
         "type": "tool_use",
-        "id": "toolu_6c6d991df80e",
+        "id": "toolu_bd353a2cb855",
         "name": "click",
         "input": {
           "why": "open the member inquiry screen",
@@ -165,7 +165,7 @@
     "content": [
       {
         "type": "tool_result",
-        "tool_use_id": "toolu_6c6d991df80e",
+        "tool_use_id": "toolu_bd353a2cb855",
         "content": "done: clicked link 'Member Inquiry'\n\nURL: http://127.0.0.1:8089/t/alpha/\nTITLE: Meridian Core \u2014 Alpine Credit Union\nLAST HTTP STATUS: 200\nFRAMES: ['(top)', 'nav', 'menu', 'main']\nINTERACTIVE ELEMENTS:\n  [e7] link \"Home\" frame=menu\n  [e9] link \"Member Inquiry\" frame=menu\n  [e21] textbox \"Member No.\" name=member_no frame=main\n  [e22] button \"Find Member\" value='Find Member' frame=main\nVISIBLE TEXT:\n[nav]\nMeridian Core \u2014 Alpine Credit Union Not signed in\n\n[menu]\nMENU\nHome\nMember Inquiry\nTransactions\nReports\nAdministration\n\n[main]\nMeridian Core \u2014 Alpine Credit Union \u00a0 v7.2.1\nMember Inquiry\nMember No. \n \nMeridian Core (simulated). All data fictional."
       }
     ]
@@ -179,7 +179,7 @@
       },
       {
         "type": "tool_use",
-        "id": "toolu_c5bd2683768a",
+        "id": "toolu_850e7c194b36",
         "name": "assert_text",
         "input": {
           "text": "Member Inquiry",
@@ -193,7 +193,7 @@
     "content": [
       {
         "type": "tool_result",
-        "tool_use_id": "toolu_c5bd2683768a",
+        "tool_use_id": "toolu_850e7c194b36",
         "content": "checkpoint recorded: 'Member Inquiry' is visible"
       }
     ]
@@ -207,7 +207,7 @@
       },
       {
         "type": "tool_use",
-        "id": "toolu_315dda34aa4a",
+        "id": "toolu_943c0b30f65c",
         "name": "fill",
         "input": {
           "param": "member_id",
@@ -222,7 +222,7 @@
     "content": [
       {
         "type": "tool_result",
-        "tool_use_id": "toolu_315dda34aa4a",
+        "tool_use_id": "toolu_943c0b30f65c",
         "content": "done: filled textbox 'Member No.'\n\nURL: http://127.0.0.1:8089/t/alpha/\nTITLE: Meridian Core \u2014 Alpine Credit Union\nLAST HTTP STATUS: 200\nFRAMES: ['(top)', 'nav', 'menu', 'main']\nINTERACTIVE ELEMENTS:\n  [e7] link \"Home\" frame=menu\n  [e9] link \"Member Inquiry\" frame=menu\n  [e21] textbox \"Member No.\" name=member_no value='100234' frame=main\n  [e22] button \"Find Member\" value='Find Member' frame=main\nVISIBLE TEXT:\n[nav]\nMeridian Core \u2014 Alpine Credit Union Not signed in\n\n[menu]\nMENU\nHome\nMember Inquiry\nTransactions\nReports\nAdministration\n\n[main]\nMeridian Core \u2014 Alpine Credit Union \u00a0 v7.2.1\nMember Inquiry\nMember No. \n \nMeridian Core (simulated). All data fictional."
       }
     ]
@@ -236,7 +236,7 @@
       },
       {
         "type": "tool_use",
-        "id": "toolu_30fa84e21c68",
+        "id": "toolu_ed0b25b80d26",
         "name": "click",
         "input": {
           "why": "run the search",
@@ -250,7 +250,7 @@
     "content": [
       {
         "type": "tool_result",
-        "tool_use_id": "toolu_30fa84e21c68",
+        "tool_use_id": "toolu_ed0b25b80d26",
         "content": "done: clicked button 'Find Member'\n\nURL: http://127.0.0.1:8089/t/alpha/\nTITLE: Meridian Core \u2014 Alpine Credit Union\nLAST HTTP STATUS: 200\nFRAMES: ['(top)', 'nav', 'menu', 'main']\nINTERACTIVE ELEMENTS:\n  [e7] link \"Home\" frame=menu\n  [e9] link \"Member Inquiry\" frame=menu\n  [e38] link \"Open Sub-Account\" frame=main\n  [e39] link \"New Inquiry\" frame=main\nVISIBLE TEXT:\n[nav]\nMeridian Core \u2014 Alpine Credit Union Not signed in\n\n[menu]\nMENU\nHome\nMember Inquiry\nTransactions\nReports\nAdministration\n\n[main]\nMeridian Core \u2014 Alpine Credit Union \u00a0 v7.2.1\nMember Detail\nMember No. 100234 Status Active\nName Doe, Jane\nShare Accounts\nShare Description Current Balance\nS01 Regular Savings $1250.75\nS09 Checking $402.10\nOpen Sub-Account \u00a0|\u00a0 New Inquiry\nMeridian Core (simulated). All data fictional."
       }
     ]
@@ -264,7 +264,7 @@
       },
       {
         "type": "tool_use",
-        "id": "toolu_ab7ec1403161",
+        "id": "toolu_4c609dc9fbfc",
         "name": "assert_text",
         "input": {
           "text": "Share Accounts",
@@ -278,8 +278,230 @@
     "content": [
       {
         "type": "tool_result",
-        "tool_use_id": "toolu_ab7ec1403161",
+        "tool_use_id": "toolu_4c609dc9fbfc",
         "content": "checkpoint recorded: 'Share Accounts' is visible"
+      }
+    ]
+  },
+  {
+    "role": "assistant",
+    "content": [
+      {
+        "type": "text",
+        "text": "(scripted) begin_probe"
+      },
+      {
+        "type": "tool_use",
+        "id": "toolu_e733d9c81311",
+        "name": "begin_probe",
+        "input": {
+          "why": "read the exact wording of the not-found screen"
+        }
+      }
+    ]
+  },
+  {
+    "role": "user",
+    "content": [
+      {
+        "type": "tool_result",
+        "tool_use_id": "toolu_e733d9c81311",
+        "content": "Recording paused. Nothing until end_probe becomes part of the capability."
+      }
+    ]
+  },
+  {
+    "role": "assistant",
+    "content": [
+      {
+        "type": "text",
+        "text": "(scripted) click"
+      },
+      {
+        "type": "tool_use",
+        "id": "toolu_c4ef9a480316",
+        "name": "click",
+        "input": {
+          "why": "start a fresh inquiry",
+          "ref": "e39"
+        }
+      }
+    ]
+  },
+  {
+    "role": "user",
+    "content": [
+      {
+        "type": "tool_result",
+        "tool_use_id": "toolu_c4ef9a480316",
+        "content": "done: clicked link 'New Inquiry'\n\nURL: http://127.0.0.1:8089/t/alpha/\nTITLE: Meridian Core \u2014 Alpine Credit Union\nLAST HTTP STATUS: 200\nFRAMES: ['(top)', 'nav', 'menu', 'main']\nINTERACTIVE ELEMENTS:\n  [e7] link \"Home\" frame=menu\n  [e9] link \"Member Inquiry\" frame=menu\n  [e21] textbox \"Member No.\" name=member_no frame=main\n  [e22] button \"Find Member\" value='Find Member' frame=main\nVISIBLE TEXT:\n[nav]\nMeridian Core \u2014 Alpine Credit Union Not signed in\n\n[menu]\nMENU\nHome\nMember Inquiry\nTransactions\nReports\nAdministration\n\n[main]\nMeridian Core \u2014 Alpine Credit Union \u00a0 v7.2.1\nMember Inquiry\nMember No. \n \nMeridian Core (simulated). All data fictional."
+      }
+    ]
+  },
+  {
+    "role": "assistant",
+    "content": [
+      {
+        "type": "text",
+        "text": "(scripted) fill"
+      },
+      {
+        "type": "tool_use",
+        "id": "toolu_bbf86646f0e5",
+        "name": "fill",
+        "input": {
+          "text": "999999",
+          "why": "search for a member number that does not exist",
+          "ref": "e21"
+        }
+      }
+    ]
+  },
+  {
+    "role": "user",
+    "content": [
+      {
+        "type": "tool_result",
+        "tool_use_id": "toolu_bbf86646f0e5",
+        "content": "done: filled textbox 'Member No.'\n\nURL: http://127.0.0.1:8089/t/alpha/\nTITLE: Meridian Core \u2014 Alpine Credit Union\nLAST HTTP STATUS: 200\nFRAMES: ['(top)', 'nav', 'menu', 'main']\nINTERACTIVE ELEMENTS:\n  [e7] link \"Home\" frame=menu\n  [e9] link \"Member Inquiry\" frame=menu\n  [e21] textbox \"Member No.\" name=member_no value='999999' frame=main\n  [e22] button \"Find Member\" value='Find Member' frame=main\nVISIBLE TEXT:\n[nav]\nMeridian Core \u2014 Alpine Credit Union Not signed in\n\n[menu]\nMENU\nHome\nMember Inquiry\nTransactions\nReports\nAdministration\n\n[main]\nMeridian Core \u2014 Alpine Credit Union \u00a0 v7.2.1\nMember Inquiry\nMember No. \n \nMeridian Core (simulated). All data fictional."
+      }
+    ]
+  },
+  {
+    "role": "assistant",
+    "content": [
+      {
+        "type": "text",
+        "text": "(scripted) click"
+      },
+      {
+        "type": "tool_use",
+        "id": "toolu_10f6c7d2fa55",
+        "name": "click",
+        "input": {
+          "why": "reach the not-found screen",
+          "ref": "e22"
+        }
+      }
+    ]
+  },
+  {
+    "role": "user",
+    "content": [
+      {
+        "type": "tool_result",
+        "tool_use_id": "toolu_10f6c7d2fa55",
+        "content": "done: clicked button 'Find Member'\n\nURL: http://127.0.0.1:8089/t/alpha/\nTITLE: Meridian Core \u2014 Alpine Credit Union\nLAST HTTP STATUS: 200\nFRAMES: ['(top)', 'nav', 'menu', 'main']\nINTERACTIVE ELEMENTS:\n  [e7] link \"Home\" frame=menu\n  [e9] link \"Member Inquiry\" frame=menu\n  [e22] link \"Back to search\" frame=main\nVISIBLE TEXT:\n[nav]\nMeridian Core \u2014 Alpine Credit Union Not signed in\n\n[menu]\nMENU\nHome\nMember Inquiry\nTransactions\nReports\nAdministration\n\n[main]\nMeridian Core \u2014 Alpine Credit Union \u00a0 v7.2.1\nMember Inquiry\nNo member record matched number 999999.\nBack to search\nMeridian Core (simulated). All data fictional."
+      }
+    ]
+  },
+  {
+    "role": "assistant",
+    "content": [
+      {
+        "type": "text",
+        "text": "(scripted) click"
+      },
+      {
+        "type": "tool_use",
+        "id": "toolu_a0b9b6521723",
+        "name": "click",
+        "input": {
+          "why": "return towards the recorded flow",
+          "ref": "e22"
+        }
+      }
+    ]
+  },
+  {
+    "role": "user",
+    "content": [
+      {
+        "type": "tool_result",
+        "tool_use_id": "toolu_a0b9b6521723",
+        "content": "done: clicked link 'Back to search'\n\nURL: http://127.0.0.1:8089/t/alpha/\nTITLE: Meridian Core \u2014 Alpine Credit Union\nLAST HTTP STATUS: 200\nFRAMES: ['(top)', 'nav', 'menu', 'main']\nINTERACTIVE ELEMENTS:\n  [e7] link \"Home\" frame=menu\n  [e9] link \"Member Inquiry\" frame=menu\n  [e21] textbox \"Member No.\" name=member_no frame=main\n  [e22] button \"Find Member\" value='Find Member' frame=main\nVISIBLE TEXT:\n[nav]\nMeridian Core \u2014 Alpine Credit Union Not signed in\n\n[menu]\nMENU\nHome\nMember Inquiry\nTransactions\nReports\nAdministration\n\n[main]\nMeridian Core \u2014 Alpine Credit Union \u00a0 v7.2.1\nMember Inquiry\nMember No. \n \nMeridian Core (simulated). All data fictional."
+      }
+    ]
+  },
+  {
+    "role": "assistant",
+    "content": [
+      {
+        "type": "text",
+        "text": "(scripted) fill"
+      },
+      {
+        "type": "tool_use",
+        "id": "toolu_448b6c44ae37",
+        "name": "fill",
+        "input": {
+          "param": "member_id",
+          "why": "restore the member the goal is about",
+          "ref": "e21"
+        }
+      }
+    ]
+  },
+  {
+    "role": "user",
+    "content": [
+      {
+        "type": "tool_result",
+        "tool_use_id": "toolu_448b6c44ae37",
+        "content": "done: filled textbox 'Member No.'\n\nURL: http://127.0.0.1:8089/t/alpha/\nTITLE: Meridian Core \u2014 Alpine Credit Union\nLAST HTTP STATUS: 200\nFRAMES: ['(top)', 'nav', 'menu', 'main']\nINTERACTIVE ELEMENTS:\n  [e7] link \"Home\" frame=menu\n  [e9] link \"Member Inquiry\" frame=menu\n  [e21] textbox \"Member No.\" name=member_no value='100234' frame=main\n  [e22] button \"Find Member\" value='Find Member' frame=main\nVISIBLE TEXT:\n[nav]\nMeridian Core \u2014 Alpine Credit Union Not signed in\n\n[menu]\nMENU\nHome\nMember Inquiry\nTransactions\nReports\nAdministration\n\n[main]\nMeridian Core \u2014 Alpine Credit Union \u00a0 v7.2.1\nMember Inquiry\nMember No. \n \nMeridian Core (simulated). All data fictional."
+      }
+    ]
+  },
+  {
+    "role": "assistant",
+    "content": [
+      {
+        "type": "text",
+        "text": "(scripted) click"
+      },
+      {
+        "type": "tool_use",
+        "id": "toolu_c1fe761d9580",
+        "name": "click",
+        "input": {
+          "why": "return to the member detail screen",
+          "ref": "e22"
+        }
+      }
+    ]
+  },
+  {
+    "role": "user",
+    "content": [
+      {
+        "type": "tool_result",
+        "tool_use_id": "toolu_c1fe761d9580",
+        "content": "done: clicked button 'Find Member'\n\nURL: http://127.0.0.1:8089/t/alpha/\nTITLE: Meridian Core \u2014 Alpine Credit Union\nLAST HTTP STATUS: 200\nFRAMES: ['(top)', 'nav', 'menu', 'main']\nINTERACTIVE ELEMENTS:\n  [e7] link \"Home\" frame=menu\n  [e9] link \"Member Inquiry\" frame=menu\n  [e38] link \"Open Sub-Account\" frame=main\n  [e39] link \"New Inquiry\" frame=main\nVISIBLE TEXT:\n[nav]\nMeridian Core \u2014 Alpine Credit Union Not signed in\n\n[menu]\nMENU\nHome\nMember Inquiry\nTransactions\nReports\nAdministration\n\n[main]\nMeridian Core \u2014 Alpine Credit Union \u00a0 v7.2.1\nMember Detail\nMember No. 100234 Status Active\nName Doe, Jane\nShare Accounts\nShare Description Current Balance\nS01 Regular Savings $1250.75\nS09 Checking $402.10\nOpen Sub-Account \u00a0|\u00a0 New Inquiry\nMeridian Core (simulated). All data fictional."
+      }
+    ]
+  },
+  {
+    "role": "assistant",
+    "content": [
+      {
+        "type": "text",
+        "text": "(scripted) end_probe"
+      },
+      {
+        "type": "tool_use",
+        "id": "toolu_a8856d31308a",
+        "name": "end_probe",
+        "input": {}
+      }
+    ]
+  },
+  {
+    "role": "user",
+    "content": [
+      {
+        "type": "tool_result",
+        "tool_use_id": "toolu_a8856d31308a",
+        "content": "Recording resumed."
       }
     ]
   },
@@ -292,7 +514,7 @@
       },
       {
         "type": "tool_use",
-        "id": "toolu_8de3018ec379",
+        "id": "toolu_bb75c9a390a6",
         "name": "declare_outcome",
         "input": {
           "code": "MEMBER_NOT_FOUND",
@@ -307,7 +529,7 @@
     "content": [
       {
         "type": "tool_result",
-        "tool_use_id": "toolu_8de3018ec379",
+        "tool_use_id": "toolu_bb75c9a390a6",
         "content": "outcome MEMBER_NOT_FOUND recorded"
       }
     ]
@@ -321,7 +543,7 @@
       },
       {
         "type": "tool_use",
-        "id": "toolu_a9160d2055fb",
+        "id": "toolu_c4d7279007f2",
         "name": "extract",
         "input": {
           "output": "savings_balance",
@@ -337,7 +559,7 @@
     "content": [
       {
         "type": "tool_result",
-        "tool_use_id": "toolu_a9160d2055fb",
+        "tool_use_id": "toolu_c4d7279007f2",
         "content": "savings_balance = '$1250.75' (from cell 'Current Balance' in row 'S01')"
       }
     ]
@@ -351,7 +573,7 @@
       },
       {
         "type": "tool_use",
-        "id": "toolu_9b354371a5b7",
+        "id": "toolu_ab7a0eade868",
         "name": "extract",
         "input": {
           "output": "member_name",
@@ -366,7 +588,7 @@
     "content": [
       {
         "type": "tool_result",
-        "tool_use_id": "toolu_9b354371a5b7",
+        "tool_use_id": "toolu_ab7a0eade868",
         "content": "member_name = 'Doe, Jane' (from cell 'Doe, Jane')"
       }
     ]
@@ -380,7 +602,7 @@
       },
       {
         "type": "tool_use",
-        "id": "toolu_7c22875b1df2",
+        "id": "toolu_092375ae95ca",
         "name": "finish",
         "input": {
           "success_text": [

@@ -102,7 +102,7 @@ uv run glovebox discover \
   --param member_id=100234 --evidence-dir evidence/discovery
 # → capabilities/member_savings_balance.json (status: draft), operator console on :8790
 
-uv run glovebox catalog approve member_savings_balance --reviewer you   # gate for unattended replay
+uv run glovebox catalog approve member_savings_balance you   # reviewer name; gate for unattended replay
 
 uv run glovebox replay member_savings_balance --param member_id=100235   # different input, no model
 uv run glovebox replay member_savings_balance --param member_id=999999   # → business_outcome MEMBER_NOT_FOUND

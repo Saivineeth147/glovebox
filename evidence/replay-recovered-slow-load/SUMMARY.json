@@ -2,8 +2,7 @@
   "fault_injected": "slow",
   "status": "success",
   "outputs": {
-    "savings_balance": 1250.75,
-    "member_name": "Doe, Jane"
+    "savings_balance": "$1250.75"
   },
   "outcome_code": null,
   "failure": null,

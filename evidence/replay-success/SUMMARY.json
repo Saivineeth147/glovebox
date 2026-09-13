@@ -2,8 +2,7 @@
   "fault_injected": null,
   "status": "success",
   "outputs": {
-    "savings_balance": 18930.0,
-    "member_name": "Ng, Marcus"
+    "savings_balance": "$18930.00"
   },
   "outcome_code": null,
   "failure": null,

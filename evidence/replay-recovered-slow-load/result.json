@@ -1,12 +1,11 @@
 {
-  "run_id": "replay-20260912T063226-bc4b1e",
+  "run_id": "replay-20260913T202942-477bf5",
   "capability_id": "member_savings_balance",
-  "capability_version": "1.0.0",
+  "capability_version": "1.0.7",
   "tenant": "alpha",
   "status": "success",
   "outputs": {
-    "savings_balance": 1250.75,
-    "member_name": "Doe, Jane"
+    "savings_balance": "$1250.75"
   },
   "outcome_code": null,
   "outcome_description": null,
@@ -17,8 +16,8 @@
       "step_id": "s01_navigate",
       "action": "navigate",
       "status": "ok",
-      "started_at": "2026-09-12T06:32:26.441564Z",
-      "duration_ms": 379,
+      "started_at": "2026-09-13T20:29:42.721238Z",
+      "duration_ms": 254,
       "strategy_used": "url",
       "recoveries": [],
       "note": null
@@ -27,8 +26,8 @@
       "step_id": "s02_fill",
       "action": "fill",
       "status": "ok",
-      "started_at": "2026-09-12T06:32:26.821581Z",
-      "duration_ms": 362,
+      "started_at": "2026-09-13T20:29:42.975868Z",
+      "duration_ms": 251,
       "strategy_used": "role_name",
       "recoveries": [],
       "note": null
@@ -37,8 +36,8 @@
       "step_id": "s03_fill",
       "action": "fill",
       "status": "ok",
-      "started_at": "2026-09-12T06:32:27.184642Z",
-      "duration_ms": 316,
+      "started_at": "2026-09-13T20:29:43.227789Z",
+      "duration_ms": 249,
       "strategy_used": "role_name",
       "recoveries": [],
       "note": null
@@ -47,8 +46,8 @@
       "step_id": "s04_click",
       "action": "click",
       "status": "ok",
-      "started_at": "2026-09-12T06:32:27.500923Z",
-      "duration_ms": 352,
+      "started_at": "2026-09-13T20:29:43.477800Z",
+      "duration_ms": 254,
       "strategy_used": "role_name",
       "recoveries": [],
       "note": null
@@ -57,8 +56,8 @@
       "step_id": "s05_assert",
       "action": "assert",
       "status": "ok",
-      "started_at": "2026-09-12T06:32:27.853325Z",
-      "duration_ms": 4016,
+      "started_at": "2026-09-13T20:29:43.732316Z",
+      "duration_ms": 3900,
       "strategy_used": null,
       "recoveries": [],
       "note": null
@@ -67,8 +66,8 @@
       "step_id": "s06_click",
       "action": "click",
       "status": "ok",
-      "started_at": "2026-09-12T06:32:31.869670Z",
-      "duration_ms": 364,
+      "started_at": "2026-09-13T20:29:47.633255Z",
+      "duration_ms": 276,
       "strategy_used": "role_name",
       "recoveries": [],
       "note": null
@@ -77,8 +76,8 @@
       "step_id": "s07_assert",
       "action": "assert",
       "status": "ok",
-      "started_at": "2026-09-12T06:32:32.233947Z",
-      "duration_ms": 348,
+      "started_at": "2026-09-13T20:29:47.909570Z",
+      "duration_ms": 249,
       "strategy_used": null,
       "recoveries": [],
       "note": null
@@ -87,8 +86,8 @@
       "step_id": "s08_fill",
       "action": "fill",
       "status": "ok",
-      "started_at": "2026-09-12T06:32:32.582740Z",
-      "duration_ms": 316,
+      "started_at": "2026-09-13T20:29:48.158809Z",
+      "duration_ms": 234,
       "strategy_used": "role_name",
       "recoveries": [],
       "note": null
@@ -97,29 +96,9 @@
       "step_id": "s09_click",
       "action": "click",
       "status": "ok",
-      "started_at": "2026-09-12T06:32:32.899645Z",
-      "duration_ms": 359,
+      "started_at": "2026-09-13T20:29:48.392986Z",
+      "duration_ms": 267,
       "strategy_used": "role_name",
-      "recoveries": [],
-      "note": null
-    },
-    {
-      "step_id": "s10_assert",
-      "action": "assert",
-      "status": "ok",
-      "started_at": "2026-09-12T06:32:33.259462Z",
-      "duration_ms": 328,
-      "strategy_used": null,
-      "recoveries": [],
-      "note": null
-    },
-    {
-      "step_id": "s11_extract",
-      "action": "extract",
-      "status": "ok",
-      "started_at": "2026-09-12T06:32:33.587787Z",
-      "duration_ms": 319,
-      "strategy_used": "table_cell",
       "recoveries": [],
       "note": null
     },
@@ -127,14 +106,24 @@
       "step_id": "s12_extract",
       "action": "extract",
       "status": "ok",
-      "started_at": "2026-09-12T06:32:33.907258Z",
-      "duration_ms": 320,
-      "strategy_used": "near_text",
+      "started_at": "2026-09-13T20:29:48.660762Z",
+      "duration_ms": 232,
+      "strategy_used": "table_cell",
+      "recoveries": [],
+      "note": null
+    },
+    {
+      "step_id": "s19_assert",
+      "action": "assert",
+      "status": "ok",
+      "started_at": "2026-09-13T20:29:48.893633Z",
+      "duration_ms": 236,
+      "strategy_used": null,
       "recoveries": [],
       "note": null
     }
   ],
-  "started_at": "2026-09-12T06:32:26.441245Z",
-  "finished_at": "2026-09-12T06:32:34.296899Z",
-  "evidence_dir": "/home/user/glovebox/runs/replay-20260912T063226-bc4b1e"
+  "started_at": "2026-09-13T20:29:42.720876Z",
+  "finished_at": "2026-09-13T20:29:49.151161Z",
+  "evidence_dir": "/Users/chintu/Desktop/glovebox/runs/replay-20260913T202942-477bf5"
 }

@@ -1,5 +1,5 @@
 {
   "note": "SCRIPTED decisions (ScriptedLLM), not a model run. The real LLM discovery evidence lives in evidence/discovery/.",
   "status": "success",
-  "actions": 6
+  "actions": 12
 }

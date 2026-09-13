@@ -1,8 +1,7 @@
 {
   "status": "success",
   "outputs": {
-    "savings_balance": 1250.75,
-    "member_name": "Doe, Jane"
+    "savings_balance": "$1250.75"
   },
   "strategies_used": {
     "s01_navigate": "url",
@@ -14,8 +13,7 @@
     "s07_assert": null,
     "s08_fill": "name_attr",
     "s09_click": "css",
-    "s10_assert": null,
-    "s11_extract": "table_cell",
-    "s12_extract": "near_text"
+    "s12_extract": "table_cell",
+    "s19_assert": null
   }
 }

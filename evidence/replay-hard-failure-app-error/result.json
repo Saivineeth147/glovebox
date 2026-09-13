@@ -1,7 +1,7 @@
 {
-  "run_id": "replay-20260912T063209-343477",
+  "run_id": "replay-20260913T202928-cefaf4",
   "capability_id": "member_savings_balance",
-  "capability_version": "1.0.0",
+  "capability_version": "1.0.7",
   "tenant": "alpha",
   "status": "failed",
   "outputs": {},
@@ -14,11 +14,11 @@
     "expected": "no failure signal",
     "observed": "found",
     "evidence": {
-      "screenshot": "/home/user/glovebox/runs/replay-20260912T063209-343477/screenshots/0004-failure-s04_click.png",
-      "snapshot:top": "/home/user/glovebox/runs/replay-20260912T063209-343477/snapshots/0005-failure-s04_click-top.html",
-      "snapshot:nav": "/home/user/glovebox/runs/replay-20260912T063209-343477/snapshots/0006-failure-s04_click-nav.html",
-      "snapshot:menu": "/home/user/glovebox/runs/replay-20260912T063209-343477/snapshots/0007-failure-s04_click-menu.html",
-      "snapshot:main": "/home/user/glovebox/runs/replay-20260912T063209-343477/snapshots/0008-failure-s04_click-main.html"
+      "screenshot": "/Users/chintu/Desktop/glovebox/runs/replay-20260913T202928-cefaf4/screenshots/0004-failure-s04_click.png",
+      "snapshot:top": "/Users/chintu/Desktop/glovebox/runs/replay-20260913T202928-cefaf4/snapshots/0005-failure-s04_click-top.html",
+      "snapshot:nav": "/Users/chintu/Desktop/glovebox/runs/replay-20260913T202928-cefaf4/snapshots/0006-failure-s04_click-nav.html",
+      "snapshot:menu": "/Users/chintu/Desktop/glovebox/runs/replay-20260913T202928-cefaf4/snapshots/0007-failure-s04_click-menu.html",
+      "snapshot:main": "/Users/chintu/Desktop/glovebox/runs/replay-20260913T202928-cefaf4/snapshots/0008-failure-s04_click-main.html"
     }
   },
   "handoff": null,
@@ -27,8 +27,8 @@
       "step_id": "s01_navigate",
       "action": "navigate",
       "status": "ok",
-      "started_at": "2026-09-12T06:32:10.105509Z",
-      "duration_ms": 364,
+      "started_at": "2026-09-13T20:29:29.100801Z",
+      "duration_ms": 240,
       "strategy_used": "url",
       "recoveries": [],
       "note": null
@@ -37,8 +37,8 @@
       "step_id": "s02_fill",
       "action": "fill",
       "status": "ok",
-      "started_at": "2026-09-12T06:32:10.470276Z",
-      "duration_ms": 348,
+      "started_at": "2026-09-13T20:29:29.341077Z",
+      "duration_ms": 253,
       "strategy_used": "role_name",
       "recoveries": [],
       "note": null
@@ -47,14 +47,14 @@
       "step_id": "s03_fill",
       "action": "fill",
       "status": "ok",
-      "started_at": "2026-09-12T06:32:10.818651Z",
-      "duration_ms": 316,
+      "started_at": "2026-09-13T20:29:29.594528Z",
+      "duration_ms": 250,
       "strategy_used": "role_name",
       "recoveries": [],
       "note": null
     }
   ],
-  "started_at": "2026-09-12T06:32:10.105058Z",
-  "finished_at": "2026-09-12T06:32:11.450712Z",
-  "evidence_dir": "/home/user/glovebox/runs/replay-20260912T063209-343477"
+  "started_at": "2026-09-13T20:29:29.100405Z",
+  "finished_at": "2026-09-13T20:29:30.085303Z",
+  "evidence_dir": "/Users/chintu/Desktop/glovebox/runs/replay-20260913T202928-cefaf4"
 }
