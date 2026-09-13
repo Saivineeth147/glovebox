@@ -285,13 +285,23 @@ Cut deliberately, in order of what I would build next:
 
 1. **Session reuse.** Each replay signs in; a session-bootstrap capability plus a per-tenant
    session pool would remove ~2 s per run and keep credentials out of the main flow entirely.
-2. **Assisted repair.** On `target_not_found`, a bounded, policy-checked single-step model
-   call that proposes a new `TargetStrategy` for review (never executes unreviewed), and the
-   human-action → override proposal described in §4.
+2. ~~**Assisted repair.**~~ Built: `repair.py`. On `target_not_found`, one model call proposes
+   a replacement `TargetStrategy`, which is kept only if it resolves to exactly one control on
+   the screen that is actually there — the same uniqueness rule every recorded strategy has to
+   satisfy. It is written beside the evidence as a proposal and never applied, and the run
+   fails exactly as it would have without it. A capability that healed itself would put a model
+   back in the production path and hand a reviewer an artifact nobody approved. The
+   human-action → override proposal described in §4 is still open.
 3. **Fleet drift telemetry** (§4): strategy-index histograms per tenant/step, confidence per
    (artifact, tenant), automatic override suggestions.
-4. **A second surface** (Windows UIA or macOS AX) to prove the seam with code rather than
-   argument. The walker's element model was written with `pywinauto`/`atspi` trees in mind.
+4. ~~**A second surface**~~ to prove the seam with code rather than argument. Built, though not
+   the one named here: `surface/http/` drives the target over HTTP with no DOM, no JavaScript
+   and no layout engine, and the committed capability replays through it in 0.03 s against
+   2.80 s in the browser. Writing it found two defects in the resolver — `near_text` returned a
+   confidently wrong element whenever layout was unavailable, and `table_cell` treated the
+   recorded table path as an identity rather than a hint. Windows UIA remains the production
+   second surface; the walker's element model was written with `pywinauto`/`atspi` trees in
+   mind.
 5. **Console hardening:** screencast instead of polling, operator auth, intervention queue,
    and recording the human's actions as a *patch proposal* to the artifact.
 6. **Sensitive-field screenshot suppression** and evidence retention policy.

@@ -94,6 +94,7 @@ def run_replay(
     on_context: Callable[[RunContext], None] | None = None,
     on_start: Callable[[str, Path], None] | None = None,
     surface_factory: SurfaceFactory | None = None,
+    repair: Any = None,
 ) -> ReplayResult:
     ctx = _context(
         "replay",
@@ -120,7 +121,7 @@ def run_replay(
             ctx.guardrails,
             ctx.logger,
             ctx.control,
-            ReplayOptions(attended=attended, allow_draft=allow_draft),
+            ReplayOptions(attended=attended, allow_draft=allow_draft, repair=repair),
             tenant=tenant,
         )
         return engine.run()

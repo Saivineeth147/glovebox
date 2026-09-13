@@ -558,3 +558,70 @@ def test_the_same_capability_replays_through_a_surface_with_no_browser(
 
     assert result.status == ReplayStatus.SUCCESS, result.failure
     assert str(result.outputs["savings_balance"]).endswith("1250.75")
+
+
+@pytest.mark.integration
+def test_a_broken_locator_gets_a_reviewable_proposal_and_the_run_still_fails(
+    savings_capability: Capability,
+    policy: Policy,
+    runs_dir: Path,
+    app_url: str,
+) -> None:
+    """Assisted repair, under a real redesign: the model suggests, the run still fails.
+
+    A capability that healed itself would put a model back in the production path and hand a
+    reviewer an artifact nobody approved. So the proposal is written beside the evidence and
+    the replay reports the failure exactly as it would have without it.
+    """
+    import json as _json
+
+    class _RenameAwareLLM:
+        """Stands in for the model: reads the screen, names the renamed control."""
+
+        def complete(self, system: str, prompt: str) -> str:
+            return _json.dumps(
+                {"kind": "role_name", "value": {"role": "button", "name": "Locate Member"}}
+            )
+
+    broken = savings_capability.model_copy(
+        update={
+            "steps": [
+                s.model_copy(
+                    update={
+                        "target": s.target.model_copy(
+                            update={
+                                "strategies": [
+                                    s.target.strategies[0].model_copy(
+                                        update={"value": {"role": "button", "name": "Gone Forever"}}
+                                    )
+                                ]
+                            }
+                        )
+                    }
+                )
+                if s.target and s.target.description == "button 'Find Member'"
+                else s
+                for s in savings_capability.steps
+            ]
+        }
+    )
+    httpx.post(f"{app_url}/__sim/drift/rename_action", timeout=10)
+    try:
+        result = run_replay(
+            broken,
+            {"member_id": "100234", **creds()},
+            policy,
+            runs_dir=runs_dir,
+            allow_draft=True,
+            trace=False,
+            repair=_RenameAwareLLM(),
+        )
+    finally:
+        httpx.request("DELETE", f"{app_url}/__sim/drift", timeout=10)
+
+    assert result.status == ReplayStatus.FAILED
+    proposal = Path(result.evidence_dir) / "repair-proposal.json"
+    assert proposal.exists(), "no proposal was written for an unresolvable target"
+    saved = _json.loads(proposal.read_text())
+    assert saved["status"] == "proposed"
+    assert saved["strategy"]["value"]["name"] == "Locate Member"

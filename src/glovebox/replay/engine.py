@@ -50,6 +50,10 @@ from .templating import InputError, coerce_output, render_template, validate_inp
 
 @dataclass
 class ReplayOptions:
+    #: When set, a target that stops resolving gets one model call proposing a replacement
+    #: locator. The proposal is written beside the evidence and never applied: healing at
+    #: replay time would put a model back in the production path.
+    repair: Any = None
     attended: bool = False  # a human is reachable through the control session
     allow_draft: bool = False  # bypass the approval gate (dev only)
     screenshot_each_step: bool = True
@@ -178,6 +182,7 @@ class ReplayEngine:
             try:
                 strategy = self._act(step)
             except SurfaceError as exc:
+                self._propose_repair(step)
                 self._stuck(
                     step,
                     rec,
@@ -344,6 +349,26 @@ class ReplayEngine:
             index=r.strategy_index,
         )
         return r
+
+    def _propose_repair(self, step: Step) -> None:
+        """Ask once for a replacement locator and record it for review, without applying it."""
+        if self.opt.repair is None or step.target is None:
+            return
+        from glovebox.repair import propose_strategy
+
+        proposal = propose_strategy(
+            step.target, self.surface.observe(label=f"repair-{step.id}").elements, self.opt.repair
+        )
+        if proposal is None:
+            return
+        path = proposal.write(self.log.run_dir.root, step.id)
+        self.log.emit(
+            EventKind.EVIDENCE,
+            f"repair proposed for {step.id}: {proposal.strategy.kind} -> "
+            f"{proposal.resolved_to}. Not applied; review before it runs unattended.",
+            step_id=step.id,
+            proposal=path,
+        )
 
     def _extract(self, step: Step, text: str) -> None:
         assert step.extract_to is not None
