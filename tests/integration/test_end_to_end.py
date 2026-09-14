@@ -67,7 +67,12 @@ def test_discovery_evidence_is_redacted(savings_capability: Capability, runs_dir
     events = (run / "events.jsonl").read_text()
     transcript = (run / "transcript.json").read_text()
     assert "teller1-pass" not in events and "teller1-pass" not in transcript
-    assert "[REDACTED:password#" in events or "[REDACTED:password" in transcript
+    assert "teller1" not in events and "teller1" not in transcript
+    # Absence alone would also hold if the prompt never mentioned the parameter. The model has to
+    # see that a credential exists and is withheld, so it must appear as a visible placeholder.
+    # This asserted "[REDACTED:password" before, which only held because the pattern redactor was
+    # re-redacting a value already substituted as "<hidden:" and mangling it in the process.
+    assert "<hidden:" in transcript
     kinds = {json.loads(line)["kind"] for line in events.splitlines()}
     assert {
         "run.started",
@@ -350,6 +355,98 @@ def test_irreversible_capability_needs_human_and_yields_reference(
     assert d.status == ReplayStatus.ESCALATED
 
 
+@pytest.mark.integration
+@pytest.mark.parametrize(
+    ("fault", "expected_code"),
+    [("permission_denied", "ACCESS_DENIED"), ("validation", "VALIDATION_ERROR")],
+)
+def test_a_refused_submit_is_an_outcome_the_caller_can_branch_on(
+    subaccount_capability: Capability,
+    policy: Policy,
+    runs_dir: Path,
+    app_url: str,
+    fault: str,
+    expected_code: str,
+) -> None:
+    """The two faults that only the mutating flow can raise, and the claim they back.
+
+    `permission_denied` and `validation` fire on the sub-account submit, so no lookup capability
+    can reach them and nothing exercised them. That left the README's "every injected fault"
+    unbacked, and left the taxonomy's most consequential row — a refused write reported as an
+    answer rather than a crash — resting on the two outcomes that happen to be read-only.
+    """
+    params = {**creds(), "member_id": "100234", "product": "Money Market", "nickname": "Rainy day"}
+    _arm(app_url, fault)
+    bridge = OperatorBridge()
+    operator = ScriptedOperator(bridge, [{"op": "approve"}]).start()
+
+    r = run_replay(
+        subaccount_capability,
+        params,
+        policy,
+        runs_dir=runs_dir,
+        bridge=bridge,
+        attended=True,
+        trace=False,
+    )
+    operator.join()
+
+    assert r.status == ReplayStatus.BUSINESS_OUTCOME, r.failure
+    assert r.outcome_code == expected_code
+    assert r.failure is None  # a refused write is an answer, not a failure
+    assert not r.ok and r.answered
+
+
+@pytest.mark.integration
+def test_an_extraction_that_loses_its_recorded_shape_fails_instead_of_guessing(
+    savings_capability: Capability, policy: Policy, runs_dir: Path
+) -> None:
+    """The taxonomy row with no test: a regex miss must not report whatever was on screen.
+
+    Returning the raw cell on a miss is how a member number gets reported as a savings balance
+    and the caller cannot tell. The failure has to name the step and show both sides.
+    """
+    cap = savings_capability.model_copy(deep=True)
+    for step in cap.steps:
+        if step.extract_to:
+            step.value = r"ACCOUNT-(\d{9})"  # a shape this cell will never have
+
+    r = run_replay(cap, {**creds(), "member_id": "100234"}, policy, runs_dir=runs_dir, trace=False)
+
+    assert r.status == ReplayStatus.FAILED
+    assert r.failure is not None
+    assert r.failure.failure_class == "checkpoint_failed"
+    assert r.failure.step_id and r.failure.step_id.endswith("_extract")
+    assert "ACCOUNT-" in (r.failure.expected or "")
+    assert "1250.75" in (r.failure.observed or "")
+    assert r.outputs == {}  # nothing plausible-but-wrong handed back
+
+
+@pytest.mark.integration
+def test_a_detector_the_recorder_verified_must_also_fire_at_replay(
+    savings_capability: Capability, policy: Policy, runs_dir: Path
+) -> None:
+    """The two halves of `verified` have to normalise text the same way.
+
+    The recorder collapses whitespace before deciding a detector was seen, because a legacy page
+    splits one sentence across table cells. Replay used a raw substring test, so a detector could
+    be recorded verified and never fire — the capability then reports a hard failure exactly where
+    its contract promised a business outcome.
+    """
+    cap = savings_capability.model_copy(deep=True)
+    assert cap.outcomes, "fixture should carry the not-found outcome"
+    outcome = cap.outcomes[0]
+    assert outcome.verified, "the recorder marked this detector as seen during the run"
+    # Re-space the detector the way a page break would; the recorder would still call it seen.
+    detector = outcome.detect.value or ""
+    outcome.detect.value = "\n   ".join(detector.split(" ", 1))
+
+    r = run_replay(cap, {**creds(), "member_id": "999999"}, policy, runs_dir=runs_dir, trace=False)
+
+    assert r.status == ReplayStatus.BUSINESS_OUTCOME, r.failure
+    assert r.outcome_code == outcome.code
+
+
 def test_irreversible_flow_reports_access_denied_outcome(
     subaccount_capability: Capability, policy: Policy, runs_dir: Path
 ) -> None:
@@ -594,7 +691,10 @@ def test_the_same_capability_replays_through_a_surface_with_no_browser(
     )
 
     assert result.status == ReplayStatus.SUCCESS, result.failure
-    assert float(result.outputs["savings_balance"]) == 1250.75
+    # Not float(...) == 1250.75: that passes for the string this capability must never return,
+    # which is the regression the typed-output contract exists to prevent.
+    assert result.outputs["savings_balance"] == 1250.75
+    assert isinstance(result.outputs["savings_balance"], float)
 
 
 @pytest.mark.integration
@@ -670,7 +770,7 @@ def test_a_warm_session_lets_a_replay_skip_signing_in_again(
     runs_dir: Path,
     app_url: str,
 ) -> None:
-    """REPORT §7's first cut: every replay signs in, and it does not have to.
+    """Glovebox-Design-Writeup.md §7's first cut: every replay signs in, and it does not have to.
 
     The first run establishes the session. The second starts after the sign-in prefix and is
     given no credentials at all, which is the point — a reused session keeps them out of the
