@@ -357,11 +357,17 @@ def drift(
     """
     from glovebox.catalog import Catalog
     from glovebox.drift_eval import DriftEvalOptions, evaluate_capability, format_report
+    from glovebox.schema.capability import ReviewStatus
 
     catalog = Catalog(catalog_dir)
-    chosen = [catalog.load(capability)] if capability else catalog.all()
+    if capability:
+        chosen = [catalog.load(capability)]  # named explicitly: evaluate it whatever its state
+    else:
+        # The sweep is a CI gate. A draft's locator ladder has not been reviewed by anyone, so
+        # failing the build on one would block a release on an artifact nobody has accepted.
+        chosen = [c for c in catalog.all() if c.review.status == ReviewStatus.APPROVED]
     if not chosen:
-        rprint("[red]no capabilities to evaluate[/red]")
+        rprint("[red]no approved capabilities to evaluate[/red]")
         raise typer.Exit(code=1)
     options = DriftEvalOptions(target_url=target_url, tenant=tenant, runs_dir=str(runs_dir))
     survived = 0

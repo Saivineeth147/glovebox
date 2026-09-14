@@ -77,3 +77,23 @@ def test_one_unloadable_artifact_should_not_take_down_the_whole_catalog(tmp_path
 
     assert [c.id for c in listed] == ["member_savings_balance"]
     assert [name for name, _ in catalog.problems()] == ["broken"]
+
+
+def test_the_drift_gate_should_skip_a_capability_no_one_has_approved(tmp_path: Path) -> None:
+    """The sweep fails CI, so it must not fail it on an artifact nobody has accepted yet.
+
+    Four places in the documentation say the sweep covers "every approved capability"; before
+    this it loaded the whole directory and replayed drafts with the gate disabled.
+    """
+    from typer.testing import CliRunner
+
+    from glovebox import cli
+
+    doc = json.loads((ROOT / "capabilities" / "member_savings_balance.json").read_text())
+    doc["review"]["status"] = "draft"
+    (tmp_path / "member_savings_balance.json").write_text(json.dumps(doc))
+
+    result = CliRunner().invoke(cli.app, ["drift", "--catalog-dir", str(tmp_path)])
+
+    assert result.exit_code == 1
+    assert "no approved capabilities" in result.output
