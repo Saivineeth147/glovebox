@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import json
+from pathlib import Path
 from typing import Any
 
 import pytest
@@ -159,3 +160,56 @@ def test_tenant_override_is_applied_by_step_id() -> None:
 def test_json_schema_is_exportable() -> None:
     schema = Capability.model_json_schema()
     assert "steps" in schema["properties"]
+
+
+def test_should_reject_a_recovery_action_that_names_an_input_nobody_declared() -> None:
+    """Validating only top-level steps meant this failed during the recovery meant to save the run."""
+    doc = _cap().model_dump(mode="json")
+    doc["recoveries"] = [
+        {
+            "name": "session_expired",
+            "detect": {"kind": "text_visible", "value": "Operator Sign-In"},
+            "actions": [
+                {
+                    "id": "r01_navigate",
+                    "action": "navigate",
+                    "intent": "return to the entry point",
+                    "value": "{{ params.nope }}",
+                }
+            ],
+            "then": "restart_capability",
+            "max_attempts": 2,
+        }
+    ]
+
+    with pytest.raises(ValidationError, match="references unknown input 'nope'"):
+        Capability.model_validate(doc)
+
+
+def test_should_reject_a_tenant_override_value_that_names_an_undeclared_input() -> None:
+    """The same gap, on the one tenant nobody replays before shipping."""
+    doc = _cap().model_dump(mode="json")
+    doc["overrides"] = [{"tenant": "bravo", "step_values": {"s1": "{{ params.absent }}"}}]
+
+    with pytest.raises(ValidationError, match="references unknown input 'absent'"):
+        Capability.model_validate(doc)
+
+
+def test_the_published_json_schema_should_match_what_the_code_generates() -> None:
+    """docs/capability.schema.json is the contract a reader trusts, and nothing guarded it.
+
+    `verified` was added to Outcome and the committed copy was never regenerated, so the
+    published contract omitted the field that decides whether a detector is trusted. No CI step
+    compares them; this test is the guard.
+    """
+    from typer.testing import CliRunner
+
+    from glovebox import cli
+
+    repo_root = Path(__file__).resolve().parents[2]
+    published = (repo_root / "docs" / "capability.schema.json").read_text()
+    generated = CliRunner().invoke(cli.app, ["schema"]).stdout
+
+    assert json.loads(published) == json.loads(generated), (
+        "docs/capability.schema.json is stale — run `uv run glovebox schema > docs/capability.schema.json`"
+    )

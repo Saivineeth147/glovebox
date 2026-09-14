@@ -18,6 +18,7 @@ Design principles (see Glovebox-Design-Writeup.md §2):
 
 from __future__ import annotations
 
+from collections.abc import Iterator
 from datetime import UTC, datetime
 from enum import StrEnum
 from typing import Any, Literal
@@ -323,10 +324,10 @@ class Capability(_Strict):
         if unfilled := declared_outputs - extracted:
             raise ValueError(f"declared outputs never extracted: {sorted(unfilled)}")
         params = {p.name for p in self.inputs}
-        for s in self.steps:
-            for ref in _template_refs(s.value):
+        for where, value in self._templated_values():
+            for ref in _template_refs(value):
                 if ref not in params:
-                    raise ValueError(f"step {s.id!r} references unknown input {ref!r}")
+                    raise ValueError(f"{where} references unknown input {ref!r}")
         highest = max((s.risk for s in self.steps), key=_risk_rank)
         if _risk_rank(highest) > _risk_rank(self.max_risk):
             raise ValueError(
@@ -343,6 +344,22 @@ class Capability(_Strict):
                 "outputs are extracted"
             )
         return self
+
+    def _templated_values(self) -> Iterator[tuple[str, str | None]]:
+        """Every value that can carry a `{{ params.x }}` reference, with where to find it.
+
+        Checking only top-level steps let a recovery action or a tenant override name an input
+        that does not exist: the artifact validated, was approved, and failed mid-replay — during
+        the recovery meant to save the run, or on the one tenant nobody replayed before shipping.
+        """
+        for step in self.steps:
+            yield f"step {step.id!r}", step.value
+        for recovery in self.recoveries:
+            for action in recovery.actions:
+                yield f"recovery {recovery.name!r} action {action.id!r}", action.value
+        for override in self.overrides:
+            for step_id, value in override.step_values.items():
+                yield f"override {override.tenant!r} value for step {step_id!r}", value
 
     def for_tenant(self, tenant: str | None) -> Capability:
         """Return a copy with the tenant override applied (identity if none)."""
