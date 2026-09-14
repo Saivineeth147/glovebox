@@ -1,9 +1,9 @@
 """Measure a capability's resilience by redesigning the app underneath it.
 
-REPORT §2 argues that several ordered locator strategies per target beat one "best" locator,
-because which locator survives a change is unknowable at record time. That is an argument.
-This turns it into a measurement: mutate the rendered page the way a redesign would, replay
-the same approved capability against each mutation, and report both how many survived and
+Glovebox-Design-Writeup.md §2 argues that several ordered locator strategies per target beat one
+"best" locator, because which locator survives a change is unknowable at record time. That is an
+argument. This turns it into a measurement: mutate the rendered page the way a redesign would,
+replay the same approved capability against each mutation, and report both how many survived and
 *which rung of the ladder caught the fall*.
 """
 

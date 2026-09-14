@@ -17,7 +17,7 @@ target description the recorder uses. The console is a thin HTTP/HTML client of 
 ## Consequences
 - One session, one thread, no re-login, cookies/state preserved across the handoff.
 - The bridge is the seam: the mock console, the scripted operator used in tests, and a
-  future real operator console (WebRTC/VNC/CDP screencast) all speak the same five verbs.
+  future real operator console (WebRTC/VNC/CDP screencast) all speak the same six verbs.
 - A handoff times out into an `escalated` result rather than hanging a worker forever.
 - The human's recorded actions can later be folded into the artifact (the discovery loop
   already does this) — the first step toward "human-assisted repair" of drifted capabilities.

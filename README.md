@@ -46,10 +46,20 @@ described. All data is fictional; credentials are fake.
 
 The workspace for engineers and operators: `make studio` → http://127.0.0.1:8800/.
 
-**Signing in.** Studio has its own accounts, separate from the application it drives. Register
-any email and password on first run — **the first account created becomes the administrator**;
-later accounts can read runs and capabilities until an administrator raises them. Accounts live
-in `runs/studio.db` (gitignored) — delete that file to start over.
+**Signing in.** Studio has its own accounts, separate from the application it drives. `.env`
+carries an administrator, so a fresh clone can sign straight in:
+
+| | |
+|---|---|
+| Email | `admin@glovebox.local` |
+| Password | `glovebox-admin-2026` |
+
+`GLOVEBOX_STUDIO_EMAIL` / `GLOVEBOX_STUDIO_PASSWORD` seed that account the first time Studio
+starts against an empty database, and seeding is refused once any account exists — so it is a way
+in on a clean checkout, never a way back to admin on a live one. Comment the two variables out and
+the sign-up form takes over, where **the first account created becomes the administrator** and
+later ones are viewers until an administrator raises them. Passwords are at least 12 characters.
+Accounts live in `runs/studio.db` (gitignored) — delete that file to start over.
 
 `GLOVEBOX_APP_USERNAME` / `GLOVEBOX_APP_PASSWORD` (`teller1` / `teller1-pass`) are **not** Studio
 credentials: they are the fake bank's operator login, which replay uses to sign into Meridian
@@ -64,7 +74,7 @@ Core. The Studio email field expects an email address, so `teller1` is rejected 
 > of a real takeover argue that better than prose. Nothing in the UI can do what the CLI
 > cannot — both drive the same `OperatorBridge` verbs — so it is a window onto the mechanism,
 > not a second implementation of it. Sign-in and roles came with it for a narrower reason
-> given in REPORT §5: an operator name the browser types is not an audit trail. If you are
+> given in Glovebox-Design-Writeup.md §5: an operator name the browser types is not an audit trail. If you are
 > weighing effort, the load-bearing work is in `agent/`, `replay/`, `schema/` and `surface/`.
 
 <p align="center"><img src="docs/studio/run-live.png" alt="Glovebox Studio: a live run with the agent's decisions streaming beside the screen" width="920"></p>
@@ -169,8 +179,8 @@ terminal-era client would, and resolves recorded targets through the same `locat
 The **same reviewed capability**, recorded through a browser, replays through it:
 
 ```
-playwright (browser)    2.80s  success  {'savings_balance': '1250.75'}
-http (no browser)       0.03s  success  {'savings_balance': '1250.75'}
+playwright (browser)    2.80s  success  {'savings_balance': 1250.75}
+http (no browser)       0.03s  success  {'savings_balance': 1250.75}
 ```
 
 What it cannot do is as useful as what it can. There is no geometry, so a `bbox` strategy
@@ -279,7 +289,10 @@ src/glovebox/
   control/     control lease, operator bridge, scripted operator, minimal console
   evidence/    run directory, redacted JSONL logger
   catalog/     capability registry → agent tool definitions
-  cli.py       typer CLI · runner.py wiring
+  studio/      the workspace UI's API: accounts, roles, jobs, live run stream, takeover
+  cli.py       typer CLI · runner.py wiring · drift_eval.py the redesign sweep
+               repair.py the bounded repair proposal · textmatch.py one definition of
+               "that text is on screen", shared by the recorder and every surface
 apps/legacy_bank/   Meridian Core: the hostile simulated target with fault injection
 capabilities/       committed artifacts (reviewable JSON)
 evidence/           discovery + replay evidence bundles (see evidence/README.md)

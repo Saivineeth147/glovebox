@@ -98,7 +98,7 @@ def session_prefix(capability: Capability) -> list[Step]:
 
     Found by following the credentials: the last step that substitutes a sensitive parameter,
     plus the click that submits it. This is what a session-bootstrap capability would own
-    instead, and what a caller holding a warm session can skip — REPORT §7's first cut.
+    instead, and what a caller holding a warm session can skip — the write-up's §7 first cut.
     """
     sensitive = {p.name for p in capability.inputs if p.sensitive}
     if not sensitive:

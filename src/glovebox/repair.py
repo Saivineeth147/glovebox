@@ -1,9 +1,9 @@
 """Propose a replacement locator when a recorded one stops resolving. Never apply one.
 
-REPORT §7 lists assisted repair as the next thing to build, with the condition that matters:
-the model may suggest, and a human disposes. A capability that healed itself at replay time
-would put a model back in the production path and hand a reviewer an artifact nobody approved,
-which is the whole thing this system is arranged to avoid.
+Glovebox-Design-Writeup.md §7 lists assisted repair as the next thing to build, with the
+condition that matters: the model may suggest, and a human disposes. A capability that healed
+itself at replay time would put a model back in the production path and hand a reviewer an
+artifact nobody approved, which is the whole thing this system is arranged to avoid.
 
 So this is deliberately small. One call, no retries, and the suggestion is thrown away unless
 it resolves to exactly one element on the screen that is actually there — the same uniqueness

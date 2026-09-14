@@ -86,14 +86,18 @@ Capability
 - **`verified` on an outcome** records whether its detector text was actually observed during the
   run. The model will otherwise guess wording it never saw, and a guessed detector never fires.
 
-What I kept out: model messages, raw HTML, coordinates as a primary locator, timing assumptions.
+What I kept out: model messages, raw HTML, coordinates as a primary locator, and any wait longer
+than the settle below.
 
 ## 3. Determinism & error handling
 
 **Determinism.** Replay never consults a model. For each step: policy check → resolve the first
 strategy that matches *exactly one* visible element (two matches is an error, not a guess) → act →
-wait for load state and settle → classify. Waits are condition-based, not sleeps; dialogs are armed
-before the click that raises them; frames are addressed by name path.
+wait for load state and settle → classify. The wait is a condition — load state on the page and on
+every frame — followed by one fixed settle the artifact records per step (150 ms), which is the
+single timing assumption here: a frameset mutates its DOM a tick after load fires, and polling for
+the absence of a change costs more than it buys. Dialogs are armed before the click that raises
+them; frames are addressed by name path.
 
 **Runtime errors and exceptional states** are classified in a fixed order after every step:
 
@@ -114,9 +118,14 @@ test and an evidence bundle.
 **What the discovery run must not record.** The first live run produced an artifact that
 validated and did not work: it had baked the recorded member's balance into `success` and declared
 the happy path as a terminal outcome, so replay ended before extraction. The recorder now refuses,
-as a *retryable tool error* the model can act on, any condition built from run data, an outcome
-that fires on the success screen, an extraction whose regex misses its element, and a detector the
-run never saw — the same mechanism an expired element ref uses. Six live runs converged from a
+as a *retryable tool error* the model can act on, any condition built from run data — a checkpoint
+as much as an outcome detector — an outcome that fires on the success screen, and an extraction
+whose regex misses its element; the same mechanism an expired element ref uses. A detector the run
+never saw is the one case it does not refuse outright: it nudges once and then records the outcome
+with `verified: false`, because a state can be genuinely unreachable while recording — an
+access-denied screen needs a permission the operator does not hold — and insisting would forbid
+declaring real outcomes. The flag is what carries it from there, and approval is where a human
+decides whether to accept it. Six live runs converged from a
 capability that worked for one member to one that replays for every member and returns
 `MEMBER_NOT_FOUND` for a missing one.
 
@@ -128,7 +137,7 @@ fails if that changes. Replay costs 2.8 s and no tokens against 86 s and ~$0.20 
 
 ## 4. Heterogeneity & multi-tenant
 
-**Surface abstraction, tested rather than argued.** `Surface` has nine verbs and `Element` uses
+**Surface abstraction, tested rather than argued.** `Surface` is fifteen methods and `Element` uses
 accessibility vocabulary, so a Windows UIA or macOS AX surface maps `role_name`/`label`/`near_text`
 onto its tree and a screenshot surface implements `bbox` and OCR `text`. To prove the seam I built
 `surface/http/`: no DOM, no JavaScript, no layout engine, driving the app the way a terminal-era
