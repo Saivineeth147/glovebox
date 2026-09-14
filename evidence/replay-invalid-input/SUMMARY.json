@@ -1,8 +1,18 @@
 {
   "fault_injected": null,
-  "status": "business_outcome",
+  "status": "failed",
   "outputs": {},
-  "outcome_code": "MEMBER_NOT_FOUND",
-  "failure": null,
+  "outcome_code": null,
+  "failure": {
+    "failure_class": "input_invalid",
+    "step_id": null,
+    "message": "parameter 'member_id' does not match pattern '^\\\\d{6}$'",
+    "expected": null,
+    "observed": null,
+    "evidence": {
+      "screenshot": "/Users/chintu/Desktop/glovebox/runs/replay-20260914T070917-3b7065/screenshots/0001-failure-run.png",
+      "snapshot:top": "/Users/chintu/Desktop/glovebox/runs/replay-20260914T070917-3b7065/snapshots/0002-failure-run-top.html"
+    }
+  },
   "handoff": null
 }

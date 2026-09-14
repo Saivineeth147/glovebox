@@ -1,7 +1,7 @@
 {
-  "run_id": "replay-20260913T222020-42b81e",
+  "run_id": "replay-20260914T070917-d43680",
   "capability_id": "member_savings_balance",
-  "capability_version": "1.0.9",
+  "capability_version": "1.1.1",
   "tenant": "alpha",
   "status": "failed",
   "outputs": {},
@@ -14,11 +14,11 @@
     "expected": "no failure signal",
     "observed": "found",
     "evidence": {
-      "screenshot": "/Users/chintu/Desktop/glovebox/runs/replay-20260913T222020-42b81e/screenshots/0004-failure-s04_click.png",
-      "snapshot:top": "/Users/chintu/Desktop/glovebox/runs/replay-20260913T222020-42b81e/snapshots/0005-failure-s04_click-top.html",
-      "snapshot:nav": "/Users/chintu/Desktop/glovebox/runs/replay-20260913T222020-42b81e/snapshots/0006-failure-s04_click-nav.html",
-      "snapshot:menu": "/Users/chintu/Desktop/glovebox/runs/replay-20260913T222020-42b81e/snapshots/0007-failure-s04_click-menu.html",
-      "snapshot:main": "/Users/chintu/Desktop/glovebox/runs/replay-20260913T222020-42b81e/snapshots/0008-failure-s04_click-main.html"
+      "screenshot": "/Users/chintu/Desktop/glovebox/runs/replay-20260914T070917-d43680/screenshots/0004-failure-s04_click.png",
+      "snapshot:top": "/Users/chintu/Desktop/glovebox/runs/replay-20260914T070917-d43680/snapshots/0005-failure-s04_click-top.html",
+      "snapshot:nav": "/Users/chintu/Desktop/glovebox/runs/replay-20260914T070917-d43680/snapshots/0006-failure-s04_click-nav.html",
+      "snapshot:menu": "/Users/chintu/Desktop/glovebox/runs/replay-20260914T070917-d43680/snapshots/0007-failure-s04_click-menu.html",
+      "snapshot:main": "/Users/chintu/Desktop/glovebox/runs/replay-20260914T070917-d43680/snapshots/0008-failure-s04_click-main.html"
     }
   },
   "handoff": null,
@@ -27,8 +27,8 @@
       "step_id": "s01_navigate",
       "action": "navigate",
       "status": "ok",
-      "started_at": "2026-09-13T22:20:21.009418Z",
-      "duration_ms": 251,
+      "started_at": "2026-09-14T07:09:17.627363Z",
+      "duration_ms": 292,
       "strategy_used": "url",
       "recoveries": [],
       "note": null
@@ -37,8 +37,8 @@
       "step_id": "s02_fill",
       "action": "fill",
       "status": "ok",
-      "started_at": "2026-09-13T22:20:21.260904Z",
-      "duration_ms": 251,
+      "started_at": "2026-09-14T07:09:17.919490Z",
+      "duration_ms": 285,
       "strategy_used": "role_name",
       "recoveries": [],
       "note": null
@@ -47,14 +47,14 @@
       "step_id": "s03_fill",
       "action": "fill",
       "status": "ok",
-      "started_at": "2026-09-13T22:20:21.512131Z",
-      "duration_ms": 251,
+      "started_at": "2026-09-14T07:09:18.205399Z",
+      "duration_ms": 264,
       "strategy_used": "role_name",
       "recoveries": [],
       "note": null
     }
   ],
-  "started_at": "2026-09-13T22:20:21.009069Z",
-  "finished_at": "2026-09-13T22:20:22.010103Z",
-  "evidence_dir": "/Users/chintu/Desktop/glovebox/runs/replay-20260913T222020-42b81e"
+  "started_at": "2026-09-14T07:09:17.626928Z",
+  "finished_at": "2026-09-14T07:09:18.717464Z",
+  "evidence_dir": "/Users/chintu/Desktop/glovebox/runs/replay-20260914T070917-d43680"
 }

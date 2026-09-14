@@ -693,11 +693,11 @@
   ],
   "max_risk": "reversible",
   "provenance": {
-    "discovery_run_id": "discovery-20260913T222009-eede80",
-    "recorded_at": "2026-09-13T22:20:13.345890Z",
+    "discovery_run_id": "discovery-20260914T070906-3cb664",
+    "recorded_at": "2026-09-14T07:09:11.595331Z",
     "model": "scripted",
     "surface": "PlaywrightSurface",
-    "transcript_sha256": "eeef89dcfb27e053a3707c74e79d5cfdbcf60854c988d1ead2594cc7fa6277d2",
+    "transcript_sha256": "fcd0347743024f02874d396e92f2c7ae2cfbeb630b43957e7908676640238762",
     "recorded_by": "glovebox-recorder"
   },
   "review": {
@@ -709,5 +709,5 @@
     "replay_successes": 0
   },
   "overrides": [],
-  "created_at": "2026-09-13T22:20:13.345941Z"
+  "created_at": "2026-09-14T07:09:11.595387Z"
 }

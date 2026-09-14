@@ -1,7 +1,7 @@
 {
-  "run_id": "replay-20260913T222034-bc24dc",
+  "run_id": "replay-20260914T070931-1fae30",
   "capability_id": "member_savings_balance",
-  "capability_version": "1.0.9",
+  "capability_version": "1.1.1",
   "tenant": "alpha",
   "status": "success",
   "outputs": {
@@ -16,8 +16,8 @@
       "step_id": "s01_navigate",
       "action": "navigate",
       "status": "ok",
-      "started_at": "2026-09-13T22:20:34.516829Z",
-      "duration_ms": 262,
+      "started_at": "2026-09-14T07:09:31.521617Z",
+      "duration_ms": 281,
       "strategy_used": "url",
       "recoveries": [],
       "note": null
@@ -26,8 +26,8 @@
       "step_id": "s02_fill",
       "action": "fill",
       "status": "ok",
-      "started_at": "2026-09-13T22:20:34.779667Z",
-      "duration_ms": 248,
+      "started_at": "2026-09-14T07:09:31.802739Z",
+      "duration_ms": 267,
       "strategy_used": "role_name",
       "recoveries": [],
       "note": null
@@ -36,8 +36,8 @@
       "step_id": "s03_fill",
       "action": "fill",
       "status": "ok",
-      "started_at": "2026-09-13T22:20:35.028329Z",
-      "duration_ms": 250,
+      "started_at": "2026-09-14T07:09:32.070285Z",
+      "duration_ms": 267,
       "strategy_used": "role_name",
       "recoveries": [],
       "note": null
@@ -46,8 +46,8 @@
       "step_id": "s04_click",
       "action": "click",
       "status": "ok",
-      "started_at": "2026-09-13T22:20:35.279227Z",
-      "duration_ms": 265,
+      "started_at": "2026-09-14T07:09:32.337738Z",
+      "duration_ms": 263,
       "strategy_used": "role_name",
       "recoveries": [],
       "note": null
@@ -56,8 +56,8 @@
       "step_id": "s05_assert",
       "action": "assert",
       "status": "ok",
-      "started_at": "2026-09-13T22:20:35.544622Z",
-      "duration_ms": 3934,
+      "started_at": "2026-09-14T07:09:32.601000Z",
+      "duration_ms": 3906,
       "strategy_used": null,
       "recoveries": [],
       "note": null
@@ -66,8 +66,8 @@
       "step_id": "s06_click",
       "action": "click",
       "status": "ok",
-      "started_at": "2026-09-13T22:20:39.479407Z",
-      "duration_ms": 248,
+      "started_at": "2026-09-14T07:09:36.508127Z",
+      "duration_ms": 277,
       "strategy_used": "role_name",
       "recoveries": [],
       "note": null
@@ -76,8 +76,8 @@
       "step_id": "s07_fill",
       "action": "fill",
       "status": "ok",
-      "started_at": "2026-09-13T22:20:39.727964Z",
-      "duration_ms": 251,
+      "started_at": "2026-09-14T07:09:36.785848Z",
+      "duration_ms": 252,
       "strategy_used": "role_name",
       "recoveries": [],
       "note": null
@@ -86,8 +86,8 @@
       "step_id": "s08_click",
       "action": "click",
       "status": "ok",
-      "started_at": "2026-09-13T22:20:39.979099Z",
-      "duration_ms": 259,
+      "started_at": "2026-09-14T07:09:37.038875Z",
+      "duration_ms": 264,
       "strategy_used": "role_name",
       "recoveries": [],
       "note": null
@@ -96,8 +96,8 @@
       "step_id": "s09_assert",
       "action": "assert",
       "status": "ok",
-      "started_at": "2026-09-13T22:20:40.238926Z",
-      "duration_ms": 224,
+      "started_at": "2026-09-14T07:09:37.303915Z",
+      "duration_ms": 253,
       "strategy_used": null,
       "recoveries": [],
       "note": null
@@ -106,24 +106,14 @@
       "step_id": "s11_extract",
       "action": "extract",
       "status": "ok",
-      "started_at": "2026-09-13T22:20:40.463865Z",
-      "duration_ms": 234,
+      "started_at": "2026-09-14T07:09:37.557480Z",
+      "duration_ms": 262,
       "strategy_used": "table_cell",
-      "recoveries": [],
-      "note": null
-    },
-    {
-      "step_id": "s18_assert",
-      "action": "assert",
-      "status": "ok",
-      "started_at": "2026-09-13T22:20:40.698801Z",
-      "duration_ms": 229,
-      "strategy_used": null,
       "recoveries": [],
       "note": null
     }
   ],
-  "started_at": "2026-09-13T22:20:34.516474Z",
-  "finished_at": "2026-09-13T22:20:40.974726Z",
-  "evidence_dir": "/Users/chintu/Desktop/glovebox/runs/replay-20260913T222034-bc24dc"
+  "started_at": "2026-09-14T07:09:31.521170Z",
+  "finished_at": "2026-09-14T07:09:37.844603Z",
+  "evidence_dir": "/Users/chintu/Desktop/glovebox/runs/replay-20260914T070931-1fae30"
 }

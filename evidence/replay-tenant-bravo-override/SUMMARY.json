@@ -13,7 +13,6 @@
     "s07_fill": "name_attr",
     "s08_click": "css",
     "s09_assert": null,
-    "s11_extract": "table_cell",
-    "s18_assert": null
+    "s11_extract": "table_cell"
   }
 }

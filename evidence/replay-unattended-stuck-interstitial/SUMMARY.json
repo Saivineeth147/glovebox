@@ -10,11 +10,11 @@
     "expected": "button 'Find Member'",
     "observed": "url=http://127.0.0.1:8089/t/alpha/ title='Meridian Core \u2014 Alpine Credit Union' text='[nav]\\nMeridian Core \u2014 Alpine Credit Union Not signed in\\n\\n[menu]\\nMENU\\nHome\\nMember Inquiry\\nTransactions\\nReports\\nAdministration\\n\\n[main]\\nMeridian Core \u2014 Alpine Credit Union \\xa0 v7.2.1\\nSystem Notice\\nNightly batch posting completed. Balances shown are as of 06:00.\\nMember Inquiry\\nMember No. \\n \\nMeridian Core '",
     "evidence": {
-      "screenshot": "/Users/chintu/Desktop/glovebox/runs/replay-20260913T222049-2dee90/screenshots/0008-failure-s08_click.png",
-      "snapshot:top": "/Users/chintu/Desktop/glovebox/runs/replay-20260913T222049-2dee90/snapshots/0009-failure-s08_click-top.html",
-      "snapshot:nav": "/Users/chintu/Desktop/glovebox/runs/replay-20260913T222049-2dee90/snapshots/0010-failure-s08_click-nav.html",
-      "snapshot:menu": "/Users/chintu/Desktop/glovebox/runs/replay-20260913T222049-2dee90/snapshots/0011-failure-s08_click-menu.html",
-      "snapshot:main": "/Users/chintu/Desktop/glovebox/runs/replay-20260913T222049-2dee90/snapshots/0012-failure-s08_click-main.html"
+      "screenshot": "/Users/chintu/Desktop/glovebox/runs/replay-20260914T070946-21dcd3/screenshots/0008-failure-s08_click.png",
+      "snapshot:top": "/Users/chintu/Desktop/glovebox/runs/replay-20260914T070946-21dcd3/snapshots/0009-failure-s08_click-top.html",
+      "snapshot:nav": "/Users/chintu/Desktop/glovebox/runs/replay-20260914T070946-21dcd3/snapshots/0010-failure-s08_click-nav.html",
+      "snapshot:menu": "/Users/chintu/Desktop/glovebox/runs/replay-20260914T070946-21dcd3/snapshots/0011-failure-s08_click-menu.html",
+      "snapshot:main": "/Users/chintu/Desktop/glovebox/runs/replay-20260914T070946-21dcd3/snapshots/0012-failure-s08_click-main.html"
     }
   },
   "handoff": null

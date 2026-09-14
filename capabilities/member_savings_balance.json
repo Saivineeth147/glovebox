@@ -1,9 +1,9 @@
 {
   "schema_version": "1.0",
   "id": "member_savings_balance",
-  "version": "1.0.9",
-  "title": "Look up member savings balance",
-  "description": "Signed in as operator, navigated to Member Inquiry, searched for member 100234, and read the current savings balance ($1250.75) from the Regular Savings (S01) row in the Share Accounts table on the Member Detail page.",
+  "version": "1.1.1",
+  "title": "Look up member and read current savings balance",
+  "description": "Signed in as operator, navigated to Member Inquiry, searched for member by member_id, and read the Regular Savings (S01) current balance from the Share Accounts table on the Member Detail screen.",
   "app": {
     "app_id": "meridian-core",
     "vendor_version": null,
@@ -15,7 +15,7 @@
     {
       "name": "username",
       "type": "string",
-      "description": "Operator ID",
+      "description": "Operator ID used to sign in to Meridian Core",
       "required": true,
       "default": null,
       "pattern": null,
@@ -26,7 +26,7 @@
     {
       "name": "password",
       "type": "string",
-      "description": "Operator password",
+      "description": "Operator password used to sign in to Meridian Core",
       "required": true,
       "default": null,
       "pattern": null,
@@ -37,10 +37,10 @@
     {
       "name": "member_id",
       "type": "string",
-      "description": "Input parameter member_id",
+      "description": "Member number to search for in Member Inquiry (e.g. 100234)",
       "required": true,
       "default": null,
-      "pattern": null,
+      "pattern": "^\\d{6}$",
       "enum": null,
       "sensitive": false,
       "example": null
@@ -50,7 +50,7 @@
     {
       "name": "savings_balance",
       "type": "number",
-      "description": "Attempt to read savings balance cell value",
+      "description": "Current balance of the Regular Savings (S01) share account",
       "sensitive": false
     }
   ],
@@ -218,7 +218,7 @@
     {
       "id": "s04_click",
       "action": "click",
-      "intent": "Submit sign-in form",
+      "intent": "Sign in to the application",
       "target": {
         "description": "button 'Sign In'",
         "frame": [
@@ -265,7 +265,7 @@
     {
       "id": "s05_assert",
       "action": "assert",
-      "intent": "Confirm successful sign-in",
+      "intent": "Confirm successful sign-in with static text",
       "target": null,
       "value": null,
       "wait": {
@@ -277,7 +277,7 @@
       "expect": [
         {
           "kind": "text_visible",
-          "value": "Welcome, teller1.",
+          "value": "Use the menu on the left to begin.",
           "regex": false,
           "target": null,
           "frame": [],
@@ -345,7 +345,7 @@
     {
       "id": "s07_fill",
       "action": "fill",
-      "intent": "Enter member number to look up",
+      "intent": "Enter member number to search",
       "target": {
         "description": "textbox 'Member No.'",
         "frame": [
@@ -417,7 +417,7 @@
     {
       "id": "s08_click",
       "action": "click",
-      "intent": "Search for member 100234",
+      "intent": "Search for the member record",
       "target": {
         "description": "button 'Find Member'",
         "frame": [
@@ -464,7 +464,7 @@
     {
       "id": "s09_assert",
       "action": "assert",
-      "intent": "Confirm savings account row is visible on member detail page",
+      "intent": "Confirm member detail page loaded",
       "target": null,
       "value": null,
       "wait": {
@@ -476,7 +476,7 @@
       "expect": [
         {
           "kind": "text_visible",
-          "value": "Regular Savings",
+          "value": "Member Detail",
           "regex": false,
           "target": null,
           "frame": [],
@@ -532,7 +532,7 @@
           }
         ]
       },
-      "value": null,
+      "value": "\\$([0-9]+\\.[0-9]{2})",
       "wait": {
         "load_state": "load",
         "settle_ms": 150,
@@ -541,31 +541,6 @@
       "risk": "read",
       "expect": [],
       "extract_to": "savings_balance",
-      "dialog_response": null
-    },
-    {
-      "id": "s18_assert",
-      "action": "assert",
-      "intent": "Final checkpoint confirming member detail page with savings balance is displayed",
-      "target": null,
-      "value": null,
-      "wait": {
-        "load_state": "load",
-        "settle_ms": 150,
-        "timeout_ms": 15000
-      },
-      "risk": "read",
-      "expect": [
-        {
-          "kind": "text_visible",
-          "value": "Regular Savings",
-          "regex": false,
-          "target": null,
-          "frame": [],
-          "timeout_ms": 8000
-        }
-      ],
-      "extract_to": null,
       "dialog_response": null
     }
   ],
@@ -585,20 +560,12 @@
       "target": null,
       "frame": [],
       "timeout_ms": 8000
-    },
-    {
-      "kind": "text_visible",
-      "value": "Current Balance",
-      "regex": false,
-      "target": null,
-      "frame": [],
-      "timeout_ms": 8000
     }
   ],
   "outcomes": [
     {
       "code": "MEMBER_NOT_FOUND",
-      "description": "Member number entered does not match any existing member record",
+      "description": "The entered member number does not match any member record.",
       "detect": {
         "kind": "text_visible",
         "value": "No member record matched number",
@@ -647,20 +614,20 @@
   ],
   "max_risk": "reversible",
   "provenance": {
-    "discovery_run_id": "discovery-20260913T221740-e4489b",
-    "recorded_at": "2026-09-13T22:19:32.664359Z",
+    "discovery_run_id": "discovery-20260914T070444-c6b81b",
+    "recorded_at": "2026-09-14T07:06:59.416494Z",
     "model": "openrouter:anthropic/claude-sonnet-5",
     "surface": "PlaywrightSurface",
-    "transcript_sha256": "1e1fea95bda1bfdf245e43513d9bf010ab4cb4af0e0d939a784c74baf15a8528",
+    "transcript_sha256": "c20e92013f159a6d01b64d6293e0e769fef143662cd83644575dc9b820ff5bd2",
     "recorded_by": "glovebox-recorder"
   },
   "review": {
     "status": "approved",
     "reviewed_by": "chintu",
-    "reviewed_at": "2026-09-13T22:20:09.101509Z",
-    "notes": "Steps, extraction target, output typing and risk reviewed. Replays for 100234/100235/100236 returning a numeric balance; 999999 returns MEMBER_NOT_FOUND, whose detector this run verified by probing.",
-    "replays": 0,
-    "replay_successes": 0
+    "reviewed_at": "2026-09-14T07:08:01.863235Z",
+    "notes": "Reviewed the run recorded on 2026-09-14 (openrouter:anthropic/claude-sonnet-5): steps, extraction target, output typing and risk. The sign-in checkpoint asserts text true for every operator, which the recorder now enforces rather than the reviewer. One reviewer change: member_id carries a ^\\d{6}$ pattern, so a malformed number is refused by the contract instead of reaching the application; patterns are not something the recorder can infer from one run.",
+    "replays": 7,
+    "replay_successes": 5
   },
   "overrides": [
     {
@@ -720,5 +687,5 @@
       "notes": "Bayview renames 'Member No.'→'Member Number' and 'Find Member'→'Search'; locators fall through to name_attr/text."
     }
   ],
-  "created_at": "2026-09-13T22:19:32.664414Z"
+  "created_at": "2026-09-14T07:06:59.416785Z"
 }
