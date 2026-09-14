@@ -46,6 +46,15 @@ described. All data is fictional; credentials are fake.
 
 The workspace for engineers and operators: `make studio` → http://127.0.0.1:8800/.
 
+**Signing in.** Studio has its own accounts, separate from the application it drives. Register
+any email and password on first run — **the first account created becomes the administrator**;
+later accounts can read runs and capabilities until an administrator raises them. Accounts live
+in `runs/studio.db` (gitignored) — delete that file to start over.
+
+`GLOVEBOX_APP_USERNAME` / `GLOVEBOX_APP_PASSWORD` (`teller1` / `teller1-pass`) are **not** Studio
+credentials: they are the fake bank's operator login, which replay uses to sign into Meridian
+Core. The Studio email field expects an email address, so `teller1` is rejected there.
+
 > **On scope.** The brief puts a full operator console out of scope and says to mock the UI
 > so long as the handoff mechanism and control-transfer model are real. I went past that
 > deliberately, and it is the one place in this repository where I did. The reason is that
