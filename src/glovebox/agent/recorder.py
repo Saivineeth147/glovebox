@@ -28,15 +28,12 @@ from glovebox.schema.capability import (
     Target,
     shadowing_outcome,
 )
+from glovebox.textmatch import collapse_whitespace
 
 DEFAULT_FAILURE_SIGNALS = [
     Condition(kind=ConditionKind.TEXT_VISIBLE, value="Application Error", timeout_ms=0),
     Condition(kind=ConditionKind.HTTP_STATUS, value="^5\\d\\d$", timeout_ms=0),
 ]
-
-
-def _collapse_whitespace(text: str) -> str:
-    return " ".join(text.lower().split())
 
 
 class Recorder:
@@ -152,6 +149,15 @@ class Recorder:
         )
 
     def assert_text(self, text: str, intent: str) -> Step:
+        """Refuse a checkpoint built from this run's data, exactly as an outcome detector is.
+
+        A checkpoint is a replay condition like any other, so the guard has to be the same one.
+        "Welcome, teller1." passes on the run that recorded it and then pins the capability to a
+        single operator — and writes a credential into the artifact this project promises never
+        carries one. The outcome path already refused text like that; this path did not.
+        """
+        if reason := self.overfit_reason(text):
+            raise ValueError(f"checkpoint rejected: {reason}")
         return self._add(
             Step(
                 id=self._id("assert"),
@@ -268,13 +274,13 @@ class Recorder:
         screen must not read as unverified because of a line break between two words.
         """
         if text:
-            self._seen_text.append(_collapse_whitespace(text))
+            self._seen_text.append(collapse_whitespace(text))
 
     def _verified(self, detect_text: str | None) -> bool:
         """Whether any observation in this run contained `detect_text`."""
         if not detect_text:
             return False
-        needle = _collapse_whitespace(detect_text)
+        needle = collapse_whitespace(detect_text)
         return any(needle in seen for seen in self._seen_text)
 
     def note_observed_value(self, value: str | None) -> None:

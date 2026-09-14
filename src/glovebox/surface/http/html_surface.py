@@ -27,6 +27,7 @@ from glovebox.surface.base import (
 )
 from glovebox.surface.http.page import Form, Page, parse_page
 from glovebox.surface.web import locators
+from glovebox.textmatch import contains_text
 
 DEFAULT_TIMEOUT_SECONDS = 15.0
 
@@ -197,7 +198,7 @@ class HtmlSurface:
         text = self._text()
         if condition.kind == ConditionKind.TEXT_VISIBLE:
             value = condition.value or ""
-            return value.lower() in text.lower(), text[:400]
+            return contains_text(value, text), text[:400]
         if condition.kind == ConditionKind.URL_MATCHES:
             return (condition.value or "") in self._url, self._url
         if condition.kind == ConditionKind.ELEMENT_VISIBLE and condition.target:

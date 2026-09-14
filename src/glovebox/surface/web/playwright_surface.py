@@ -19,6 +19,7 @@ from playwright.sync_api import Error as PlaywrightError
 from glovebox.evidence.logger import RunDir
 from glovebox.schema.capability import Condition, ConditionKind, Target
 from glovebox.surface.base import DialogInfo, Element, Observation, Resolved, SurfaceError
+from glovebox.textmatch import contains_text
 
 from . import locators
 
@@ -340,4 +341,5 @@ class _Wrap:
 def _text_match(pattern: str, haystack: str, regex: bool) -> bool:
     if regex:
         return re.search(pattern, haystack, re.IGNORECASE | re.DOTALL) is not None
-    return pattern.lower() in haystack.lower()
+    # Same normalisation the recorder verifies a detector with, or `verified` means nothing.
+    return contains_text(pattern, haystack)

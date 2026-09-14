@@ -196,3 +196,23 @@ def test_should_reject_a_monetary_amount() -> None:
 
 def test_should_reject_a_long_identifier() -> None:
     assert overfit_reason("Member 100234", []) is not None
+
+
+def test_should_refuse_a_checkpoint_that_contains_a_value_from_this_run() -> None:
+    """A checkpoint is a replay condition, so the outcome guard has to cover it too.
+
+    The shipped artifact once carried `text_visible: "Welcome, teller1."` — a credential in the
+    file the project promises never holds one, recorded because this path skipped the check.
+    """
+    rec = _recorder(param_values={"username": "teller1", "member_id": "100234"})
+
+    with pytest.raises(ValueError, match="checkpoint rejected"):
+        rec.assert_text("Welcome, teller1.", "confirm we are signed in")
+
+
+def test_should_allow_a_checkpoint_that_holds_for_every_input() -> None:
+    rec = _recorder(param_values={"username": "teller1", "member_id": "100234"})
+
+    step = rec.assert_text("Use the menu on the left to begin.", "confirm we are signed in")
+
+    assert step.expect[0].value == "Use the menu on the left to begin."
