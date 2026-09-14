@@ -16,3 +16,6 @@ ui/dist/
 
 # Claude Code local state, including agent worktrees
 .claude/
+
+# Local session handoff notes — never publish to the submission repo
+HANDOFF.md
