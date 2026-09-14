@@ -229,8 +229,28 @@ def create_studio(runs_dir: Path, catalog_dir: Path, policy_path: Path) -> FastA
         return cap_public(approved)
 
     # ------------------------------------------------------------------ jobs
+    def _require_reachable(origin: str) -> None:
+        """Refuse a job the target cannot possibly serve.
+
+        Studio already knows whether the application answers — the overview banner reads
+        "target: offline". Accepting a run anyway produces a job that sits on run.started until
+        somebody kills the server, which is the state a reviewer hits first if they start Studio
+        without `make target`.
+        """
+        try:
+            httpx.get(origin.rstrip("/") + "/", timeout=2.0)
+        except httpx.HTTPError as exc:
+            raise HTTPException(
+                status_code=503,
+                detail=(
+                    f"the target application is not reachable at {origin} — start it with "
+                    "`make target` (it must be that origin; the policy allowlists it)"
+                ),
+            ) from exc
+
     @api.post("/api/discover", dependencies=[Depends(require_role("operator"))])
     def discover(body: DiscoverBody) -> dict[str, Any]:
+        _require_reachable(body.app_url)
         job = jobs.start_discovery(
             body.goal,
             body.app_url,
@@ -244,6 +264,7 @@ def create_studio(runs_dir: Path, catalog_dir: Path, policy_path: Path) -> FastA
 
     @api.post("/api/replay", dependencies=[Depends(require_role("operator"))])
     def replay(body: ReplayBody) -> dict[str, Any]:
+        _require_reachable(target_base())
         try:
             job = jobs.start_replay(
                 body.capability_id,
@@ -256,6 +277,13 @@ def create_studio(runs_dir: Path, catalog_dir: Path, policy_path: Path) -> FastA
         except FileNotFoundError as exc:
             raise HTTPException(404, str(exc)) from exc
         return job.public()
+
+    @api.post("/api/jobs/{job_id}/cancel", dependencies=[Depends(require_role("operator"))])
+    def cancel_job(job_id: str) -> dict[str, Any]:
+        try:
+            return jobs.cancel(job_id).public()
+        except KeyError as missing:
+            raise HTTPException(404, f"no such job {job_id!r}") from missing
 
     @api.get("/api/jobs")
     def list_jobs() -> list[dict[str, Any]]:

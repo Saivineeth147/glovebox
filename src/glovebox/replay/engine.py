@@ -18,6 +18,7 @@ waits for the human; when unattended, it is a failure with evidence.
 from __future__ import annotations
 
 import time
+from collections.abc import Callable
 from dataclasses import dataclass
 from datetime import UTC, datetime
 from typing import Any
@@ -71,6 +72,9 @@ class ReplayOptions:
     attended: bool = False  # a human is reachable through the control session
     allow_draft: bool = False  # bypass the approval gate (dev only)
     screenshot_each_step: bool = True
+    #: Asked before each step. A thread cannot be killed from outside, so stopping a run
+    #: has to be cooperative: the loop checks, finishes the step it is on, and stops.
+    should_cancel: Callable[[], bool] | None = None
 
 
 def steps_from(steps: list[Step], start_at: str | None) -> list[Step]:
@@ -203,6 +207,14 @@ class ReplayEngine(ReplayReporting, ReplayRecovery):
         i = 0
         steps = steps_from(self.cap.steps, self.opt.start_at)
         while i < len(steps):
+            if self.opt.should_cancel is not None and self.opt.should_cancel():
+                raise _Stop(
+                    self._fail(
+                        FailureClass.CANCELLED,
+                        steps[i].id,
+                        "stopped from the console before this step ran",
+                    )
+                )
             step = steps[i]
             action = self._run_step(step)
             if action == "restart":

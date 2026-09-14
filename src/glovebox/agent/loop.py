@@ -11,6 +11,7 @@ import base64
 import hashlib
 import re
 import time
+from collections.abc import Callable
 from dataclasses import dataclass
 from pathlib import Path
 from typing import Any
@@ -32,7 +33,7 @@ from .tools import SYSTEM_PROMPT, TOOLS
 
 @dataclass
 class DiscoveryResult:
-    status: str  # success | escalated | failed | max_steps | timeout
+    status: str  # success | escalated | failed | max_steps | timeout | cancelled
     capability: Capability | None
     summary: str
     steps: int
@@ -57,6 +58,7 @@ class DiscoveryAgent(DiscoveryTools):
         app_id: str,
         tenant: str | None,
         max_steps: int = 40,
+        should_cancel: Callable[[], bool] | None = None,
         timeout_s: float = 600.0,
         screenshots: bool = True,
     ) -> None:
@@ -70,6 +72,7 @@ class DiscoveryAgent(DiscoveryTools):
             control,
         )
         self.max_steps, self.timeout_s, self.screenshots = max_steps, timeout_s, screenshots
+        self.should_cancel = should_cancel
         self.recorder = Recorder(
             capability_id=capability_id,
             app_id=app_id,
@@ -109,6 +112,10 @@ class DiscoveryAgent(DiscoveryTools):
             for turn_no in range(1, self.max_steps + 1):
                 if time.monotonic() - t0 > self.timeout_s:
                     raise _Finished("timeout", f"run exceeded {self.timeout_s}s")
+                # A thread cannot be killed from outside. Checking here means a stop lands
+                # between turns, so the transcript and the evidence stay coherent.
+                if self.should_cancel is not None and self.should_cancel():
+                    raise _Finished("cancelled", "stopped from the console")
                 turn = self.llm.turn(SYSTEM_PROMPT, self.messages, TOOLS)
                 self.log.emit(
                     EventKind.MODEL_USAGE, f"turn {turn_no}", usage=turn.usage, model=turn.model

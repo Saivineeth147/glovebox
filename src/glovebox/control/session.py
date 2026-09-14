@@ -101,6 +101,18 @@ class OperatorBridge:
         except queue.Empty:
             return {"ok": False, "error": "no reply from automation thread (is a handoff open?)"}
 
+    def request_abort(self, operator: str = "operator") -> bool:
+        """Enqueue an abort without waiting for the reply. Returns whether one was waiting.
+
+        `submit` blocks until the automation thread answers, which is right for an operator at
+        the console and wrong for a stop button: a run blocked in a handoff is exactly the case
+        that needs releasing, and the caller should not wait on the thread it is unblocking.
+        """
+        if self.current is None:
+            return False
+        self._q.put(OperatorCommand(op="abort", args={}, operator=operator))
+        return True
+
     def _next(self, timeout: float) -> OperatorCommand | None:
         try:
             return self._q.get(timeout=timeout)

@@ -447,6 +447,41 @@ def test_a_detector_the_recorder_verified_must_also_fire_at_replay(
     assert r.outcome_code == outcome.code
 
 
+@pytest.mark.integration
+def test_a_run_can_be_stopped_part_way_and_says_so(
+    savings_capability: Capability, policy: Policy, runs_dir: Path
+) -> None:
+    """Studio's Stop button, at the level that has to honour it.
+
+    A daemon thread cannot be killed from outside and tearing the browser down mid-action would
+    leave evidence describing a step that never finished, so the loop asks between steps. The run
+    reports `failed / cancelled`, which is neither an answer nor the capability breaking — a
+    caller can retry the same invocation verbatim.
+    """
+    asked: list[int] = []
+
+    def stop_after_two_steps() -> bool:
+        asked.append(1)
+        return len(asked) > 2
+
+    r = run_replay(
+        savings_capability,
+        {**creds(), "member_id": "100234"},
+        policy,
+        runs_dir=runs_dir,
+        trace=False,
+        should_cancel=stop_after_two_steps,
+    )
+
+    assert r.status == ReplayStatus.FAILED
+    assert r.failure is not None
+    assert r.failure.failure_class == "cancelled"
+    assert r.failure.step_id, "the failure names the step it stopped before"
+    assert 0 < len(r.steps) < len(savings_capability.steps), (
+        "it stopped part way, not at either end"
+    )
+
+
 def test_irreversible_flow_reports_access_denied_outcome(
     subaccount_capability: Capability, policy: Policy, runs_dir: Path
 ) -> None:

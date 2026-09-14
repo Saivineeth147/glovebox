@@ -34,6 +34,9 @@ class FailureClass(StrEnum):
     TIMEOUT = "timeout"
     SURFACE_ERROR = "surface_error"
     NOT_APPROVED = "not_approved"
+    #: A person stopped the run from the console. Not an answer, so not a business
+    #: outcome; not the capability breaking either, so the caller can retry it verbatim.
+    CANCELLED = "cancelled"
 
 
 class Failure(BaseModel):

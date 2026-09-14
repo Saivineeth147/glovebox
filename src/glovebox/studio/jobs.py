@@ -34,6 +34,9 @@ class Job:
     result: dict[str, Any] | None = None
     error: str | None = None
     thread: threading.Thread | None = None
+    #: Set by `JobManager.cancel`. A daemon thread cannot be killed from outside, so the
+    #: run loops ask this between steps and stop themselves.
+    cancel: threading.Event = field(default_factory=threading.Event)
 
     def public(self) -> dict[str, Any]:
         cur = self.bridge.current
@@ -44,6 +47,7 @@ class Job:
             "params": {k: ("••••" if k in {"password"} else v) for k, v in self.params.items()},
             "created_at": self.created_at.isoformat(),
             "status": self.status,
+            "cancel_requested": self.cancel.is_set(),
             "run_id": self.run_id,
             "result": self.result,
             "error": self.error,
@@ -138,6 +142,7 @@ class JobManager:
                     bridge=job.bridge,
                     trace=False,
                     on_start=on_ctx,
+                    should_cancel=job.cancel.is_set,
                 )
                 saved = None
                 if res.capability:
@@ -210,6 +215,7 @@ class JobManager:
                     allow_draft=allow_draft,
                     trace=False,
                     on_start=on_ctx,
+                    should_cancel=job.cancel.is_set,
                 )
                 Catalog(self.catalog_dir).record_replay(cap.id, res.answered)
                 job.result = res.model_dump(mode="json")
@@ -225,6 +231,20 @@ class JobManager:
             self.jobs[job.id] = job
         job.thread = threading.Thread(target=target, daemon=True, name=job.id)
         job.thread.start()
+
+    def cancel(self, job_id: str) -> Job:
+        """Ask a running job to stop at its next step boundary.
+
+        Cooperative by necessity: a daemon thread cannot be killed from outside, and tearing a
+        browser down mid-action would leave evidence describing a step that never finished. The
+        run stops between steps and reports `failed / cancelled`, which is neither an answer nor
+        the capability breaking, so a caller can retry it verbatim.
+        """
+        job = self.jobs[job_id]
+        if job.status in {"queued", "running"}:
+            job.cancel.set()
+            job.bridge.request_abort()
+        return job
 
     # ------------------------------------------------------------------ queries
     def get(self, job_id: str) -> Job:

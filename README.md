@@ -86,6 +86,12 @@ Core. The Studio email field expects an email address, so `teller1` is rejected 
   locator strategies and robustness notes, outcomes, recoveries, provenance. Approve for
   unattended replay, or invoke with parameters, a tenant override and an injected fault.
 - **Discover** — give the model a goal and watch it work inside policy.
+- **Stop** — a running job can be asked to stop from its run page. Cancellation is cooperative:
+  a daemon thread cannot be killed from outside, and tearing the browser down mid-action would
+  leave evidence describing a step that never finished, so the loop checks between steps. The run
+  reports `failed / cancelled`, which is neither an answer nor the capability breaking, so the
+  caller can retry the same invocation verbatim. Starting a job against an unreachable target is
+  refused outright rather than accepted and left to hang.
 - **Takeover** — when a run is stuck, needs approval for an irreversible step, or is blocked,
   the takeover panel appears on the run page: the *same* browser session with clickable
   hotspots on every control, why it stopped, what the automation saw, and six ways to hand

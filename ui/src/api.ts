@@ -37,6 +37,7 @@ export const api = {
   replay: (body: Json) => req("/api/replay", { method: "POST", body: JSON.stringify(body) }),
   jobs: () => req<Json[]>("/api/jobs"),
   job: (id: string) => req(`/api/jobs/${id}`),
+  cancelJob: (id: string) => req(`/api/jobs/${id}/cancel`, { method: "POST" }),
   operator: (jobId: string) => req(`/api/jobs/${jobId}/operator`),
   command: (jobId: string, body: Json) => req(`/api/jobs/${jobId}/operator/command`, { method: "POST", body: JSON.stringify(body) }),
   policy: () => req("/api/policy"),

@@ -98,6 +98,7 @@ def run_replay(
     repair: Any = None,
     surface: Surface | None = None,
     start_at: str | None = None,
+    should_cancel: Callable[[], bool] | None = None,
 ) -> ReplayResult:
     ctx = _context(
         "replay",
@@ -130,6 +131,7 @@ def run_replay(
                 allow_draft=allow_draft,
                 repair=repair,
                 start_at=start_at,
+                should_cancel=should_cancel,
             ),
             tenant=tenant,
         )
@@ -161,6 +163,7 @@ def run_discovery(
     screenshots: bool = True,
     trace: bool = True,
     on_start: Callable[[str, Path], None] | None = None,
+    should_cancel: Callable[[], bool] | None = None,
 ) -> DiscoveryResult:
     ctx = _context(
         "discovery",
@@ -194,6 +197,7 @@ def run_discovery(
             tenant=tenant,
             max_steps=max_steps or policy.max_steps,
             timeout_s=policy.run_timeout_s,
+            should_cancel=should_cancel,
             screenshots=screenshots,
         )
         agent_holder["agent"] = agent

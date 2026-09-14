@@ -74,7 +74,14 @@ export default function RunDetail({ runId }: { runId: string }) {
       <PageHeader
         title={<span className="flex items-center gap-3"><a href="#/runs" className="text-ink-400 hover:text-ink-100"><ChevronLeft className="w-5 h-5" /></a>{run.title.replace(/^(replay|discovery): ?/, "")}<Chip value={live ? "running" : run.status} />{live && <span className="pulse-dot w-2 h-2 rounded-full bg-amber-400" />}</span>}
         subtitle={<span className="font-mono">{runId}</span>}
-        action={<div className="flex items-center gap-2"><Chip value={run.kind} /><Chip value={job?.owner ?? run.owner} /><label className="text-[12px] text-ink-400 flex items-center gap-1.5 ml-2"><input type="checkbox" checked={follow} onChange={(e) => setFollow(e.target.checked)} /> follow</label></div>} />
+        action={<div className="flex items-center gap-2"><Chip value={run.kind} /><Chip value={job?.owner ?? run.owner} />{live && job && (
+          <button
+            className="btn btn-danger"
+            disabled={job.cancel_requested}
+            title="Ask the run to stop at its next step boundary"
+            onClick={() => api.cancelJob(job.id).then(setJob).catch(() => {})}
+          >{job.cancel_requested ? "Stopping…" : "Stop"}</button>
+        )}<label className="text-[12px] text-ink-400 flex items-center gap-1.5 ml-2"><input type="checkbox" checked={follow} onChange={(e) => setFollow(e.target.checked)} /> follow</label></div>} />
 
       {intervention && job && <div className="mb-4"><Operator jobId={job.id} /></div>}
 
