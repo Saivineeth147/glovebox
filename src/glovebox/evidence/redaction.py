@@ -22,7 +22,13 @@ _BUILTIN: list[tuple[str, re.Pattern[str]]] = [
     ("bearer", re.compile(r"(?i)bearer\s+[A-Za-z0-9._\-]{12,}")),
     ("card_pan", re.compile(r"\b(?:\d[ -]?){13,19}\b")),
     ("ssn", re.compile(r"\b\d{3}-\d{2}-\d{4}\b")),
-    ("password_kv", re.compile(r"(?i)(password|passwd|pwd)\s*[=:]\s*\S+")),
+    # The negative lookahead stops a second pass from re-redacting an already-redacted value:
+    # `\S+` halts at the space inside "<hidden: sensitive>", which left the tail of the
+    # placeholder dangling in committed evidence.
+    (
+        "password_kv",
+        re.compile(r"(?i)(password|passwd|pwd)\s*[=:]\s*(?!\[REDACTED|<hidden)\S+"),
+    ),
     ("cookie", re.compile(r"(?i)(MCSESSION|sessionid|jsessionid)=[A-Za-z0-9]+")),
 ]
 

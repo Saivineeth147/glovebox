@@ -91,3 +91,20 @@ def test_validate_inputs_and_templates() -> None:
     assert render_template("/m/{{ params.member_id }}", {"member_id": "1"}) == "/m/1"
     with pytest.raises(InputError):
         render_template("{{ params.nope }}", {})
+
+
+def test_should_not_mangle_a_value_it_has_already_hidden() -> None:
+    """Double-redaction corrupted committed evidence, which is the one thing evidence must not be.
+
+    The discovery prompt already substitutes a sensitive parameter with "<hidden: sensitive>".
+    password_kv then matched it and its `\\S+` stopped at the space inside the placeholder, so the
+    transcript shipped reading `Operator password=[REDACTED:password] sensitive>`.
+    """
+    already_hidden = "- password (string): Operator password = <hidden: sensitive>"
+
+    assert Redactor().text(already_hidden) == already_hidden
+
+
+def test_should_still_redact_a_real_password_in_key_value_form() -> None:
+    assert Redactor().text("password=hunter2supersecret") == "password=[REDACTED:password]"
+    assert Redactor().text("PASSWORD: s3cr3t-value") == "PASSWORD=[REDACTED:password]"
