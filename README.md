@@ -28,7 +28,7 @@ production:  agent ──▶ replay(capability, params) ──▶ success{output
 | 3.7 Heterogeneity & multi-tenant | `Surface` protocol, `TenantOverride` in the schema, [REPORT.md §4](./REPORT.md) |
 | Stretch: agent-facing catalog, stability, cross-tenant | `src/glovebox/catalog/`, `glovebox stability`, `evidence/replay-tenant-bravo-override/` |
 
-Design write-up: **[REPORT.md](./REPORT.md)**. Decisions: [docs/adr/](./docs/adr/) and the reviewer's [hard questions](./docs/hard-questions.md). Evidence: [evidence/](./evidence/).
+Design write-up: **[REPORT.md](./REPORT.md)**. Decisions: [docs/adr/](./docs/adr/). Evidence: [evidence/](./evidence/).
 
 ## The target: Meridian Core
 

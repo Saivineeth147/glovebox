@@ -2,7 +2,7 @@
 
 Glovebox turns one LLM-driven run against a legacy bank application into a deterministic,
 reviewable capability that an AI agent invokes in production without the model. Code references
-are to `src/glovebox/`; the reviewer-facing decision log is `docs/hard-questions.md`.
+are to `src/glovebox/`.
 
 ## 1. Architecture
 
