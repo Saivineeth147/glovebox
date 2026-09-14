@@ -9,6 +9,7 @@ from __future__ import annotations
 
 import base64
 import hashlib
+import re
 import time
 from dataclasses import dataclass
 from pathlib import Path
@@ -186,7 +187,10 @@ class DiscoveryAgent(DiscoveryTools):
             is_error = False
         except _Finished:
             raise
-        except (SurfaceError, KeyError, ValueError, TypeError) as exc:
+        # re.error is not a ValueError, so a regex the model wrote that does not compile would
+        # otherwise escape the loop and end the run with no transcript and no capability — the
+        # most expensive possible way to learn the model mistyped a pattern.
+        except (SurfaceError, KeyError, ValueError, TypeError, re.error) as exc:
             content, is_error = f"ERROR: {type(exc).__name__}: {exc}", True
             self.log.emit(EventKind.ERROR, f"tool {name} failed: {exc}", tool=name)
         block: dict[str, Any] = {"type": "tool_result", "tool_use_id": tu["id"], "content": content}

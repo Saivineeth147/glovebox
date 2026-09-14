@@ -203,3 +203,45 @@ def test_should_refuse_to_drop_an_outcome_that_was_never_declared() -> None:
 
     with pytest.raises(ValueError, match="not declared"):
         DiscoveryAgent._t_drop_outcome(_agent_with(_recorder()), "NOPE")
+
+
+def test_a_regex_the_model_mistyped_should_come_back_as_a_tool_error() -> None:
+    """re.error is not a ValueError, so it used to escape the loop entirely.
+
+    Discovery is the one path that costs money and calls a model; losing the whole run — no
+    transcript, no capability, no run.finished — because a pattern had an unbalanced bracket is
+    the most expensive possible way to find that out. It belongs in the retryable-error channel
+    the model can act on, like every other recorder refusal.
+    """
+    from types import SimpleNamespace
+
+    agent = _agent_with(_recorder())
+    agent._el = lambda ref: SimpleNamespace(text="$1250.75", value=None)  # type: ignore[method-assign,assignment,return-value]
+
+    block = agent._dispatch(
+        {
+            "id": "t1",
+            "name": "extract",
+            "input": {"ref": "e1", "output": "balance", "description": "b", "regex": "([unclosed"},
+        }
+    )
+
+    assert block["is_error"] is True
+    assert "PatternError" in block["content"] or "error" in block["content"]
+
+
+def test_the_finish_tool_should_let_a_real_model_describe_the_parameters() -> None:
+    """The recorder always read parameter_descriptions; the schema forbade sending them.
+
+    additionalProperties was false and the key was not declared, so only the scripted stand-in
+    could supply one. Every artifact a real model recorded therefore shipped a generated
+    placeholder as the description a calling agent reads.
+    """
+    from glovebox.agent.tools import TOOLS
+
+    finish = next(tool for tool in TOOLS if tool["name"] == "finish")
+    schema = finish["input_schema"]
+
+    assert "parameter_descriptions" in schema["properties"]
+    assert schema["properties"]["parameter_descriptions"]["type"] == "object"
+    assert "parameter_descriptions" not in schema["required"]  # optional, not a new burden

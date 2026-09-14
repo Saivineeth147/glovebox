@@ -224,6 +224,18 @@ TOOLS: list[dict[str, Any]] = [
                 "success_text": {"type": "array", "items": {"type": "string"}, "minItems": 1},
                 "summary": {"type": "string"},
                 "title": {"type": "string", "description": "Short capability title."},
+                # The recorder has always read this; the schema forbade it, so only the scripted
+                # stand-in could supply one and every real run shipped a generated placeholder
+                # like "Input parameter member_id" as the contract a calling agent reads.
+                "parameter_descriptions": {
+                    "type": "object",
+                    "additionalProperties": {"type": "string"},
+                    "description": (
+                        "What each input parameter means, keyed by parameter name, e.g. "
+                        '{"member_id": "Member number to look up"}. These become the contract '
+                        "an agent reads before invoking the capability."
+                    ),
+                },
             },
             "required": ["success_text", "summary", "title"],
             "additionalProperties": False,
@@ -241,6 +253,8 @@ How to work
 - Take the shortest sensible path a trained operator would take. Do not explore.
 - After every navigation or submit, `assert_text` a distinctive piece of text on the new screen.
   These checkpoints are what make replay verifiable.
+- When you `finish`, pass `parameter_descriptions` saying what each input parameter means.
+  That is the contract another agent reads before invoking this capability.
 - Never type literal values that come from input parameters — use `param` so the recording is
   parameterized. Sensitive parameters (credentials) are substituted for you; you never see them.
 - Declare `risk: "irreversible"` on clicks that commit business changes. Such clicks require human
