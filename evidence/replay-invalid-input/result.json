@@ -1,5 +1,5 @@
 {
-  "run_id": "replay-20260914T070917-3b7065",
+  "run_id": "replay-20260914T073215-f052b2",
   "capability_id": "member_savings_balance",
   "capability_version": "1.1.1",
   "tenant": "alpha",
@@ -14,13 +14,13 @@
     "expected": null,
     "observed": null,
     "evidence": {
-      "screenshot": "/Users/chintu/Desktop/glovebox/runs/replay-20260914T070917-3b7065/screenshots/0001-failure-run.png",
-      "snapshot:top": "/Users/chintu/Desktop/glovebox/runs/replay-20260914T070917-3b7065/snapshots/0002-failure-run-top.html"
+      "screenshot": "/Users/chintu/Desktop/glovebox/runs/replay-20260914T073215-f052b2/screenshots/0001-failure-run.png",
+      "snapshot:top": "/Users/chintu/Desktop/glovebox/runs/replay-20260914T073215-f052b2/snapshots/0002-failure-run-top.html"
     }
   },
   "handoff": null,
   "steps": [],
-  "started_at": "2026-09-14T07:09:17.308726Z",
-  "finished_at": "2026-09-14T07:09:17.350007Z",
-  "evidence_dir": "/Users/chintu/Desktop/glovebox/runs/replay-20260914T070917-3b7065"
+  "started_at": "2026-09-14T07:32:15.590506Z",
+  "finished_at": "2026-09-14T07:32:15.625245Z",
+  "evidence_dir": "/Users/chintu/Desktop/glovebox/runs/replay-20260914T073215-f052b2"
 }

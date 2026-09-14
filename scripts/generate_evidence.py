@@ -237,11 +237,13 @@ EVIDENCE_README = """# Evidence
 
 Every directory is one run: `events.jsonl` (structured, redacted log), `screenshots/`,
 `snapshots/` (frame HTML on failure/handoff), `result.json` (replay) or `transcript.json` +
-`capability.json` (discovery), and `SUMMARY.json` (what was injected and what came back).
+`capability.json` (discovery). Replay bundles also carry `SUMMARY.json` — what was injected and
+what came back.
 
 | Bundle | What it shows |
 |---|---|
-| `discovery/` | **The real LLM-driven discovery run** (Claude via the Anthropic API) that recorded `capabilities/member_savings_balance.json`. |
+| `discovery/` | **The real LLM-driven discovery run** (Claude Sonnet 5, reached through OpenRouter's
+OpenAI-compatible endpoint — see `provenance.model` in `capability.json`) that recorded `capabilities/member_savings_balance.json`. |
 | `discovery-offline-scripted/` | The same loop driven by `ScriptedLLM` — no model. Shows the artifact-generation path is model-independent. Clearly not a model run. |
 | `replay-success/` | Deterministic replay with a *different* member id; outputs returned. |
 | `replay-business-outcome-not-found/` | Unknown member → `business_outcome: MEMBER_NOT_FOUND`, not a failure. |

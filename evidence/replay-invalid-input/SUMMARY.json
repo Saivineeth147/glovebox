@@ -10,8 +10,8 @@
     "expected": null,
     "observed": null,
     "evidence": {
-      "screenshot": "/Users/chintu/Desktop/glovebox/runs/replay-20260914T070917-3b7065/screenshots/0001-failure-run.png",
-      "snapshot:top": "/Users/chintu/Desktop/glovebox/runs/replay-20260914T070917-3b7065/snapshots/0002-failure-run-top.html"
+      "screenshot": "/Users/chintu/Desktop/glovebox/runs/replay-20260914T073215-f052b2/screenshots/0001-failure-run.png",
+      "snapshot:top": "/Users/chintu/Desktop/glovebox/runs/replay-20260914T073215-f052b2/snapshots/0002-failure-run-top.html"
     }
   },
   "handoff": null

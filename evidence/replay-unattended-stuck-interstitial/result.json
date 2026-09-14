@@ -1,5 +1,5 @@
 {
-  "run_id": "replay-20260914T070946-21dcd3",
+  "run_id": "replay-20260914T073245-4ed4e6",
   "capability_id": "member_savings_balance",
   "capability_version": "1.1.1",
   "tenant": "alpha",
@@ -14,11 +14,11 @@
     "expected": "button 'Find Member'",
     "observed": "url=http://127.0.0.1:8089/t/alpha/ title='Meridian Core \u2014 Alpine Credit Union' text='[nav]\\nMeridian Core \u2014 Alpine Credit Union Not signed in\\n\\n[menu]\\nMENU\\nHome\\nMember Inquiry\\nTransactions\\nReports\\nAdministration\\n\\n[main]\\nMeridian Core \u2014 Alpine Credit Union \\xa0 v7.2.1\\nSystem Notice\\nNightly batch posting completed. Balances shown are as of 06:00.\\nMember Inquiry\\nMember No. \\n \\nMeridian Core '",
     "evidence": {
-      "screenshot": "/Users/chintu/Desktop/glovebox/runs/replay-20260914T070946-21dcd3/screenshots/0008-failure-s08_click.png",
-      "snapshot:top": "/Users/chintu/Desktop/glovebox/runs/replay-20260914T070946-21dcd3/snapshots/0009-failure-s08_click-top.html",
-      "snapshot:nav": "/Users/chintu/Desktop/glovebox/runs/replay-20260914T070946-21dcd3/snapshots/0010-failure-s08_click-nav.html",
-      "snapshot:menu": "/Users/chintu/Desktop/glovebox/runs/replay-20260914T070946-21dcd3/snapshots/0011-failure-s08_click-menu.html",
-      "snapshot:main": "/Users/chintu/Desktop/glovebox/runs/replay-20260914T070946-21dcd3/snapshots/0012-failure-s08_click-main.html"
+      "screenshot": "/Users/chintu/Desktop/glovebox/runs/replay-20260914T073245-4ed4e6/screenshots/0008-failure-s08_click.png",
+      "snapshot:top": "/Users/chintu/Desktop/glovebox/runs/replay-20260914T073245-4ed4e6/snapshots/0009-failure-s08_click-top.html",
+      "snapshot:nav": "/Users/chintu/Desktop/glovebox/runs/replay-20260914T073245-4ed4e6/snapshots/0010-failure-s08_click-nav.html",
+      "snapshot:menu": "/Users/chintu/Desktop/glovebox/runs/replay-20260914T073245-4ed4e6/snapshots/0011-failure-s08_click-menu.html",
+      "snapshot:main": "/Users/chintu/Desktop/glovebox/runs/replay-20260914T073245-4ed4e6/snapshots/0012-failure-s08_click-main.html"
     }
   },
   "handoff": null,
@@ -27,8 +27,8 @@
       "step_id": "s01_navigate",
       "action": "navigate",
       "status": "ok",
-      "started_at": "2026-09-14T07:09:47.219541Z",
-      "duration_ms": 265,
+      "started_at": "2026-09-14T07:32:45.402590Z",
+      "duration_ms": 258,
       "strategy_used": "url",
       "recoveries": [],
       "note": null
@@ -37,8 +37,8 @@
       "step_id": "s02_fill",
       "action": "fill",
       "status": "ok",
-      "started_at": "2026-09-14T07:09:47.484822Z",
-      "duration_ms": 267,
+      "started_at": "2026-09-14T07:32:45.661532Z",
+      "duration_ms": 283,
       "strategy_used": "role_name",
       "recoveries": [],
       "note": null
@@ -47,8 +47,8 @@
       "step_id": "s03_fill",
       "action": "fill",
       "status": "ok",
-      "started_at": "2026-09-14T07:09:47.752414Z",
-      "duration_ms": 284,
+      "started_at": "2026-09-14T07:32:45.945290Z",
+      "duration_ms": 247,
       "strategy_used": "role_name",
       "recoveries": [],
       "note": null
@@ -57,8 +57,8 @@
       "step_id": "s04_click",
       "action": "click",
       "status": "ok",
-      "started_at": "2026-09-14T07:09:48.037182Z",
-      "duration_ms": 255,
+      "started_at": "2026-09-14T07:32:46.192444Z",
+      "duration_ms": 267,
       "strategy_used": "role_name",
       "recoveries": [],
       "note": null
@@ -67,8 +67,8 @@
       "step_id": "s05_assert",
       "action": "assert",
       "status": "ok",
-      "started_at": "2026-09-14T07:09:48.293222Z",
-      "duration_ms": 242,
+      "started_at": "2026-09-14T07:32:46.460091Z",
+      "duration_ms": 239,
       "strategy_used": null,
       "recoveries": [],
       "note": null
@@ -77,8 +77,8 @@
       "step_id": "s06_click",
       "action": "click",
       "status": "ok",
-      "started_at": "2026-09-14T07:09:48.536128Z",
-      "duration_ms": 300,
+      "started_at": "2026-09-14T07:32:46.699697Z",
+      "duration_ms": 275,
       "strategy_used": "role_name",
       "recoveries": [],
       "note": null
@@ -87,14 +87,14 @@
       "step_id": "s07_fill",
       "action": "fill",
       "status": "ok",
-      "started_at": "2026-09-14T07:09:48.836983Z",
-      "duration_ms": 248,
+      "started_at": "2026-09-14T07:32:46.975679Z",
+      "duration_ms": 269,
       "strategy_used": "role_name",
       "recoveries": [],
       "note": null
     }
   ],
-  "started_at": "2026-09-14T07:09:47.219072Z",
-  "finished_at": "2026-09-14T07:09:54.206898Z",
-  "evidence_dir": "/Users/chintu/Desktop/glovebox/runs/replay-20260914T070946-21dcd3"
+  "started_at": "2026-09-14T07:32:45.402145Z",
+  "finished_at": "2026-09-14T07:32:52.405638Z",
+  "evidence_dir": "/Users/chintu/Desktop/glovebox/runs/replay-20260914T073245-4ed4e6"
 }
