@@ -8,12 +8,12 @@ from __future__ import annotations
 
 from pathlib import Path
 
-from glovebox.surface.http.page import parse_page
+from glovebox.surface.http.page import Page, parse_page
 
 PAGES = Path(__file__).resolve().parents[1] / "fixtures" / "pages"
 
 
-def _elements(name: str, frame: list[str] | None = None):
+def _elements(name: str, frame: list[str] | None = None) -> Page:
     return parse_page((PAGES / name).read_text(), frame or ["main"], "http://127.0.0.1:8089")
 
 

@@ -8,21 +8,21 @@ from glovebox.surface.web import locators
 
 
 def el(
-    ref,
-    role,
-    name,
+    ref: str,
+    role: str,
+    name: str,
     *,
-    text=None,
-    label=None,
-    name_attr=None,
-    x=0.0,
-    y=0.0,
-    interactive=True,
-    tag="input",
-    table=None,
-    row=-1,
-    col=-1,
-):
+    text: str | None = None,
+    label: str | None = None,
+    name_attr: str | None = None,
+    x: float = 0.0,
+    y: float = 0.0,
+    interactive: bool = True,
+    tag: str = "input",
+    table: str | None = None,
+    row: int = -1,
+    col: int = -1,
+) -> Element:
     return Element(
         ref=ref,
         frame=["main"],
@@ -42,7 +42,7 @@ def el(
     )
 
 
-def test_describe_orders_strategies_and_resolve_prefers_role_name():
+def test_describe_orders_strategies_and_resolve_prefers_role_name() -> None:
     els = [
         el("e1", "cell", "Member No.", interactive=False, tag="td", x=0, y=100),
         el("e2", "textbox", "Member No.", label="Member No.", name_attr="member_no", x=100, y=100),
@@ -61,7 +61,7 @@ def test_describe_orders_strategies_and_resolve_prefers_role_name():
     assert r.element.ref == "e2" and r.strategy_kind == "role_name"
 
 
-def test_resolve_falls_through_when_label_renamed_across_tenant():
+def test_resolve_falls_through_when_label_renamed_across_tenant() -> None:
     t = Target(
         description="member input",
         frame=["main"],
@@ -79,7 +79,7 @@ def test_resolve_falls_through_when_label_renamed_across_tenant():
     assert r.strategy_kind == "name_attr"
 
 
-def test_ambiguity_is_an_error_not_a_guess():
+def test_ambiguity_is_an_error_not_a_guess() -> None:
     t = Target(
         description="ok button",
         frame=["main"],
@@ -93,7 +93,7 @@ def test_ambiguity_is_an_error_not_a_guess():
         locators.resolve(t, [el("e1", "button", "Cancel")])
 
 
-def test_table_cell_strategy_is_value_independent():
+def test_table_cell_strategy_is_value_independent() -> None:
     tbl = "body > table"
     cells = [
         el("h1", "cell", "Share", interactive=False, tag="td", table=tbl, row=0, col=0, x=0, y=0),

@@ -22,7 +22,13 @@ from pathlib import Path
 from typing import Any
 
 from fastapi import FastAPI, Form, Request
-from fastapi.responses import HTMLResponse, JSONResponse, RedirectResponse, Response
+from fastapi.responses import (
+    HTMLResponse,
+    JSONResponse,
+    RedirectResponse,
+    Response,
+    StreamingResponse,
+)
 from fastapi.templating import Jinja2Templates
 
 from .data import FAULTS, MEMBERS, PRODUCTS, next_reference
@@ -117,10 +123,13 @@ def create_app() -> FastAPI:
 
     @app.middleware("http")
     async def rewrite_for_drift(request: Request, call_next: Any) -> Response:
-        response = await call_next(request)
+        response: StreamingResponse = await call_next(request)
         if not _DRIFT or "text/html" not in response.headers.get("content-type", ""):
             return response
-        body = b"".join([section async for section in response.body_iterator])
+        # body_iterator is typed as str | bytes | memoryview; only bytes occurs here, but
+        # coercing explicitly beats laundering the whole middleware through Any.
+        chunks = [section async for section in response.body_iterator]
+        body = b"".join(c.encode() if isinstance(c, str) else bytes(c) for c in chunks)
         # Carry the original headers across. Rebuilding a bare response would drop Set-Cookie
         # and Location, so a capability would appear to fail the redesign for a reason that
         # has nothing to do with the redesign — the confound this module exists to avoid.

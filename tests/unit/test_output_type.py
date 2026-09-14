@@ -93,4 +93,6 @@ def test_a_later_extraction_should_replace_an_abandoned_one_s_declaration() -> N
         surface_name="TestSurface",
     )
     assert [(o.name, str(o.type)) for o in cap.outputs] == [("savings_balance", "number")]
-    assert [s.target.description for s in cap.steps if s.extract_to] == ["cell 'Current Balance'"]
+    assert [s.target.description for s in cap.steps if s.extract_to and s.target] == [
+        "cell 'Current Balance'"
+    ]

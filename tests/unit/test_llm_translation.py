@@ -1,14 +1,17 @@
 from __future__ import annotations
 
 import json
+from collections.abc import Callable
+from typing import Any
 
 import httpx
+import pytest
 
 from glovebox.agent.llm import OpenAICompatibleLLM, make_llm
 from glovebox.agent.tools import TOOLS
 
 
-def _client(handler):
+def _client(handler: Callable[[httpx.Request], httpx.Response]) -> OpenAICompatibleLLM:
     llm = OpenAICompatibleLLM("test/model", api_key="k", base_url="https://router.test/v1")
     llm._client = httpx.Client(
         base_url="https://router.test/v1", transport=httpx.MockTransport(handler)
@@ -16,7 +19,7 @@ def _client(handler):
     return llm
 
 
-def test_openai_compatible_translation_roundtrip():
+def test_openai_compatible_translation_roundtrip() -> None:
     seen = {}
 
     def handler(req: httpx.Request) -> httpx.Response:
@@ -50,7 +53,7 @@ def test_openai_compatible_translation_roundtrip():
         )
 
     llm = _client(handler)
-    messages = [
+    messages: list[dict[str, Any]] = [
         {"role": "user", "content": "GOAL: x"},
         {
             "role": "assistant",
@@ -106,7 +109,7 @@ def test_openai_compatible_translation_roundtrip():
     assert turn.text == "Filling the field." and turn.usage["input_tokens"] == 120
 
 
-def test_openai_compatible_error_is_raised():
+def test_openai_compatible_error_is_raised() -> None:
     llm = _client(lambda req: httpx.Response(402, text="insufficient credits"))
     try:
         llm.turn("s", [{"role": "user", "content": "x"}], TOOLS)
@@ -116,7 +119,7 @@ def test_openai_compatible_error_is_raised():
         raise AssertionError("expected RuntimeError")
 
 
-def test_make_llm_picks_provider_from_env(monkeypatch):
+def test_make_llm_picks_provider_from_env(monkeypatch: pytest.MonkeyPatch) -> None:
     monkeypatch.delenv("ANTHROPIC_API_KEY", raising=False)
     monkeypatch.delenv("OPENAI_API_KEY", raising=False)
     monkeypatch.delenv("GLOVEBOX_LLM_PROVIDER", raising=False)

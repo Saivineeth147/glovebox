@@ -10,8 +10,16 @@ from __future__ import annotations
 
 import pytest
 
+from glovebox.agent.loop import DiscoveryAgent
 from glovebox.agent.recorder import Recorder
-from glovebox.schema.capability import Parameter, ParamType, Target, TargetStrategy
+from glovebox.schema.capability import (
+    Capability,
+    Parameter,
+    ParamType,
+    RiskClass,
+    Target,
+    TargetStrategy,
+)
 
 
 def _recorder() -> Recorder:
@@ -33,7 +41,7 @@ def _target() -> Target:
     )
 
 
-def _finish(rec: Recorder):
+def _finish(rec: Recorder) -> Capability:
     return rec.build(
         title="t",
         description="d",
@@ -48,7 +56,7 @@ def test_should_not_record_a_step_taken_while_probing() -> None:
     rec.navigate("http://127.0.0.1:8089/t/alpha/", "open the application entry point")
     rec.extract(_target(), "savings_balance", "balance", "string", None)
     rec.paused = True
-    rec.click(_target(), "search for a member that does not exist", "read")
+    rec.click(_target(), "search for a member that does not exist", RiskClass.READ)
     rec.paused = False
     assert [str(s.action) for s in _finish(rec).steps] == ["navigate", "extract"]
 
@@ -85,7 +93,7 @@ def test_should_refuse_to_build_while_still_probing() -> None:
         _finish(rec)
 
 
-def _agent_with(rec: Recorder):
+def _agent_with(rec: Recorder) -> DiscoveryAgent:
     from glovebox.agent.loop import DiscoveryAgent
 
     agent = object.__new__(DiscoveryAgent)
@@ -172,7 +180,7 @@ def test_should_allow_finishing_once_the_detector_has_been_seen() -> None:
     agent.recorder.note_observed_text("No member record matched number 999999.")
     agent.recorder.declare_outcome("MEMBER_NOT_FOUND", "no match", "No member record matched")
     agent._finish = None
-    from glovebox.agent.loop import _Finished
+    from glovebox.agent.loop import _Finished  # type: ignore[attr-defined]
 
     # _t_finish ends the run by raising; reaching that is what "allowed through" means here.
     with pytest.raises(_Finished):

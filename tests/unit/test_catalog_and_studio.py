@@ -13,7 +13,7 @@ from tests.unit.test_schema import _cap
 ROOT = Path(__file__).resolve().parents[2]
 
 
-def test_catalog_bumps_version_on_rerecord_and_resets_review(tmp_path: Path):
+def test_catalog_bumps_version_on_rerecord_and_resets_review(tmp_path: Path) -> None:
     cat = Catalog(tmp_path)
     first = _cap()
     cat.save(first)
@@ -35,7 +35,7 @@ def test_catalog_bumps_version_on_rerecord_and_resets_review(tmp_path: Path):
     assert cat.load("demo").version == "1.0.1" and cat.load("demo").review.replays == 1
 
 
-def test_studio_api_serves_catalog_policy_and_tools(tmp_path: Path):
+def test_studio_api_serves_catalog_policy_and_tools(tmp_path: Path) -> None:
     cat_dir = tmp_path / "caps"
     Catalog(cat_dir).save(_cap())
     app = create_studio(tmp_path / "runs", cat_dir, ROOT / "policies" / "default.yaml")
@@ -67,7 +67,7 @@ def test_studio_api_serves_catalog_policy_and_tools(tmp_path: Path):
     assert index.status_code in (200, 503)
 
 
-def test_committed_capability_is_valid_and_approved():
+def test_committed_capability_is_valid_and_approved() -> None:
     cap = Capability.model_validate_json(
         (ROOT / "capabilities" / "member_savings_balance.json").read_text()
     )
@@ -75,7 +75,9 @@ def test_committed_capability_is_valid_and_approved():
     assert cap.steps[0].value == "{{ app.entry_path }}"
 
 
-def test_approval_is_recorded_against_the_signed_in_admin_not_the_request_body(tmp_path: Path):
+def test_approval_is_recorded_against_the_signed_in_admin_not_the_request_body(
+    tmp_path: Path,
+) -> None:
     """Approval is the gate to unattended replay; the name on it must not be typed in."""
     cat_dir = tmp_path / "caps"
     Catalog(cat_dir).save(_cap())
@@ -94,7 +96,9 @@ def test_approval_is_recorded_against_the_signed_in_admin_not_the_request_body(t
     assert approved["review"]["reviewed_by"] == "admin@example.com"
 
 
-def test_the_unauthenticated_spa_route_cannot_reach_outside_the_built_bundle(tmp_path: Path):
+def test_the_unauthenticated_spa_route_cannot_reach_outside_the_built_bundle(
+    tmp_path: Path,
+) -> None:
     """This route must stay open so the sign-in screen loads, so its reach is what bounds it."""
     from glovebox.studio import server
 

@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 from pathlib import Path
+from typing import Any
 
 from fastapi.testclient import TestClient
 
@@ -17,8 +18,10 @@ def _studio(tmp_path: Path) -> TestClient:
     return TestClient(app)
 
 
-def _register(client: TestClient, email: str) -> dict:
-    return client.post("/api/auth/register", json={"email": email, "password": PASSWORD}).json()
+def _register(client: TestClient, email: str) -> dict[str, Any]:
+    response = client.post("/api/auth/register", json={"email": email, "password": PASSWORD})
+    body: dict[str, Any] = response.json()
+    return body
 
 
 def test_should_let_an_admin_raise_a_viewer_to_operator(tmp_path: Path) -> None:

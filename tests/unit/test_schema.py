@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import json
+from typing import Any
 
 import pytest
 from pydantic import ValidationError
@@ -30,7 +31,7 @@ def _target(name: str = "Find") -> Target:
     )
 
 
-def _cap(**over) -> Capability:
+def _cap(**over: Any) -> Capability:
     base = dict(
         id="demo",
         version="1.0.0",
@@ -51,21 +52,21 @@ def _cap(**over) -> Capability:
     return Capability(**base)
 
 
-def test_roundtrip_json():
+def test_roundtrip_json() -> None:
     cap = _cap()
     again = Capability.model_validate_json(cap.model_dump_json())
     assert again == cap
     assert json.loads(cap.model_dump_json())["schema_version"] == "1.0"
 
 
-def test_step_requires_target_and_value():
+def test_step_requires_target_and_value() -> None:
     with pytest.raises(ValidationError, match="requires a target"):
         Step(id="s", action=ActionKind.CLICK, intent="x")
     with pytest.raises(ValidationError, match="requires a value"):
         Step(id="s", action=ActionKind.FILL, intent="x", target=_target())
 
 
-def test_undeclared_output_and_param_are_rejected():
+def test_undeclared_output_and_param_are_rejected() -> None:
     with pytest.raises(ValidationError, match="undeclared outputs"):
         _cap(
             steps=[
@@ -92,7 +93,7 @@ def test_undeclared_output_and_param_are_rejected():
         )
 
 
-def test_risk_must_be_declared_honestly():
+def test_risk_must_be_declared_honestly() -> None:
     with pytest.raises(ValidationError, match="declare it honestly"):
         _cap(
             steps=[
@@ -120,7 +121,7 @@ def test_risk_must_be_declared_honestly():
     assert cap.max_risk == RiskClass.IRREVERSIBLE
 
 
-def test_bbox_cannot_be_primary_strategy():
+def test_bbox_cannot_be_primary_strategy() -> None:
     with pytest.raises(ValidationError, match="bbox must be a fallback"):
         Target(
             description="x",
@@ -133,7 +134,7 @@ def test_bbox_cannot_be_primary_strategy():
         )
 
 
-def test_tenant_override_is_applied_by_step_id():
+def test_tenant_override_is_applied_by_step_id() -> None:
     cap = _cap(
         overrides=[
             TenantOverride(
@@ -145,7 +146,9 @@ def test_tenant_override_is_applied_by_step_id():
     )
     b = cap.for_tenant("bravo")
     assert b.app.origin == "http://127.0.0.1:9999"
-    assert b.steps[0].target.strategies[0].value["name"] == "Search"
+    overridden = b.steps[0].target
+    assert overridden is not None
+    assert overridden.strategies[0].value["name"] == "Search"
     assert cap.for_tenant(None) is cap
     with pytest.raises(KeyError):
         cap.for_tenant("charlie")
@@ -153,6 +156,6 @@ def test_tenant_override_is_applied_by_step_id():
         _cap(overrides=[TenantOverride(tenant="b", step_values={"zzz": "1"})])
 
 
-def test_json_schema_is_exportable():
+def test_json_schema_is_exportable() -> None:
     schema = Capability.model_json_schema()
     assert "steps" in schema["properties"]

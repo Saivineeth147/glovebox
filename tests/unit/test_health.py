@@ -8,10 +8,15 @@ MEMBER_NOT_FOUND as a failure. It read 78% while the current artifacts were at 1
 
 from __future__ import annotations
 
+from pathlib import Path
+from typing import Any
+
 from glovebox.studio.health import replay_health
 
 
-def _run(status: str, version: str = "1.0.7", failure: str | None = None, kind: str = "replay"):
+def _run(
+    status: str, version: str = "1.0.7", failure: str | None = None, kind: str = "replay"
+) -> dict[str, Any]:
     result = {"failure": {"failure_class": failure}} if failure else None
     return {
         "kind": kind,
@@ -74,7 +79,7 @@ def test_should_treat_a_capability_missing_from_the_catalog_as_superseded() -> N
     assert (health.eligible, health.superseded) == (0, 1)
 
 
-def test_a_business_outcome_should_count_toward_a_capability_s_confidence(tmp_path) -> None:
+def test_a_business_outcome_should_count_toward_a_capability_s_confidence(tmp_path: Path) -> None:
     """review.confidence is the per-artifact version of the same question the dashboard asks.
 
     Counting a correct MEMBER_NOT_FOUND as an unsuccessful replay showed the committed

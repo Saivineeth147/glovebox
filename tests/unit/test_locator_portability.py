@@ -9,7 +9,14 @@ from glovebox.surface.web import locators
 FLAT = (0.0, 0.0, 0.0, 0.0)
 
 
-def _cell(ref: str, text: str, row: int, col: int, table: str, geometry=FLAT) -> Element:
+def _cell(
+    ref: str,
+    text: str,
+    row: int,
+    col: int,
+    table: str,
+    geometry: tuple[float, float, float, float] = FLAT,
+) -> Element:
     return Element(
         ref=ref,
         frame=[],

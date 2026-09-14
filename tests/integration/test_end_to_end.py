@@ -30,6 +30,7 @@ from glovebox.schema import (
     TargetStrategy,
     TenantOverride,
 )
+from glovebox.schema.capability import ReviewStatus
 from tests.conftest import creds
 
 pytestmark = pytest.mark.integration
@@ -40,7 +41,9 @@ def _arm(app_url: str, fault: str) -> None:
 
 
 # ----------------------------------------------------------------------------- discovery artifact
-def test_discovery_produces_reviewable_parameterized_artifact(savings_capability: Capability):
+def test_discovery_produces_reviewable_parameterized_artifact(
+    savings_capability: Capability,
+) -> None:
     cap = savings_capability
     assert cap.id == "member_savings_balance" and cap.review.status == "approved"
     assert {p.name for p in cap.inputs} == {"username", "password", "member_id"}
@@ -59,7 +62,7 @@ def test_discovery_produces_reviewable_parameterized_artifact(savings_capability
     assert "teller1-pass" not in dumped and "100234" not in dumped  # parameterized, no secrets
 
 
-def test_discovery_evidence_is_redacted(savings_capability: Capability, runs_dir: Path):
+def test_discovery_evidence_is_redacted(savings_capability: Capability, runs_dir: Path) -> None:
     run = runs_dir / savings_capability.provenance.discovery_run_id
     events = (run / "events.jsonl").read_text()
     transcript = (run / "transcript.json").read_text()
@@ -77,7 +80,9 @@ def test_discovery_evidence_is_redacted(savings_capability: Capability, runs_dir
 
 
 # ----------------------------------------------------------------------------- replay: outcomes
-def test_replay_success_with_different_input(savings_capability, policy, runs_dir):
+def test_replay_success_with_different_input(
+    savings_capability: Capability, policy: Policy, runs_dir: Path
+) -> None:
     r = run_replay(
         savings_capability,
         {**creds(), "member_id": "100235"},
@@ -91,7 +96,9 @@ def test_replay_success_with_different_input(savings_capability, policy, runs_di
     assert (Path(r.evidence_dir) / "result.json").exists()
 
 
-def test_replay_reports_business_outcome_not_failure(savings_capability, policy, runs_dir):
+def test_replay_reports_business_outcome_not_failure(
+    savings_capability: Capability, policy: Policy, runs_dir: Path
+) -> None:
     r = run_replay(
         savings_capability,
         {**creds(), "member_id": "999999"},
@@ -103,20 +110,26 @@ def test_replay_reports_business_outcome_not_failure(savings_capability, policy,
     assert r.outcome_code == "MEMBER_NOT_FOUND" and r.failure is None and r.outputs == {}
 
 
-def test_replay_rejects_invalid_input_before_touching_the_app(savings_capability, policy, runs_dir):
+def test_replay_rejects_invalid_input_before_touching_the_app(
+    savings_capability: Capability, policy: Policy, runs_dir: Path
+) -> None:
     r = run_replay(
         savings_capability, {**creds(), "member_id": "abc"}, policy, runs_dir=runs_dir, trace=False
     )
+    assert r.failure is not None
     assert r.status == ReplayStatus.FAILED and r.failure.failure_class == "input_invalid"
     assert r.steps == []
 
 
-def test_replay_refuses_unapproved_draft(savings_capability, policy, runs_dir):
+def test_replay_refuses_unapproved_draft(
+    savings_capability: Capability, policy: Policy, runs_dir: Path
+) -> None:
     draft = savings_capability.model_copy(deep=True)
-    draft.review.status = "draft"
+    draft.review.status = ReviewStatus.DRAFT
     r = run_replay(
         draft, {**creds(), "member_id": "100234"}, policy, runs_dir=runs_dir, trace=False
     )
+    assert r.failure is not None
     assert r.status == ReplayStatus.FAILED and r.failure.failure_class == "not_approved"
     ok = run_replay(
         draft,
@@ -130,7 +143,9 @@ def test_replay_refuses_unapproved_draft(savings_capability, policy, runs_dir):
 
 
 # ----------------------------------------------------------------------------- replay: runtime faults
-def test_app_error_is_a_hard_failure_with_evidence(savings_capability, policy, runs_dir, app_url):
+def test_app_error_is_a_hard_failure_with_evidence(
+    savings_capability: Capability, policy: Policy, runs_dir: Path, app_url: str
+) -> None:
     _arm(app_url, "app_error")
     r = run_replay(
         savings_capability,
@@ -140,12 +155,15 @@ def test_app_error_is_a_hard_failure_with_evidence(savings_capability, policy, r
         trace=False,
     )
     assert r.status == ReplayStatus.FAILED
+    assert r.failure is not None
     assert r.failure.failure_class == "failure_signal" and r.failure.step_id
     assert Path(r.failure.evidence["screenshot"]).exists()
     assert any(k.startswith("snapshot:") for k in r.failure.evidence)
 
 
-def test_session_expiry_is_recovered_by_restart(savings_capability, policy, runs_dir, app_url):
+def test_session_expiry_is_recovered_by_restart(
+    savings_capability: Capability, policy: Policy, runs_dir: Path, app_url: str
+) -> None:
     _arm(app_url, "session_expired")  # fires on the first guarded request after login
     r = run_replay(
         savings_capability,
@@ -159,7 +177,9 @@ def test_session_expiry_is_recovered_by_restart(savings_capability, policy, runs
     assert r.outputs["savings_balance"] == 1250.75
 
 
-def test_slow_load_is_absorbed_by_waits(savings_capability, policy, runs_dir, app_url):
+def test_slow_load_is_absorbed_by_waits(
+    savings_capability: Capability, policy: Policy, runs_dir: Path, app_url: str
+) -> None:
     _arm(app_url, "slow")
     r = run_replay(
         savings_capability,
@@ -172,8 +192,8 @@ def test_slow_load_is_absorbed_by_waits(savings_capability, policy, runs_dir, ap
 
 
 def test_unknown_interstitial_escalates_and_human_dismisses_it(
-    savings_capability, policy, runs_dir, app_url
-):
+    savings_capability: Capability, policy: Policy, runs_dir: Path, app_url: str
+) -> None:
     """The interstitial is not declared in the artifact → automation is stuck → human clears it → resume."""
     _arm(app_url, "interstitial")
     bridge = OperatorBridge()
@@ -213,8 +233,8 @@ def test_unknown_interstitial_escalates_and_human_dismisses_it(
 
 
 def test_unknown_interstitial_unattended_is_a_debuggable_failure(
-    savings_capability, policy, runs_dir, app_url
-):
+    savings_capability: Capability, policy: Policy, runs_dir: Path, app_url: str
+) -> None:
     _arm(app_url, "interstitial")
     r = run_replay(
         savings_capability,
@@ -224,13 +244,14 @@ def test_unknown_interstitial_unattended_is_a_debuggable_failure(
         trace=False,
     )
     assert r.status == ReplayStatus.FAILED
+    assert r.failure is not None
     assert r.failure.failure_class in {"target_not_found", "checkpoint_failed"}
     assert r.failure.step_id and r.failure.expected and r.failure.observed
 
 
 def test_declared_interstitial_is_recovered_without_a_human(
-    savings_capability, policy, runs_dir, app_url
-):
+    savings_capability: Capability, policy: Policy, runs_dir: Path, app_url: str
+) -> None:
     cap = savings_capability.model_copy(deep=True)
     cap.recoveries.append(
         Recovery(
@@ -267,7 +288,9 @@ def test_declared_interstitial_is_recovered_without_a_human(
     assert any("batch_notice" in s.recoveries for s in r.steps)
 
 
-def test_operator_timeout_yields_escalated(savings_capability, policy, runs_dir, app_url):
+def test_operator_timeout_yields_escalated(
+    savings_capability: Capability, policy: Policy, runs_dir: Path, app_url: str
+) -> None:
     _arm(app_url, "interstitial")
     r = run_replay(
         savings_capability,
@@ -279,27 +302,32 @@ def test_operator_timeout_yields_escalated(savings_capability, policy, runs_dir,
         handoff_timeout_s=1.0,
         trace=False,
     )
+    assert r.handoff is not None
     assert r.status == ReplayStatus.ESCALATED and r.handoff.resolution == "timed_out"
 
 
 # ----------------------------------------------------------------------------- policy
-def test_policy_blocks_navigation_outside_allowlist(savings_capability, policy, runs_dir):
+def test_policy_blocks_navigation_outside_allowlist(
+    savings_capability: Capability, policy: Policy, runs_dir: Path
+) -> None:
     cap = savings_capability.model_copy(deep=True)
     cap.steps[0] = cap.steps[0].model_copy(update={"value": "/__sim/faults"})
     r = run_replay(cap, {**creds(), "member_id": "100234"}, policy, runs_dir=runs_dir, trace=False)
+    assert r.failure is not None
     assert r.status == ReplayStatus.FAILED and r.failure.failure_class == "policy_violation"
     assert r.failure.step_id == cap.steps[0].id
 
 
 # ----------------------------------------------------------------------------- irreversible flow
 def test_irreversible_capability_needs_human_and_yields_reference(
-    subaccount_capability, policy, runs_dir
-):
+    subaccount_capability: Capability, policy: Policy, runs_dir: Path
+) -> None:
     cap = subaccount_capability
     assert cap.max_risk == "irreversible"
     assert any(s.action == ActionKind.EXPECT_DIALOG for s in cap.steps)
     params = {**creds(), "member_id": "100234", "product": "Money Market", "nickname": "Rainy day"}
     blocked = run_replay(cap, params, policy, runs_dir=runs_dir, trace=False)
+    assert blocked.failure is not None
     assert (
         blocked.status == ReplayStatus.FAILED
         and blocked.failure.failure_class == "policy_violation"
@@ -311,6 +339,7 @@ def test_irreversible_capability_needs_human_and_yields_reference(
     )
     op.join()
     assert r.status == ReplayStatus.SUCCESS, r.failure
+    assert r.handoff is not None
     assert r.outputs["reference"].startswith("SA-") and r.handoff.resolution == "approve"
     bridge2 = OperatorBridge()
     op2 = ScriptedOperator(bridge2, [{"op": "decline"}]).start()
@@ -321,7 +350,9 @@ def test_irreversible_capability_needs_human_and_yields_reference(
     assert d.status == ReplayStatus.ESCALATED
 
 
-def test_irreversible_flow_reports_access_denied_outcome(subaccount_capability, policy, runs_dir):
+def test_irreversible_flow_reports_access_denied_outcome(
+    subaccount_capability: Capability, policy: Policy, runs_dir: Path
+) -> None:
     bridge = OperatorBridge()
     op = ScriptedOperator(bridge, [{"op": "approve"}]).start()
     r = run_replay(
@@ -339,8 +370,8 @@ def test_irreversible_flow_reports_access_denied_outcome(subaccount_capability, 
 
 # ----------------------------------------------------------------------------- multi-tenant
 def test_capability_recorded_on_alpha_replays_on_bravo_with_override(
-    savings_capability, policy, runs_dir
-):
+    savings_capability: Capability, policy: Policy, runs_dir: Path
+) -> None:
     """Bravo renames the label, the button, and shows a post-login notice. One override handles it."""
     cap = savings_capability.model_copy(deep=True)
     cap.overrides.append(
@@ -399,7 +430,9 @@ def test_capability_recorded_on_alpha_replays_on_bravo_with_override(
 
 
 # ----------------------------------------------------------------------------- catalog
-def test_catalog_exposes_capabilities_as_tools(catalog: Catalog, savings_capability):
+def test_catalog_exposes_capabilities_as_tools(
+    catalog: Catalog, savings_capability: Capability
+) -> None:
     tools = catalog.tool_definitions()
     t = next(x for x in tools if x["name"] == "member_savings_balance")
     assert t["input_schema"]["required"] == ["username", "password", "member_id"]
@@ -411,8 +444,8 @@ def test_catalog_exposes_capabilities_as_tools(catalog: Catalog, savings_capabil
 
 # ----------------------------------------------------------------------------- operator console
 def test_operator_console_serves_state_and_forwards_commands(
-    savings_capability, policy, runs_dir, app_url
-):
+    savings_capability: Capability, policy: Policy, runs_dir: Path, app_url: str
+) -> None:
     import threading
     import time
 
@@ -458,10 +491,13 @@ def test_operator_console_serves_state_and_forwards_commands(
     t.join(30)
     console.stop()
     assert r.status == ReplayStatus.SUCCESS, r.failure
+    assert r.handoff is not None
     assert r.handoff.operator == "console-user"
 
 
-def test_human_can_restart_the_flow_from_the_top(savings_capability, policy, runs_dir, app_url):
+def test_human_can_restart_the_flow_from_the_top(
+    savings_capability: Capability, policy: Policy, runs_dir: Path, app_url: str
+) -> None:
     _arm(app_url, "interstitial")
     bridge = OperatorBridge()
     op = ScriptedOperator(
@@ -483,6 +519,7 @@ def test_human_can_restart_the_flow_from_the_top(savings_capability, policy, run
     )
     op.join()
     assert r.status == ReplayStatus.SUCCESS, r.failure
+    assert r.handoff is not None
     assert r.handoff.resolution == "restart"
     assert [s.step_id for s in r.steps].count("s01_navigate") == 2
 

@@ -5,7 +5,7 @@ from __future__ import annotations
 from pathlib import Path
 
 from glovebox.agent.recorder import Recorder
-from glovebox.schema.capability import Parameter, ParamType, Target, TargetStrategy
+from glovebox.schema.capability import Capability, Parameter, ParamType, Target, TargetStrategy
 
 
 def _recorder() -> Recorder:
@@ -20,7 +20,7 @@ def _recorder() -> Recorder:
     )
 
 
-def _build(rec: Recorder):
+def _build(rec: Recorder) -> Capability:
     rec.navigate("http://127.0.0.1:8089/t/alpha/", "open the application entry point")
     rec.extract(
         Target(
@@ -68,7 +68,7 @@ def test_should_verify_text_seen_after_the_outcome_was_declared() -> None:
 
 
 def test_should_refuse_to_approve_a_capability_carrying_an_unverified_terminal_outcome(
-    tmp_path,
+    tmp_path: Path,
 ) -> None:
     """Approval is where a guessed detector must be caught; it cannot be caught later."""
     import json

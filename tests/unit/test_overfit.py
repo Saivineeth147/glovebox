@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import json
 from pathlib import Path
+from typing import Any
 
 import pytest
 
@@ -21,11 +22,14 @@ from glovebox.schema.capability import (
 ROOT = Path(__file__).resolve().parents[2]
 
 
-def _committed_artifact() -> dict:
-    return json.loads((ROOT / "capabilities" / "member_savings_balance.json").read_text())
+def _committed_artifact() -> dict[str, Any]:
+    artifact: dict[str, Any] = json.loads(
+        (ROOT / "capabilities" / "member_savings_balance.json").read_text()
+    )
+    return artifact
 
 
-def _recorder(**kw) -> Recorder:
+def _recorder(**kw: Any) -> Recorder:
     return Recorder(
         capability_id="c",
         app_id="a",
@@ -112,7 +116,7 @@ def _target() -> Target:
     )
 
 
-def _built_with_outcome(detect_text: str, success_text: list[str]) -> tuple:
+def _built_with_outcome(detect_text: str, success_text: list[str]) -> tuple[Capability, Recorder]:
     rec = _recorder(param_values={"member_id": "100234"})
     rec.navigate("http://127.0.0.1:8089/t/alpha/", "open the application entry point")
     rec.extract(_target(), "savings_balance", "current balance", "string", None)

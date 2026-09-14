@@ -1,5 +1,7 @@
 from __future__ import annotations
 
+from typing import Any
+
 import pytest
 
 from glovebox.evidence.redaction import Redactor
@@ -8,7 +10,7 @@ from glovebox.replay.templating import InputError, render_template, validate_inp
 from glovebox.schema import ActionKind, Parameter, ParamType, Policy, RiskClass
 
 
-def test_redactor_registered_secret_and_patterns():
+def test_redactor_registered_secret_and_patterns() -> None:
     r = Redactor()
     r.register_secret("s3cret-pass", "password")
     out = r.text(
@@ -24,7 +26,7 @@ def test_redactor_registered_secret_and_patterns():
     assert r.obj({"k": ["s3cret-pass"]}) == {"k": [r.text("s3cret-pass")]}
 
 
-def _policy(**kw) -> Policy:
+def _policy(**kw: Any) -> Policy:
     base = dict(
         allowed_origins=["http://127.0.0.1:8089"],
         allowed_path_patterns=["^/t/"],
@@ -34,7 +36,7 @@ def _policy(**kw) -> Policy:
     return Policy(**base)
 
 
-def test_guardrails_urls():
+def test_guardrails_urls() -> None:
     g = Guardrails(_policy())
     assert g.check_url("http://127.0.0.1:8089/t/alpha/app/home").allowed
     assert not g.check_url("http://127.0.0.1:8089/__sim/faults").allowed
@@ -42,7 +44,7 @@ def test_guardrails_urls():
     assert not g.check_url("https://bank.example.com/t/x").allowed
 
 
-def test_guardrails_risk_matrix():
+def test_guardrails_risk_matrix() -> None:
     g = Guardrails(_policy())
     assert g.check_action(ActionKind.FILL, RiskClass.REVERSIBLE, attended=False).allowed
     assert (
@@ -67,7 +69,7 @@ def test_guardrails_risk_matrix():
     )
 
 
-def test_validate_inputs_and_templates():
+def test_validate_inputs_and_templates() -> None:
     from tests.unit.test_schema import _cap
 
     cap = _cap(

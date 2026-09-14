@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import os
+from collections.abc import Iterator
 from pathlib import Path
 
 import pytest
@@ -11,7 +12,7 @@ from glovebox.envfile import load_env_file, parse_env_file
 
 
 @pytest.fixture(autouse=True)
-def _restore_environment():
+def _restore_environment() -> Iterator[None]:
     """load_env_file writes to os.environ itself, so monkeypatch has nothing to undo."""
     before = dict(os.environ)
     yield
@@ -46,7 +47,7 @@ def test_should_return_empty_mapping_when_file_is_absent(tmp_path: Path) -> None
 
 
 def test_should_not_override_a_variable_already_in_the_environment(
-    tmp_path: Path, monkeypatch
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
 ) -> None:
     """A real export (CI secret, operator shell) must beat a stale checked-out file."""
     monkeypatch.setenv("GLOVEBOX_MODEL", "openai/gpt-5.6-sol")
@@ -59,7 +60,7 @@ def test_should_not_override_a_variable_already_in_the_environment(
 
 
 def test_should_report_the_names_it_set_without_exposing_values(
-    tmp_path: Path, monkeypatch
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
 ) -> None:
     monkeypatch.delenv("OPENROUTER_API_KEY", raising=False)
     env = tmp_path / ".env"
@@ -68,7 +69,9 @@ def test_should_report_the_names_it_set_without_exposing_values(
     assert load_env_file(env) == ["OPENROUTER_API_KEY"]
 
 
-def test_should_load_the_project_dotenv_before_a_command_runs(tmp_path: Path, monkeypatch) -> None:
+def test_should_load_the_project_dotenv_before_a_command_runs(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
     """Wiring test: every CLI command, including `studio` and `discover`, gets the file."""
     from typer.testing import CliRunner
 

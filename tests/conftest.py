@@ -4,6 +4,7 @@ import os
 import socket
 from collections.abc import Iterator
 from pathlib import Path
+from typing import Any
 
 import pytest
 
@@ -61,7 +62,7 @@ def catalog(tmp_path_factory: pytest.TempPathFactory) -> Catalog:
 
 
 def _discover(
-    script: list[dict],
+    script: list[dict[str, Any]],
     app_url: str,
     policy: Policy,
     runs_dir: Path,

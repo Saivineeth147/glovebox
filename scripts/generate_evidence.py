@@ -13,6 +13,7 @@ import os
 import shutil
 import sys
 from pathlib import Path
+from typing import Any
 
 import httpx
 
@@ -32,7 +33,7 @@ RUNS = ROOT / "runs"
 PORT = 8089
 
 
-def bundle(name: str, run_dir: str | Path, extra: dict | None = None) -> None:
+def bundle(name: str, run_dir: str | Path, extra: dict[str, Any] | None = None) -> None:
     dst = EVIDENCE / name
     if dst.exists():
         shutil.rmtree(dst)
@@ -111,7 +112,7 @@ def main() -> None:
             else cap
         )
 
-        def replay(name: str, params: dict, fault: str | None = None, **kw) -> None:
+        def replay(name: str, params: dict[str, Any], fault: str | None = None, **kw: Any) -> None:
             print(name)
             if fault:
                 httpx.post(f"{base}/__sim/faults/{fault}", timeout=5).raise_for_status()

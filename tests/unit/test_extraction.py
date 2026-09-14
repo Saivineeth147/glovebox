@@ -31,7 +31,7 @@ def test_should_refuse_to_record_an_extraction_whose_regex_misses_the_element() 
     from glovebox.agent.loop import DiscoveryAgent
 
     agent = object.__new__(DiscoveryAgent)
-    agent._el = lambda ref: SimpleNamespace(text="100234", value=None)  # type: ignore[method-assign]
+    agent._el = lambda ref: SimpleNamespace(text="100234", value=None)  # type: ignore[method-assign,assignment,return-value]
     with pytest.raises(ValueError, match="does not match"):
         DiscoveryAgent._t_extract(
             agent, "e1", "savings_balance", "balance", "string", r"S01 Regular Savings \$([\d,.]+)"
