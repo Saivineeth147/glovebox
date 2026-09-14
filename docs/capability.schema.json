@@ -155,6 +155,12 @@
           "default": true,
           "title": "Terminal",
           "type": "boolean"
+        },
+        "verified": {
+          "default": false,
+          "description": "The detector text was actually observed during discovery. An unverified detector is the model's guess at wording it never saw; it silently never fires, so the capability reports a hard failure where it promised a business outcome.",
+          "title": "Verified",
+          "type": "boolean"
         }
       },
       "required": [
@@ -627,7 +633,7 @@
     },
     "TenantOverride": {
       "additionalProperties": false,
-      "description": "Per-tenant specialisation of a shared capability. Applied by step id; only the\nlisted fields change. This is how 'same vendor app, different institution' is handled\nwithout re-recording (REPORT.md \u00a74).",
+      "description": "Per-tenant specialisation of a shared capability. Applied by step id; only the\nlisted fields change. This is how 'same vendor app, different institution' is handled\nwithout re-recording (Glovebox-Design-Writeup.md \u00a74).",
       "properties": {
         "tenant": {
           "title": "Tenant",
