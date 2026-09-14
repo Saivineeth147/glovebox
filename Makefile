@@ -3,6 +3,10 @@
 UV ?= uv
 RUN := $(UV) run
 
+.PHONY: help setup lint fmt test studio ui ui-test target discover approve discover-offline replay drift evidence
+# Without this, `make ui` and `make evidence` silently no-op: a directory of that name
+# already exists, so make considers the target up to date and runs no recipe.
+
 help: ## list targets
 	@grep -E '^[a-zA-Z_-]+:.*?## ' $(MAKEFILE_LIST) | awk 'BEGIN {FS = ":.*?## "}; {printf "  \033[36m%-16s\033[0m %s\n", $$1, $$2}'
 
@@ -28,8 +32,10 @@ studio: ## run Glovebox Studio (workspace UI + API) on :8800
 ui: ## rebuild the Studio frontend (needs node 20+); output is committed under src/glovebox/studio/static
 	cd ui && npm install --no-audit --no-fund && npx tsc --noEmit && npx vitest run && npx vite build
 
-ui-test: ## frontend unit tests only
-	cd ui && npx vitest run
+ui-test: ## frontend unit tests only (installs the ui dependencies on first run)
+	# `make setup` covers Python and Chromium only, and ui/node_modules is gitignored, so on a
+	# cold clone this target has to provision its own dependencies or it cannot run at all.
+	cd ui && { [ -d node_modules ] || npm install --no-audit --no-fund; } && npx vitest run
 
 target: ## run the hostile legacy target app on :8089
 	$(RUN) glovebox target serve --port 8089
