@@ -1,6 +1,6 @@
 """The capability artifact: a typed, versioned, reviewable description of a recorded flow.
 
-Design principles (see REPORT.md §2):
+Design principles (see Glovebox-Design-Writeup.md §2):
 
 * **Decoupled from the transcript.** Nothing here references model messages. The recorder
   translates the model's ephemeral element references into `Target`s with several
@@ -255,7 +255,7 @@ class ReviewState(_Strict):
 class TenantOverride(_Strict):
     """Per-tenant specialisation of a shared capability. Applied by step id; only the
     listed fields change. This is how 'same vendor app, different institution' is handled
-    without re-recording (REPORT.md §4)."""
+    without re-recording (Glovebox-Design-Writeup.md §4)."""
 
     tenant: str
     origin: str | None = None

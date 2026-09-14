@@ -10,22 +10,22 @@ are to `src/glovebox/`.
 
 ```
                     ┌────────────────────────────┐
-  discovery         │  agent/loop.py  (model)     │      replay/engine.py (no model)
-  goal + params ───▶│  observe → decide → act     │      capability + params ──▶ result
-                    └──────────┬─────────────────┘                 │
+  discovery         │  agent/loop.py  (model)    │      replay/engine.py (no model)
+  goal + params ───▶│  observe → decide → act    │      capability + params ──▶ result
+                    └──────────┬─────────────────┘                  │
                                │ every action                       │ every step
                     ┌──────────▼─────────────────────────────────────▼──────────┐
-                    │  policy/guardrails.py   allowlist · action kinds · risk     │
-                    ├────────────────────────────────────────────────────────────┤
-                    │  control/session.py     lease: automation ⇄ human           │
-                    ├────────────────────────────────────────────────────────────┤
-                    │  surface/  (Surface protocol)  observe · act · resolve      │  ◀── seam 1
-                    │     web/ (Playwright)     http/ (no browser)               │
-                    └────────────────────────────────────────────────────────────┘
+                    │  policy/guardrails.py   allowlist · action kinds · risk   │
+                    ├───────────────────────────────────────────────────────────┤
+                    │  control/session.py     lease: automation ⇄ human         │
+                    ├───────────────────────────────────────────────────────────┤
+                    │  surface/  (Surface protocol)  observe · act · resolve    │  ◀── seam 1
+                    │     web/ (Playwright)     http/ (no browser)              │
+                    └───────────────────────────────────────────────────────────┘
                                │ events, screenshots, snapshots (redacted)
                     ┌──────────▼─────────────────┐   ┌───────────────────────────┐
-                    │  evidence/  runs/<run_id>/  │   │ schema/capability.py       │  ◀── seam 2
-                    └────────────────────────────┘   │ the artifact both paths use │
+                    │  evidence/  runs/<run_id>/ │   │ schema/capability.py      │  ◀── seam 2
+                    └────────────────────────────┘   │the artifact both paths use│
                                                      └───────────────────────────┘
 ```
 
@@ -212,8 +212,14 @@ mocking. The control model is the hardest claim here to believe from prose — a
 *same* live session, the automation thread staying alive to serve them — and a working takeover
 argues it better. The load-bearing work is still `agent/`, `replay/`, `schema/` and `surface/`.
 
-Of the optional stretch items, I built those that land on a graded axis — approval gating and
-stability (safety, robustness), a bounded repair *proposal* that is never applied (robustness),
-cross-tenant overrides (generalization), the agent-facing catalog — and skipped code generation.
+Of the optional stretch items, I built those that land on a graded axis, and skipped code
+generation:
+
+1. **Approval gating** (safety, robustness)
+2. **Stability** (safety, robustness)
+3. **A bounded repair *proposal*, never applied** (robustness)
+4. **Cross-tenant overrides** (generalization)
+5. **The agent-facing catalog**
+
 The recorder guards, the drift evaluation and the browser-free surface were not on the list; each
 exists because a real run showed the argument it replaced was wrong.

@@ -25,10 +25,10 @@ production:  agent ──▶ replay(capability, params) ──▶ success{output
 | 3.4 Allowlist, risk classes, redaction | `policies/default.yaml`, `src/glovebox/policy/`, `src/glovebox/evidence/redaction.py` |
 | 3.5 Evidence | `runs/<run_id>/` → `evidence/` (events.jsonl, screenshots, DOM snapshots, trace) |
 | 3.6 Human escalation & handoff on the live session | `src/glovebox/control/` (lease model, bridge), Studio takeover panel |
-| 3.7 Heterogeneity & multi-tenant | `Surface` protocol, `TenantOverride` in the schema, [REPORT.md §4](./REPORT.md) |
+| 3.7 Heterogeneity & multi-tenant | `Surface` protocol, `TenantOverride` in the schema, [Glovebox-Design-Writeup.md §4](./Glovebox-Design-Writeup.md) |
 | Stretch: agent-facing catalog, stability, cross-tenant | `src/glovebox/catalog/`, `glovebox stability`, `evidence/replay-tenant-bravo-override/` |
 
-Design write-up: **[REPORT.md](./REPORT.md)**. Decisions: [docs/adr/](./docs/adr/). Evidence: [evidence/](./evidence/).
+Design write-up: **[Glovebox-Design-Writeup.md](./Glovebox-Design-Writeup.md)**. Decisions: [docs/adr/](./docs/adr/). Evidence: [evidence/](./evidence/).
 
 ## The target: Meridian Core
 
@@ -286,7 +286,7 @@ tests/              unit + integration
 - **Target application** — a simulation. It is *more* hostile than most demo sites and lets us
   inject runtime faults deterministically, which a public site cannot.
 - **Desktop / accessibility surfaces** — not implemented; the `Surface` protocol and the
-  artifact vocabulary are designed for them (REPORT.md §4).
+  artifact vocabulary are designed for them (Glovebox-Design-Writeup.md §4).
 
 ## License
 

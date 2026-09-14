@@ -1,4 +1,4 @@
-"""Deterministic replay: the production execution path (REPORT.md §3).
+"""Deterministic replay: the production execution path (Glovebox-Design-Writeup.md §3).
 
 No model is consulted. For each step the engine:
   1. asks policy whether the action is permitted (block → hard failure; confirm → human),

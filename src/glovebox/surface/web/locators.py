@@ -1,7 +1,7 @@
 """Turn a live Element into a multi-strategy `Target`, and resolve a `Target` back to exactly
 one Element on a later observation.
 
-Strategy order encodes a robustness argument (REPORT.md §3):
+Strategy order encodes a robustness argument (Glovebox-Design-Writeup.md §3):
 1. role_name   — what a screen reader (and a human) uses; survives restyling and DOM moves.
 2. label       — legacy table forms have visible labels even when there is no <label>.
 3. name_attr   — form `name` attributes are wired to the server and almost never change.

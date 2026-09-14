@@ -1,4 +1,4 @@
-"""Control-transfer model for human-in-the-loop handoff (REPORT.md §5).
+"""Control-transfer model for human-in-the-loop handoff (Glovebox-Design-Writeup.md §5).
 
 Exactly one party owns the live session at any time:
 
