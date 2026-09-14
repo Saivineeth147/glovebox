@@ -13,6 +13,7 @@ from glovebox.agent.scripts import MEMBER_SAVINGS_BALANCE, OPEN_SUB_ACCOUNT, sta
 from glovebox.catalog import Catalog
 from glovebox.runner import run_discovery
 from glovebox.schema import Capability, Parameter, ParamType, Policy
+from glovebox.studio.seed import EMAIL_VARIABLE, PASSWORD_VARIABLE
 from glovebox.testing import target_app
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -22,6 +23,19 @@ FIXED_PORT = 8089  # policies/default.yaml allowlists this origin
 def _port_is_free(port: int) -> bool:
     with socket.socket() as probe:
         return probe.connect_ex(("127.0.0.1", port)) != 0
+
+
+@pytest.fixture(autouse=True)
+def _unseeded_studio(monkeypatch: pytest.MonkeyPatch) -> None:
+    """Keep a developer's `.env` out of Studio's account ladder.
+
+    Any test that invokes the CLI runs `_bootstrap_environment`, which loads the real `.env`
+    straight into `os.environ` and — by design, so an exported secret wins — never takes it back
+    out. A checkout whose `.env` seeds an administrator would therefore silently demote the first
+    account every later test registers. Tests that want seeding set these themselves.
+    """
+    monkeypatch.delenv(EMAIL_VARIABLE, raising=False)
+    monkeypatch.delenv(PASSWORD_VARIABLE, raising=False)
 
 
 @pytest.fixture(scope="session")

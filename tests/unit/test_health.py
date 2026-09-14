@@ -115,3 +115,20 @@ def test_a_business_outcome_should_count_toward_a_capability_s_confidence(tmp_pa
 
     catalog.record_replay("member_savings_balance", outcome.answered)
     assert catalog.load("member_savings_balance").review.confidence == 1.0
+
+
+def test_studio_should_advertise_the_model_a_run_would_actually_use() -> None:
+    """Discover submits this value verbatim, so a second copy of the default is a real divergence.
+
+    Studio named claude-opus-5 and anthropic/claude-sonnet-4.5 while the clients defaulted to
+    claude-sonnet-5 — a Studio discovery would have run a different model than the CLI.
+    """
+    from glovebox.agent.llm import DEFAULT_MODEL, DEFAULT_OPENROUTER_MODEL
+    from glovebox.studio import server
+
+    source = Path(server.__file__).read_text()
+
+    assert "DEFAULT_MODEL" in source and "DEFAULT_OPENROUTER_MODEL" in source
+    assert '"claude-opus-5"' not in source
+    assert '"anthropic/claude-sonnet-4.5"' not in source
+    assert DEFAULT_MODEL and DEFAULT_OPENROUTER_MODEL

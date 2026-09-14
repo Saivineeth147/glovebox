@@ -20,7 +20,12 @@ from fastapi.responses import FileResponse, HTMLResponse, JSONResponse, Streamin
 from fastapi.staticfiles import StaticFiles
 from pydantic import BaseModel
 
-from glovebox.agent.llm import RECOMMENDED_MODELS, available_provider
+from glovebox.agent.llm import (
+    DEFAULT_MODEL,
+    DEFAULT_OPENROUTER_MODEL,
+    RECOMMENDED_MODELS,
+    available_provider,
+)
 from glovebox.catalog import Catalog
 from glovebox.catalog.registry import UnverifiedOutcomeError
 from glovebox.schema.capability import Capability
@@ -31,6 +36,7 @@ from .guards import require_role, require_user
 from .health import replay_health
 from .jobs import JobManager
 from .routes_auth import router as auth_router
+from .seed import seed_administrator
 from .sessions import SessionStore
 from .throttle import AttemptLimiter
 
@@ -97,6 +103,7 @@ def create_studio(runs_dir: Path, catalog_dir: Path, policy_path: Path) -> FastA
     db_path = _resolve_db_path(runs_dir)
     app.state.login_limiter = AttemptLimiter()
     app.state.account_store = AccountStore(db_path)
+    seed_administrator(app.state.account_store)
     app.state.session_store = SessionStore(db_path)
     app.state.jobs = jobs
     app.include_router(auth_router)
@@ -137,12 +144,10 @@ def create_studio(runs_dir: Path, catalog_dir: Path, policy_path: Path) -> FastA
             "open_interventions": sum(1 for j in jobs.all() if j.bridge.current),
             "target": {**target, "url": target_base()},
             "policy": policy().name,
+            # The clients own these defaults. Repeating them here drifted: Studio advertised
+            # a different model than a run would use, and Discover submits this value verbatim.
             "model": os.environ.get("GLOVEBOX_MODEL")
-            or (
-                "claude-opus-5"
-                if available_provider() == "anthropic"
-                else "anthropic/claude-sonnet-4.5"
-            ),
+            or (DEFAULT_MODEL if available_provider() == "anthropic" else DEFAULT_OPENROUTER_MODEL),
             "provider": available_provider(),
             "has_api_key": available_provider() is not None,
             "models": [m for m in RECOMMENDED_MODELS if m["provider"] == available_provider()],
