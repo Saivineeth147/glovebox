@@ -69,18 +69,25 @@ export default function SessionWindow({
           style={{ aspectRatio: isWhole ? aspect : CROPPED_ASPECT }}
         >
           {src ? (
-            <img
-              src={src}
-              alt={title ?? "captured session"}
-              draggable={false}
-              className={`w-full h-full ${isWhole ? "object-contain" : "object-cover object-top"}`}
-            />
+            // The overlay is positioned in percentages of the capture, so it has to live in a
+            // box that *is* the capture. Cropping with object-cover scales the picture inside
+            // this container and leaves the boxes behind, which put every hotspot somewhere the
+            // control is not. Cropping is the container's job: the image keeps its own geometry,
+            // fills the width, and the overflow is clipped.
+            <div className="absolute inset-x-0 top-0">
+              <img
+                src={src}
+                alt={title ?? "captured session"}
+                draggable={false}
+                className="block w-full"
+              />
+              {overlay}
+            </div>
           ) : (
             <div className="absolute inset-0 grid place-items-center text-[13px] text-ink-400">
               {empty ?? "Nothing captured yet"}
             </div>
           )}
-          {overlay}
           {/* A faint inner edge so the pale page reads as being behind glass, not pasted on. */}
           <div className="pointer-events-none absolute inset-0 ring-1 ring-inset ring-black/40" />
         </div>
