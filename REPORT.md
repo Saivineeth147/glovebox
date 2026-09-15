@@ -110,6 +110,7 @@ them; frames are addressed by name path.
 | Undeclared modal, target missing | nothing matched → *stuck* | attended: `escalated`; else `failed` |
 | Extracted text without the recorded shape | checkpoint | `failed / checkpoint_failed`, expected vs observed |
 | Bad parameter · draft artifact · disallowed URL | contract · policy | refused before touching the app |
+| Stopped from the console | cooperative cancel, checked between steps | `failed / cancelled` — not an answer and not a breakage, so the caller may retry verbatim |
 
 The result contract has four statuses — `success`, `business_outcome`, `escalated`, `failed` — and
 a `Failure{failure_class, step_id, expected, observed, evidence}`. Every row has an integration
@@ -176,6 +177,12 @@ same multi-strategy target description the recorder uses.
 step for when the human's fix reset a form; `complete` verifies `success` and runs the extractions
 so the caller still gets outputs; `abort`; and `approve`/`decline` for confirmations. A handoff has
 a timeout, and who holds the lease is always answerable from `ControlSession.owner`.
+
+**Stopping.** A run can also be stopped outright from its page. A thread cannot be killed from
+outside, and tearing the browser down mid-action would leave evidence describing a step that
+never finished, so cancellation is cooperative: the loop checks between steps, a run blocked in a
+handoff is released through the bridge, and the result is `failed / cancelled` — neither an answer
+nor the capability breaking, so the same invocation can be retried verbatim.
 
 **Identity.** The operator on every recorded action and the reviewer on every approval come from
 an authenticated session, not from a name the browser typed. The brief allows the console to be

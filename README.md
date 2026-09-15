@@ -92,6 +92,8 @@ Core. The Studio email field expects an email address, so `teller1` is rejected 
   reports `failed / cancelled`, which is neither an answer nor the capability breaking, so the
   caller can retry the same invocation verbatim. Starting a job against an unreachable target is
   refused outright rather than accepted and left to hang.
+  The invoke panel also names any fault still armed on the target from an earlier selection,
+  since a one-shot fault nobody remembers arming is how a run fails for no visible reason.
 - **Takeover** — when a run is stuck, needs approval for an irreversible step, or is blocked,
   the takeover panel appears on the run page: the *same* browser session with clickable
   hotspots on every control, why it stopped, what the automation saw, and six ways to hand
