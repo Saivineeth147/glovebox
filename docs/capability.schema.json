@@ -633,7 +633,7 @@
     },
     "TenantOverride": {
       "additionalProperties": false,
-      "description": "Per-tenant specialisation of a shared capability. Applied by step id; only the\nlisted fields change. This is how 'same vendor app, different institution' is handled\nwithout re-recording (Glovebox-Design-Writeup.md \u00a74).",
+      "description": "Per-tenant specialisation of a shared capability. Applied by step id; only the\nlisted fields change. This is how 'same vendor app, different institution' is handled\nwithout re-recording (REPORT.md \u00a74).",
       "properties": {
         "tenant": {
           "title": "Tenant",

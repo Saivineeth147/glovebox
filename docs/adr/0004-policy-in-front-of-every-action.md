@@ -20,4 +20,4 @@ parameters, sensitive outputs) plus pattern rules, before anything is written.
 - Sensitive parameters never reach the model: it references them by name; the loop
   substitutes the value.
 - Screenshots may still show what the *screen* shows; the surface masks password fields,
-  and PII on screen is the remaining exposure (documented limit, see Glovebox-Design-Writeup.md §6).
+  and PII on screen is the remaining exposure (documented limit, see REPORT.md §6).

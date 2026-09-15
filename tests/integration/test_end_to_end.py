@@ -805,7 +805,7 @@ def test_a_warm_session_lets_a_replay_skip_signing_in_again(
     runs_dir: Path,
     app_url: str,
 ) -> None:
-    """Glovebox-Design-Writeup.md §7's first cut: every replay signs in, and it does not have to.
+    """REPORT.md §7's first cut: every replay signs in, and it does not have to.
 
     The first run establishes the session. The second starts after the sign-in prefix and is
     given no credentials at all, which is the point — a reused session keeps them out of the

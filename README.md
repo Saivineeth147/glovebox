@@ -25,10 +25,10 @@ production:  agent ──▶ replay(capability, params) ──▶ success{output
 | 3.4 Allowlist, risk classes, redaction | `policies/default.yaml`, `src/glovebox/policy/`, `src/glovebox/evidence/redaction.py` |
 | 3.5 Evidence | `runs/<run_id>/` → `evidence/` (events.jsonl, screenshots, DOM snapshots, trace) |
 | 3.6 Human escalation & handoff on the live session | `src/glovebox/control/` (lease model, bridge), Studio takeover panel |
-| 3.7 Heterogeneity & multi-tenant | `Surface` protocol, `TenantOverride` in the schema, [Glovebox-Design-Writeup.md §4](./Glovebox-Design-Writeup.md) |
+| 3.7 Heterogeneity & multi-tenant | `Surface` protocol, `TenantOverride` in the schema, [REPORT.md §4](./REPORT.md) |
 | Stretch: agent-facing catalog, stability, cross-tenant | `src/glovebox/catalog/`, `glovebox stability`, `evidence/replay-tenant-bravo-override/` |
 
-Design write-up: **[Glovebox-Design-Writeup.md](./Glovebox-Design-Writeup.md)**. Decisions: [docs/adr/](./docs/adr/). Evidence: [evidence/](./evidence/).
+Design write-up: **[REPORT.md](./REPORT.md)**. Decisions: [docs/adr/](./docs/adr/). Evidence: [evidence/](./evidence/).
 
 ## The target: Meridian Core
 
@@ -74,7 +74,7 @@ Core. The Studio email field expects an email address, so `teller1` is rejected 
 > of a real takeover argue that better than prose. Nothing in the UI can do what the CLI
 > cannot — both drive the same `OperatorBridge` verbs — so it is a window onto the mechanism,
 > not a second implementation of it. Sign-in and roles came with it for a narrower reason
-> given in Glovebox-Design-Writeup.md §5: an operator name the browser types is not an audit trail. If you are
+> given in REPORT.md §5: an operator name the browser types is not an audit trail. If you are
 > weighing effort, the load-bearing work is in `agent/`, `replay/`, `schema/` and `surface/`.
 
 <p align="center"><img src="docs/studio/run-live.png" alt="Glovebox Studio: a live run with the agent's decisions streaming beside the screen" width="920"></p>
@@ -314,7 +314,7 @@ tests/              unit + integration
 - **Target application** — a simulation. It is *more* hostile than most demo sites and lets us
   inject runtime faults deterministically, which a public site cannot.
 - **Desktop / accessibility surfaces** — not implemented; the `Surface` protocol and the
-  artifact vocabulary are designed for them (Glovebox-Design-Writeup.md §4).
+  artifact vocabulary are designed for them (REPORT.md §4).
 
 ## License
 
