@@ -15,7 +15,8 @@ export default function CapabilityDetail({ id }: { id: string }) {
   const [busy, setBusy] = useState(false);
   const [err, setErr] = useState<string | null>(null);
   const [known, setKnown] = useState<string[]>([]);
-  useEffect(() => { api.capability(id).then((cap) => { setC(cap); setTenant(cap.app.tenant ?? ""); setParams(Object.fromEntries(cap.inputs.filter((p: any) => !p.sensitive).map((p: any) => [p.name, p.example ?? p.default ?? ""]))); }); api.overview().then((o) => setKnown(o.target.known ?? [])); }, [id]);
+  const [armed, setArmed] = useState<Record<string, number>>({});
+  useEffect(() => { api.capability(id).then((cap) => { setC(cap); setTenant(cap.app.tenant ?? ""); setParams(Object.fromEntries(cap.inputs.filter((p: any) => !p.sensitive).map((p: any) => [p.name, p.example ?? p.default ?? ""]))); }); api.overview().then((o) => { setKnown(o.target.known ?? []); setArmed(o.target.armed ?? {}); }); }, [id]);
   if (!c) return <Spinner />;
 
   const invoke = async () => {
@@ -86,7 +87,35 @@ export default function CapabilityDetail({ id }: { id: string }) {
               {c.inputs.filter((p: any) => !p.sensitive).map((p: any) => <div key={p.name}><div className="label mb-1">{p.name}{p.required ? "" : " (optional)"}</div><input className="input font-mono" value={params[p.name] ?? ""} onChange={(e) => setParams({ ...params, [p.name]: e.target.value })} placeholder={p.example ?? p.pattern ?? ""} /><div className="text-[11px] text-ink-500 mt-1">{p.description}</div></div>)}
               {c.inputs.some((p: any) => p.sensitive) && <div className="text-[12px] text-ink-400">Sensitive inputs ({c.inputs.filter((p: any) => p.sensitive).map((p: any) => p.name).join(", ")}) are supplied from the environment and never shown.</div>}
               <div><div className="label mb-1">Tenant</div><select className="input" value={tenant} onChange={(e) => setTenant(e.target.value)}><option value={c.app.tenant ?? ""}>{c.app.tenant} (recorded)</option>{c.overrides.map((o: any) => <option key={o.tenant} value={o.tenant}>{o.tenant} (override)</option>)}</select></div>
-              <div><div className="label mb-1">Inject a runtime fault</div><div className="flex flex-wrap gap-1.5">{known.map((f) => <button key={f} className={`btn !py-1 !px-2 text-[12px] ${faults.includes(f) ? "border-amber-500/60 text-amber-300" : ""}`} onClick={() => setFaults(faults.includes(f) ? faults.filter((x) => x !== f) : [...faults, f])}>{f}</button>)}</div></div>
+              <div>
+                <div className="label mb-1">Inject a runtime fault</div>
+                <div className="flex flex-wrap gap-1.5">
+                  {known.map((f) => {
+                    const picked = faults.includes(f);
+                    return (
+                      <button
+                        key={f}
+                        aria-pressed={picked}
+                        className={`btn !py-1 !px-2 text-[12px] ${picked ? "!bg-attention-600/25 !border-attention-500 !text-attention-200 font-semibold" : ""}`}
+                        onClick={() => setFaults(picked ? faults.filter((x) => x !== f) : [...faults, f])}
+                      >{picked ? "✓ " : ""}{f}</button>
+                    );
+                  })}
+                </div>
+                {faults.length > 0 && (
+                  <div className="text-[11px] text-attention-300 mt-1.5">
+                    {faults.length === 1 ? "1 fault" : `${faults.length} faults`} will be armed on the target for this run.
+                  </div>
+                )}
+                {/* A fault is one-shot and armed server-side, so one selected and never consumed
+                    waits to fire on somebody's next run. Say so where it would surprise them. */}
+                {Object.keys(armed).length > 0 && (
+                  <div className="text-[11px] text-ink-400 mt-1.5">
+                    Already armed on the target: <span className="text-attention-300">{Object.keys(armed).join(", ")}</span> — these fire on the next run that triggers them.{" "}
+                    <button className="underline hover:text-ink-200" onClick={() => api.clearFaults().then(() => api.overview()).then((o) => setArmed(o.target.armed ?? {}))}>Clear</button>
+                  </div>
+                )}
+              </div>
               <label className="flex items-center gap-2 text-[13px]"><input type="checkbox" checked={attended} onChange={(e) => setAttended(e.target.checked)} /> Attended — I will take over if it gets stuck</label>
               {c.review.status !== "approved" && <label className="flex items-center gap-2 text-[13px] text-amber-300"><input type="checkbox" checked={allowDraft} onChange={(e) => setAllowDraft(e.target.checked)} /> Allow draft (dev only; production refuses drafts)</label>}
               {err && <div className="text-[12px] text-rose-300">{err}</div>}
